@@ -3,33 +3,39 @@ import Player from "./player.js";
 import Cloud from "./cloud.js";
 
 const canvas = document.getElementById("gameCanvas")
+let mapWidth = canvas.width;
+let mapHeight = canvas.height;
+const BASEMAPWIDTH = 1280;
+const BASEMAPHEIGHT = 580;
+resizeCanvas();
+const keysPressed = new Set();
 
 const ctx = canvas.getContext("2d");
 
-const dragon = new Dragon(0.1 * canvas.width, 0.3 * canvas.height);
-const player = new Player(0.74 * canvas.width, 0.4 * canvas.height);
+const dragon = new Dragon(0.1, 0.3);
+const player = new Player(0.74, 0.4);
 const cloud = new Cloud(-0.1 * canvas.width, 0);
 
 function update(deltaTime) {
     const now = performance.now();
+    player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
+
+}
+
+function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
-    // Always adjust with screen (CHANGE LATER WHEN THEY START MOVING)
-    dragon.x = 0.1 * canvas.width;
-    dragon.y = 0.3 * canvas.height;
-    player.x = 0.74 * canvas.width;
-    player.y = 0.4 * canvas.height;
-
+    mapWidth = canvas.width;
+    mapHeight = canvas.height;
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "skyblue";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    player.draw(ctx);
-    dragon.draw(ctx);
     cloud.draw(ctx, canvas);
+    player.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
+    dragon.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
 }
 
 let lastTimestamp = 0;
@@ -42,4 +48,17 @@ function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
 }
 
+document.addEventListener("keydown", (e) => {
+    keysPressed.add(e.key.toLowerCase());
+})
+
+document.addEventListener("keyup", (e) => {
+    keysPressed.delete(e.key.toLowerCase());
+})
+
+window.addEventListener("resize", resizeCanvas);
+
+canvas.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+})
 requestAnimationFrame(gameLoop);
