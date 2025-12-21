@@ -16,10 +16,12 @@ const dragon = new Dragon(0.1, 0.3);
 const player = new Player(0.74, 0.4);
 const cloud = new Cloud(-0.1 * canvas.width, 0);
 
+let shooting = false;
+
 function update(deltaTime) {
     const now = performance.now();
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
-
+    if (shooting) player.shoot();
 }
 
 function resizeCanvas() {
@@ -50,10 +52,16 @@ function gameLoop(timestamp) {
 
 document.addEventListener("keydown", (e) => {
     keysPressed.add(e.key.toLowerCase());
+    if (e.code == "Space") {
+        shooting = true;
+    }
 })
 
 document.addEventListener("keyup", (e) => {
     keysPressed.delete(e.key.toLowerCase());
+    if (e.code == "Space") {
+        shooting = false;
+    }
 })
 
 window.addEventListener("resize", resizeCanvas);
