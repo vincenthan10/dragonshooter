@@ -21,7 +21,10 @@ let shooting = false;
 function update(deltaTime) {
     const now = performance.now();
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
-    if (shooting) player.shoot();
+    if (shooting && now - player.lastShootTime >= player.shootingDelay) {
+        player.shoot();
+        player.lastShootTime = now;
+    }
 }
 
 function resizeCanvas() {
@@ -50,15 +53,30 @@ function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
 }
 
+const blockedKeys = [
+    "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight",
+    "KeyW", "KeyA", "KeyS", "KeyD",
+    "Space"
+];
+
 document.addEventListener("keydown", (e) => {
-    keysPressed.add(e.key.toLowerCase());
-    if (e.code == "Space") {
+    if (blockedKeys.includes(e.code)) {
+        e.preventDefault();
+    }
+
+    keysPressed.add(e.code);
+
+    if (e.code === "Space") {
         shooting = true;
     }
-})
+});
+
 
 document.addEventListener("keyup", (e) => {
-    keysPressed.delete(e.key.toLowerCase());
+    if (blockedKeys.includes(e.code)) {
+        e.preventDefault();
+    }
+    keysPressed.delete(e.code);
     if (e.code == "Space") {
         shooting = false;
     }
