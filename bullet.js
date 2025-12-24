@@ -2,7 +2,7 @@ export default class Bullet {
     constructor(x, y, dir) {
         this.x = x;
         this.y = y;
-        this.baseSpeed = 0.005;
+        this.baseSpeed = 0.0067;
         this.speed = this.baseSpeed * dir;
 
         this.img = new Image();
