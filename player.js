@@ -3,8 +3,8 @@ export default class Player {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.speedX = 0.003;
-        this.speedY = 0.0054;
+        this.speedX = 0.13;
+        this.speedY = 0.3;
         this.alive = true;
 
         this.img = new Image();
@@ -15,6 +15,8 @@ export default class Player {
         this.imageHeight = this.BASEIMGHEIGHT;
 
         this.bullets = [];
+        this.lastShootTime = 0;
+        this.shootingDelay = 700;
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -26,16 +28,22 @@ export default class Player {
 
     update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, baseWidth, baseHeight) {
         this.bullets.forEach(b => b.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
+        for (let i = this.bullets.length - 1; i >= 0; i--) {
+            if (this.bullets[i].x <= -0.1 || this.bullets[i].x + this.bullets[i].imageWidth / mapWidth >= 1.1) {
+                this.bullets.splice(i, 1);
+            }
+        }
         if (this.alive) {
-            console.log(this.speedY * (mapHeight / baseHeight));
+            const dt = deltaTime / 1000;
+            // console.log(this.speedY * (mapHeight / baseHeight));
             this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
             this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
             let dx = 0;
             let dy = 0;
-            if (keysPressed.has("w") || keysPressed.has("arrowup")) dy -= this.speedY * (mapHeight / baseHeight);
-            if (keysPressed.has("s") || keysPressed.has("arrowdown")) dy += this.speedY * (mapHeight / baseHeight);
-            if (keysPressed.has("a") || keysPressed.has("arrowleft")) dx -= this.speedX * (mapWidth / baseWidth);
-            if (keysPressed.has("d") || keysPressed.has("arrowright")) dx += this.speedX * (mapWidth / baseWidth);
+            if (keysPressed.has("KeyW") || keysPressed.has("ArrowUp")) dy -= this.speedY * dt;
+            if (keysPressed.has("KeyS") || keysPressed.has("ArrowDown")) dy += this.speedY * dt;
+            if (keysPressed.has("KeyA") || keysPressed.has("ArrowLeft")) dx -= this.speedX * dt;
+            if (keysPressed.has("KeyD") || keysPressed.has("ArrowRight")) dx += this.speedX * dt;
 
             if (dx !== 0 && dy !== 0) {
                 dx /= Math.sqrt(2);
@@ -62,6 +70,6 @@ export default class Player {
     }
 
     shoot() {
-        this.bullets.push(new Bullet(this.x, this.y, 0));
+        this.bullets.push(new Bullet(this.x, this.y + 0.02, -1));
     }
 }
