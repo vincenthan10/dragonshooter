@@ -6,13 +6,18 @@ export default class Player {
         this.speedX = 0.13;
         this.speedY = 0.3;
         this.alive = true;
+        this.facing = -1; // - = left, + = right
 
         this.img = new Image();
         this.img.src = "images/player.png";
+        this.imgR = new Image();
+        this.imgR.src = "images/playerR.png";
         this.BASEIMGWIDTH = 150;
-        this.BASEIMGHEIGHT = 95;
+        this.BASEIMGHEIGHT = 92;
         this.imageWidth = this.BASEIMGWIDTH;
         this.imageHeight = this.BASEIMGHEIGHT;
+        this.width = 0;
+        this.height = 0;
 
         this.bullets = [];
         this.lastShootTime = 0;
@@ -21,7 +26,11 @@ export default class Player {
 
     draw(ctx, mapWidth, mapHeight) {
         ctx.save();
-        ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+        if (this.facing < 0) {
+            ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+        } else {
+            ctx.drawImage(this.imgR, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight)
+        }
         this.bullets.forEach(b => b.draw(ctx, mapWidth, mapHeight));
         ctx.restore();
     }
@@ -38,12 +47,23 @@ export default class Player {
             // console.log(this.speedY * (mapHeight / baseHeight));
             this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
             this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
+            this.width = this.imageWidth / mapWidth;
+            this.height = this.imageHeight / mapHeight;
             let dx = 0;
             let dy = 0;
             if (keysPressed.has("KeyW") || keysPressed.has("ArrowUp")) dy -= this.speedY * dt;
             if (keysPressed.has("KeyS") || keysPressed.has("ArrowDown")) dy += this.speedY * dt;
-            if (keysPressed.has("KeyA") || keysPressed.has("ArrowLeft")) dx -= this.speedX * dt;
-            if (keysPressed.has("KeyD") || keysPressed.has("ArrowRight")) dx += this.speedX * dt;
+            const left = keysPressed.has("KeyA") || keysPressed.has("ArrowLeft");
+            const right = keysPressed.has("KeyD") || keysPressed.has("ArrowRight");
+
+            if (left && !right) {
+                dx -= this.speedX * dt;
+            } else if (right && !left) {
+                dx = this.speedX * dt;
+            }
+
+            if (dx < 0) this.facing = -1;
+            else if (dx > 0) this.facing = 1;
 
             if (dx !== 0 && dy !== 0) {
                 dx /= Math.sqrt(2);
@@ -52,13 +72,13 @@ export default class Player {
             if (this.x <= -0.05 && dx < 0) {
                 dx = 0;
             }
-            if (this.x + this.imageWidth / mapWidth >= 1.05 && dx > 0) {
+            if (this.x + this.width >= 1.05 && dx > 0) {
                 dx = 0;
             }
             if (this.y <= 0.12 && dy < 0) {
                 dy = 0;
             }
-            if (this.y + this.imageHeight / mapHeight >= 1.05 && dy > 0) {
+            if (this.y + this.height >= 1.05 && dy > 0) {
                 dy = 0;
             }
             let newX = this.x + dx;
@@ -70,6 +90,10 @@ export default class Player {
     }
 
     shoot() {
-        this.bullets.push(new Bullet(this.x, this.y + 0.02, -1));
+        if (this.facing < 0) {
+            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1));
+        } else {
+            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1));
+        }
     }
 }
