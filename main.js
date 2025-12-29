@@ -20,6 +20,7 @@ let shooting = false;
 
 function update(deltaTime) {
     const now = performance.now();
+    cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     if (shooting && now - player.lastShootTime >= player.shootingDelay) {
         player.shoot();
@@ -38,7 +39,7 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "skyblue";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    cloud.draw(ctx, canvas);
+    cloud.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
     player.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
     dragon.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
 }
