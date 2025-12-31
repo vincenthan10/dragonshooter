@@ -15,25 +15,57 @@ export default class Cloud {
         this.width = 0;
         this.height = 0;
 
+        this.warningActive = false;
+        this.startTime = 0;
+        this.lightningActive = false;
+        this.strikeInterval = Math.random() * 4500 + 3500;
+        this.lastStrikeTime = 0;
+        this.warningTime = 1500;
+        this.strikeTime = 400;
+        this.strikePosition = 0;
+
     }
 
     draw(ctx, mapWidth, mapHeight, baseWidth, baseHeight) {
         ctx.save();
         ctx.drawImage(this.img, this.x, this.y, mapWidth * 1.2, mapHeight * 0.12);
-        ctx.drawImage(this.ltnImg, 0.5 * mapWidth - this.imageWidth / 2, mapHeight * 0.08, this.imageWidth, this.imageHeight);
+        if (this.lightningActive) {
+            ctx.drawImage(this.ltnImg, this.strikePosition - this.imageWidth / 2, mapHeight * 0.08, this.imageWidth, this.imageHeight);
+        }
 
-        ctx.beginPath();
-        ctx.moveTo(0.5 * mapWidth, mapHeight * 0.08);
-        ctx.lineTo(0.5 * mapWidth, mapHeight);
-        ctx.strokeStyle = "#0b4f73ff";
-        ctx.stroke();
+        if (this.warningActive) {
+            ctx.beginPath();
+            ctx.moveTo(this.strikePosition, mapHeight * 0.08);
+            ctx.lineTo(this.strikePosition, mapHeight);
+            ctx.strokeStyle = "#0b4f73ff";
+            ctx.stroke();
+        }
+
         ctx.restore();
+
     }
 
     update(deltaTime, mapWidth, mapHeight, canvas, baseWidth, baseHeight) {
+        const now = performance.now();
         this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
         this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
         this.width = this.imageWidth / mapWidth;
         this.height = this.imageHeight / mapHeight;
+
+        if (!this.warningActive && !this.lightningActive && now - this.lastStrikeTime >= this.strikeInterval) {
+            this.strikePosition = Math.random() * mapWidth * 0.90 + mapWidth * 0.05;
+            this.warningActive = true;
+            this.startTime = now;
+        }
+        if (this.warningActive && now - this.startTime >= this.warningTime) {
+            this.warningActive = false;
+            this.lightningActive = true;
+            this.startTime = now;
+        }
+        if (this.lightningActive && now - this.startTime >= this.strikeTime) {
+            this.lightningActive = false;
+            this.lastStrikeTime = now;
+            this.strikeInterval = Math.random() * 5000 + 3000;
+        }
     }
 }
