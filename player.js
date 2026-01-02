@@ -6,6 +6,7 @@ export default class Player {
         this.speedX = 0.13;
         this.speedY = 0.3;
         this.alive = true;
+        this.hp = 1;
         this.facing = -1; // - = left, + = right
 
         this.img = new Image();
@@ -20,17 +21,20 @@ export default class Player {
         this.height = 0;
 
         this.bullets = [];
-        this.lastShootTime = 0;
         this.shootingDelay = 700;
+        this.lastShootTime = this.shootingDelay * -1;
     }
 
     draw(ctx, mapWidth, mapHeight) {
         ctx.save();
-        if (this.facing < 0) {
-            ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
-        } else {
-            ctx.drawImage(this.imgR, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight)
+        if (this.alive) {
+            if (this.facing < 0) {
+                ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+            } else {
+                ctx.drawImage(this.imgR, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight)
+            }
         }
+
         this.bullets.forEach(b => b.draw(ctx, mapWidth, mapHeight));
         ctx.restore();
     }
@@ -42,6 +46,8 @@ export default class Player {
                 this.bullets.splice(i, 1);
             }
         }
+        if (this.hp <= 0) this.alive = false;
+
         if (this.alive) {
             const dt = deltaTime / 1000;
             // console.log(this.speedY * (mapHeight / baseHeight));
