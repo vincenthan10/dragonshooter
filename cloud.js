@@ -18,11 +18,13 @@ export default class Cloud {
         this.warningActive = false;
         this.startTime = 0;
         this.lightningActive = false;
+        this.canDamage = false;
         this.strikeInterval = Math.random() * 4500 + 3500;
         this.lastStrikeTime = 0;
         this.warningTime = 1500;
         this.strikeTime = 400;
         this.strikePosition = 0;
+        this.lightningDmg = 10;
 
     }
 
@@ -60,12 +62,25 @@ export default class Cloud {
         if (this.warningActive && now - this.startTime >= this.warningTime) {
             this.warningActive = false;
             this.lightningActive = true;
+            this.canDamage = true;
             this.startTime = now;
         }
         if (this.lightningActive && now - this.startTime >= this.strikeTime) {
             this.lightningActive = false;
+            this.canDamage = false;
             this.lastStrikeTime = now;
             this.strikeInterval = Math.random() * 5000 + 3000;
+            this.lightningDmg = Math.random() * 4 + 8;
+        }
+    }
+
+
+    collisionHandler(entity, mapWidth) {
+        let relativePosition = this.strikePosition / mapWidth;
+        let relativeWidth = this.imageWidth / mapWidth;
+        if (this.canDamage && relativePosition - relativeWidth / 3 <= entity.x + entity.width && relativePosition + relativeWidth / 3 >= entity.x) {
+            entity.hp -= this.lightningDmg;
+            this.canDamage = false;
         }
     }
 }
