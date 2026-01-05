@@ -12,17 +12,27 @@ const keysPressed = new Set();
 
 const ctx = canvas.getContext("2d");
 
+const playerSpawnX = 0.74;
+const playerSpawnY = 0.4;
 const dragon = new Dragon(0.1, 0.3);
-const player = new Player(0.74, 0.4);
+const player = new Player(playerSpawnX, playerSpawnY);
 const cloud = new Cloud(-0.1 * canvas.width, 0);
 
 let shooting = false;
 
+let gameState = "game";
+let gameOver = false;
+
 function update(deltaTime) {
+    if (gameOver) return;
     const now = performance.now();
     cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     cloud.collisionHandler(player, mapWidth);
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
+    if (!player.alive) {
+        gameOver = true;
+        return;
+    }
     if (shooting && now - player.lastShootTime >= player.shootingDelay) {
         player.shoot();
         player.lastShootTime = now;
@@ -43,6 +53,40 @@ function draw() {
     player.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
     dragon.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
     cloud.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
+
+    // Game Over screen
+    if (gameOver) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "white";
+        ctx.font = "40px Arial";
+        ctx.fillText("You Died", canvas.width / 2 - 90, canvas.height / 2 - 40);
+
+        ctx.font = "16px Arial";
+        ctx.fillText("Press Enter to respawn", canvas.width / 2 - 92, canvas.height / 2);
+    }
+}
+
+function reset() {
+    let now = performance.now();
+    player.x = playerSpawnX;
+    player.y = playerSpawnY;
+    player.alive = true;
+    player.hp = 1;
+    player.facing = -1;
+    shooting = false;
+    keysPressed.clear();
+    player.bullets = [];
+    player.lastShootTime = now;
+
+    cloud.warningActive = false;
+    cloud.lightningActive = false;
+    cloud.canDamage = false;
+    cloud.startTime = now;
+    cloud.lastStrikeTime = now;
+
+    gameOver = false;
 }
 
 let lastTimestamp = 0;
@@ -70,6 +114,10 @@ document.addEventListener("keydown", (e) => {
 
     if (e.code === "Space") {
         shooting = true;
+    }
+
+    if (e.code === "Enter" && gameOver) {
+        reset();
     }
 });
 
