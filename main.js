@@ -20,16 +20,21 @@ const cloud = new Cloud(-0.1 * canvas.width, 0);
 
 let shooting = false;
 
-let gameState = "game";
+let deadTime = 0;
+let gameOverTime = 1000;
+let gameState = "title";
 let gameOver = false;
 
 function update(deltaTime) {
-    if (gameOver) return;
+    if (gameOver || gameState === "title") return;
     const now = performance.now();
     cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     cloud.collisionHandler(player, mapWidth);
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
-    if (!player.alive) {
+    if (!player.alive && deadTime === 0) {
+        deadTime = now;
+    }
+    if (!player.alive && now - deadTime >= gameOverTime) {
         gameOver = true;
         return;
     }
@@ -53,6 +58,22 @@ function draw() {
     player.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
     dragon.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
     cloud.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
+
+    if (gameState === "title") {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "white";
+        ctx.font = "40px Arial";
+        ctx.fillText("Dragon Shooter", canvas.width / 2 - 140, canvas.height / 2 - 50);
+
+        ctx.font = "18px Arial";
+        ctx.fillText("Use WASD or arrow keys to move, space to shoot", canvas.width / 2 - 200, canvas.height / 2 - 5);
+        ctx.fillText("Defeat the dragon without getting hit!", canvas.width / 2 - 150, canvas.height / 2 + 25);
+
+        ctx.font = "16px Arial";
+        ctx.fillText("Press Enter to start", canvas.width / 2 - 80, canvas.height / 2 + 80);
+    }
 
     // Game Over screen
     if (gameOver) {
@@ -86,7 +107,9 @@ function reset() {
     cloud.startTime = now;
     cloud.lastStrikeTime = now;
 
+    deadTime = 0;
     gameOver = false;
+    gameState = "game";
 }
 
 let lastTimestamp = 0;
@@ -116,7 +139,7 @@ document.addEventListener("keydown", (e) => {
         shooting = true;
     }
 
-    if (e.code === "Enter" && gameOver) {
+    if (e.code === "Enter" && (gameOver || gameState === "title")) {
         reset();
     }
 });
