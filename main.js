@@ -42,6 +42,7 @@ function update(deltaTime) {
         player.shoot();
         player.lastShootTime = now;
     }
+    dragon.follow(player, deltaTime);
 }
 
 function resizeCanvas() {
