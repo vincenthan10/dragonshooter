@@ -14,7 +14,9 @@ const ctx = canvas.getContext("2d");
 
 const playerSpawnX = 0.74;
 const playerSpawnY = 0.4;
-const dragon = new Dragon(0.1, 0.3);
+const dragonSpawnX = 0.1;
+const dragonSpawnY = 0.3;
+const dragon = new Dragon(dragonSpawnX, dragonSpawnY);
 const player = new Player(playerSpawnX, playerSpawnY);
 const cloud = new Cloud(-0.1 * canvas.width, 0);
 
@@ -42,7 +44,7 @@ function update(deltaTime) {
         player.shoot();
         player.lastShootTime = now;
     }
-    dragon.follow(player, deltaTime);
+    dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player);
 }
 
 function resizeCanvas() {
@@ -107,6 +109,11 @@ function reset() {
     cloud.canDamage = false;
     cloud.startTime = now;
     cloud.lastStrikeTime = now;
+
+    dragon.x = dragonSpawnX;
+    dragon.y = dragonSpawnY;
+    dragon.charging = false;
+    dragon.lastMoveTime = now;
 
     deadTime = 0;
     gameOver = false;
