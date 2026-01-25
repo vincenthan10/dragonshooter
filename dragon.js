@@ -3,11 +3,18 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.speed = 0.1;
+        this.xSpeed = 0;
+        this.ySpeed = 0;
 
         this.img = new Image();
         this.img.src = "images/greendragon.png";
         this.BASEIMGWIDTH = 210;
         this.BASEIMGHEIGHT = 233;
+
+        this.charging = false;
+        this.restTime = Math.random() * 1750 + 2750;
+        this.chargeTime = Math.random() * 1000 + 3000;
+        this.lastMoveTime = 0;
     }
 
     draw(ctx, mapWidth, mapHeight, baseWidth, baseHeight) {
@@ -16,15 +23,34 @@ export default class Dragon {
         ctx.restore();
     }
 
-    follow(target, deltaTime) {
-        const dx = target.x - this.x;
-        const dy = target.y - this.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist === 0) return;
+    update(deltaTime, mapWidth, mapHeight, canvas, baseWidth, baseHeight, target) {
+        const now = performance.now();
+        this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
+        this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
+        this.width = this.imageWidth / mapWidth;
+        this.height = this.imageHeight / mapHeight;
 
-        let newX = this.x + (dx / dist) * this.speed * deltaTime / 1000;
-        let newY = this.y + (dy / dist) * this.speed * deltaTime / 1000;
-        this.x = newX;
-        this.y = newY;
+        if (!this.charging && now - this.lastMoveTime >= this.restTime) {
+            let dx = target.x + target.width / 2 - this.x - this.width / 2;
+            let dy = target.y + target.height / 2 - this.y - this.height / 2;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            this.xSpeed = (dx / dist) * this.speed * deltaTime / 1000;
+            this.ySpeed = (dy / dist) * this.speed * deltaTime / 1000;
+            this.charging = true;
+            this.chargeTime = Math.random() * 1000 + 3000;
+            this.lastMoveTime = now;
+        }
+        if (this.charging) {
+            let newX = this.x + this.xSpeed;
+            let newY = this.y + this.ySpeed;
+            this.x = newX;
+            this.y = newY;
+
+            if (now - this.lastMoveTime >= this.chargeTime) {
+                this.charging = false;
+                this.restTime = Math.random() * 1750 + 2750;
+                this.lastMoveTime = now;
+            }
+        }
     }
 }
