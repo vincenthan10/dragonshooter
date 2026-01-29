@@ -2,14 +2,19 @@ export default class Dragon {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.speed = 0.1;
+        this.speed = 0.15;
         this.xSpeed = 0;
         this.ySpeed = 0;
+        this.facing = 1; // - = left, + = right
 
         this.img = new Image();
         this.img.src = "images/greendragon.png";
+        this.imgL = new Image();
+        this.imgL.src = "images/greendragonL.png";
         this.BASEIMGWIDTH = 210;
         this.BASEIMGHEIGHT = 233;
+        this.width = 0;
+        this.height = 0;
 
         this.charging = false;
         this.restTime = Math.random() * 1750 + 2750;
@@ -19,7 +24,12 @@ export default class Dragon {
 
     draw(ctx, mapWidth, mapHeight, baseWidth, baseHeight) {
         ctx.save();
-        ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.BASEIMGWIDTH * (mapWidth / baseWidth), this.BASEIMGHEIGHT * (mapHeight / baseHeight));
+        if (this.facing > 0) {
+            ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.BASEIMGWIDTH * (mapWidth / baseWidth), this.BASEIMGHEIGHT * (mapHeight / baseHeight));
+        } else {
+            ctx.drawImage(this.imgL, this.x * mapWidth, this.y * mapHeight, this.BASEIMGWIDTH * (mapWidth / baseWidth), this.BASEIMGHEIGHT * (mapHeight / baseHeight));
+        }
+
         ctx.restore();
     }
 
@@ -36,6 +46,11 @@ export default class Dragon {
             let dist = Math.sqrt(dx * dx + dy * dy);
             this.xSpeed = (dx / dist) * this.speed * deltaTime / 1000;
             this.ySpeed = (dy / dist) * this.speed * deltaTime / 1000;
+            if (this.xSpeed > 0) {
+                this.facing = 1;
+            } else {
+                this.facing = -1;
+            }
             this.charging = true;
             this.chargeTime = Math.random() * 1000 + 3000;
             this.lastMoveTime = now;
