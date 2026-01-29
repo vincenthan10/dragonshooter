@@ -112,6 +112,7 @@ function reset() {
 
     dragon.x = dragonSpawnX;
     dragon.y = dragonSpawnY;
+    dragon.facing = 1;
     dragon.charging = false;
     dragon.lastMoveTime = now;
 
