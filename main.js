@@ -45,6 +45,9 @@ function update(deltaTime) {
         player.lastShootTime = now;
     }
     dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player);
+    if (dragon.isColliding(player)) {
+        player.hp = 0;
+    }
 }
 
 function resizeCanvas() {
