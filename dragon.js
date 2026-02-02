@@ -1,3 +1,4 @@
+import Fireball from "./fireball.js";
 export default class Dragon {
     constructor(x, y) {
         this.x = x;
@@ -20,6 +21,11 @@ export default class Dragon {
         this.restTime = Math.random() * 1750 + 2750;
         this.chargeTime = Math.random() * 1000 + 3000;
         this.lastMoveTime = 0;
+
+        this.fireballs = []
+        this.shooting = true;
+        this.shootingDelay = 1800;
+        this.lastShootTime = 0;
     }
 
     draw(ctx, mapWidth, mapHeight, baseWidth, baseHeight) {
@@ -30,6 +36,7 @@ export default class Dragon {
             ctx.drawImage(this.imgL, this.x * mapWidth, this.y * mapHeight, this.BASEIMGWIDTH * (mapWidth / baseWidth), this.BASEIMGHEIGHT * (mapHeight / baseHeight));
         }
 
+        this.fireballs.forEach(f => f.draw(ctx, mapWidth, mapHeight));
         ctx.restore();
     }
 
@@ -39,6 +46,12 @@ export default class Dragon {
         this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
         this.width = this.imageWidth / mapWidth;
         this.height = this.imageHeight / mapHeight;
+
+        this.fireballs.forEach(f => f.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
+        if (this.shooting && now - this.lastShootTime >= this.shootingDelay) {
+            this.shoot();
+            this.lastShootTime = now;
+        }
 
         if (!this.charging && now - this.lastMoveTime >= this.restTime) {
             let dx = target.x + target.width / 2 - this.x - this.width / 2;
@@ -74,5 +87,13 @@ export default class Dragon {
             return true;
         }
         return false;
+    }
+
+    shoot() {
+        if (this.facing < 0) {
+            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1));
+        } else {
+            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1));
+        }
     }
 }
