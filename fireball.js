@@ -1,0 +1,32 @@
+export default class Bullet {
+    constructor(x, y, dir) {
+        this.x = x;
+        this.y = y;
+        this.baseSpeed = 0.005;
+        this.speed = this.baseSpeed * dir;
+
+        if (dir > 0) {
+            this.img = new Image();
+            this.img.src = "images/fireball.png";
+        } else {
+            this.img = new Image();
+            this.img.src = "images/fireballL.png";
+        }
+        this.BASEIMGWIDTH = 55;
+        this.BASEIMGHEIGHT = 20;
+        this.imageWidth = this.BASEIMGWIDTH;
+        this.imageHeight = this.BASEIMGHEIGHT;
+    }
+
+    draw(ctx, mapWidth, mapHeight) {
+        ctx.save();
+        ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+        ctx.restore();
+    }
+
+    update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight) {
+        this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
+        this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
+        this.x += this.speed;
+    }
+}
