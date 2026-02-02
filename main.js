@@ -118,6 +118,8 @@ function reset() {
     dragon.facing = 1;
     dragon.charging = false;
     dragon.lastMoveTime = now;
+    dragon.fireballs = [];
+    dragon.lastShootTime - now;
 
     deadTime = 0;
     gameOver = false;
