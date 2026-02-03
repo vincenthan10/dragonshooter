@@ -3,7 +3,7 @@ export default class Dragon {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.speed = 0.15;
+        this.speed = 0.125;
         this.xSpeed = 0;
         this.ySpeed = 0;
         this.facing = 1; // - = left, + = right
@@ -18,22 +18,22 @@ export default class Dragon {
         this.height = 0;
 
         this.charging = false;
-        this.restTime = Math.random() * 1750 + 2750;
-        this.chargeTime = Math.random() * 1000 + 3000;
+        this.restTime = Math.random() * 1500 + 3000;
+        this.chargeTime = Math.random() * 750 + 2750;
         this.lastMoveTime = 0;
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelay = 1800;
+        this.shootingDelay = 2400;
         this.lastShootTime = 0;
     }
 
-    draw(ctx, mapWidth, mapHeight, baseWidth, baseHeight) {
+    draw(ctx, mapWidth, mapHeight) {
         ctx.save();
         if (this.facing > 0) {
-            ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.BASEIMGWIDTH * (mapWidth / baseWidth), this.BASEIMGHEIGHT * (mapHeight / baseHeight));
+            ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
         } else {
-            ctx.drawImage(this.imgL, this.x * mapWidth, this.y * mapHeight, this.BASEIMGWIDTH * (mapWidth / baseWidth), this.BASEIMGHEIGHT * (mapHeight / baseHeight));
+            ctx.drawImage(this.imgL, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
         }
 
         this.fireballs.forEach(f => f.draw(ctx, mapWidth, mapHeight));
@@ -48,6 +48,11 @@ export default class Dragon {
         this.height = this.imageHeight / mapHeight;
 
         this.fireballs.forEach(f => f.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
+        for (let i = this.fireballs.length - 1; i >= 0; i--) {
+            if (this.fireballs[i].x <= -0.1 || this.fireballs[i].x + this.fireballs[i].imageWidth / mapWidth >= 1.1) {
+                this.fireballs.splice(i, 1);
+            }
+        }
         if (this.shooting && now - this.lastShootTime >= this.shootingDelay) {
             this.shoot();
             this.lastShootTime = now;
