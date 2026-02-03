@@ -21,7 +21,7 @@ export default class Player {
         this.height = 0;
 
         this.bullets = [];
-        this.shootingDelay = 700;
+        this.shootingDelay = 1000;
         this.lastShootTime = this.shootingDelay * -1;
     }
 
