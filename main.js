@@ -1,6 +1,7 @@
 import Dragon from "./dragon.js";
 import Player from "./player.js";
 import Cloud from "./cloud.js";
+import Explosion from "./explosion.js";
 
 const canvas = document.getElementById("gameCanvas")
 let mapWidth = canvas.width;
@@ -19,6 +20,12 @@ const dragonSpawnY = 0.3;
 const dragon = new Dragon(dragonSpawnX, dragonSpawnY);
 const player = new Player(playerSpawnX, playerSpawnY);
 const cloud = new Cloud(-0.1 * canvas.width, 0);
+const explosions = [];
+const fireExplosion = {
+    src: "images/fireexplosion.png",
+    BASEIMAGEWIDTH: 120,
+    BASEIMAGEHEIGHT: 68
+}
 
 let shooting = false;
 
@@ -48,6 +55,18 @@ function update(deltaTime) {
     if (dragon.isColliding(player)) {
         player.hp = 0;
     }
+    for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
+        if (dragon.fireballs[i].isColliding(player)) {
+            player.hp -= dragon.fireballs[i].damage;
+            explosions.push(new Explosion(dragon.fireballs[i].x, dragon.fireballs[i].y, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT));
+            dragon.fireballs.splice(i, 1);
+        }
+    }
+    for (let i = explosions.length - 1; i >= 0; i++) {
+        if (!explosions[i].active) {
+            explosions.splice(i, 1);
+        }
+    }
 }
 
 function resizeCanvas() {
@@ -61,9 +80,10 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "skyblue";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    player.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
-    dragon.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
-    cloud.draw(ctx, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
+    player.draw(ctx, mapWidth, mapHeight);
+    dragon.draw(ctx, mapWidth, mapHeight);
+    cloud.draw(ctx, mapWidth, mapHeight);
+    explosions.forEach(e => e.draw(ctx, mapWidth, mapHeight));
 
     if (gameState === "title") {
         ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
