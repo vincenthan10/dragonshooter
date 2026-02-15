@@ -3,7 +3,7 @@ export default class Dragon {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.speed = 0.125;
+        this.speed = 0.115;
         this.xSpeed = 0;
         this.ySpeed = 0;
         this.facing = 1; // - = left, + = right
@@ -64,8 +64,8 @@ export default class Dragon {
             let dx = target.x + target.width / 2 - this.x - this.width / 2;
             let dy = target.y + target.height / 2 - this.y - this.height / 2;
             let dist = Math.sqrt(dx * dx + dy * dy);
-            this.xSpeed = (dx / dist) * this.speed * deltaTime / 1000;
-            this.ySpeed = (dy / dist) * this.speed * deltaTime / 1000;
+            this.xSpeed = (dx / dist) * this.speed;
+            this.ySpeed = (dy / dist) * this.speed;
             if (this.xSpeed > 0) {
                 this.facing = 1;
             } else {
@@ -76,11 +76,8 @@ export default class Dragon {
             this.lastMoveTime = now;
         }
         if (this.charging) {
-            let newX = this.x + this.xSpeed;
-            let newY = this.y + this.ySpeed;
-            this.x = newX;
-            this.y = newY;
-
+            this.x += this.xSpeed * deltaTime / 1000;
+            this.y += this.ySpeed * deltaTime / 1000;
             if (now - this.lastMoveTime >= this.chargeTime) {
                 this.charging = false;
                 this.restTime = Math.random() * 1750 + 2750;
