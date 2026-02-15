@@ -6,12 +6,12 @@ export default class Explosion {
         this.img.src = src;
         this.BASEIMAGEWIDTH = baseWidth;
         this.BASEIMAGEHEIGHT = baseHeight;
-        this.width = 0;
-        this.height = 0;
+        this.imageWidth = this.BASEIMAGEWIDTH;
+        this.imageHeight = this.BASEIMAGEHEIGHT;
 
         this.active = true;
         this.drawTime = 400;
-        this.timeSinceDraw = 0;
+        this.timeAlive = 0;
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -23,11 +23,11 @@ export default class Explosion {
     }
 
     update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight) {
-        this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
-        this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
-        let now = performance.now();
-        if (now - timeSinceDraw >= drawTime) {
-            active = false;
+        this.imageWidth = this.BASEIMAGEWIDTH * (mapWidth / baseWidth);
+        this.imageHeight = this.BASEIMAGEHEIGHT * (mapHeight / baseHeight);
+        this.timeAlive += deltaTime;
+        if (this.timeAlive >= this.drawTime) {
+            this.active = false;
         }
     }
 }
