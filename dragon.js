@@ -14,6 +14,8 @@ export default class Dragon {
         this.imgL.src = "images/greendragonL.png";
         this.BASEIMGWIDTH = 210;
         this.BASEIMGHEIGHT = 233;
+        this.imageWidth = this.BASEIMGWIDTH;
+        this.imageHeight = this.BASEIMGHEIGHT;
         this.width = 0;
         this.height = 0;
 
