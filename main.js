@@ -36,6 +36,7 @@ let gameOver = false;
 
 function update(deltaTime) {
     if (gameOver || gameState === "title") return;
+    console.log(explosions);
     const now = performance.now();
     cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     cloud.collisionHandler(player, mapWidth);
@@ -62,11 +63,8 @@ function update(deltaTime) {
             dragon.fireballs.splice(i, 1);
         }
     }
-    for (let i = explosions.length - 1; i >= 0; i++) {
-        if (!explosions[i].active) {
-            explosions.splice(i, 1);
-        }
-    }
+    explosions.forEach(e => e.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT));
+
 }
 
 function resizeCanvas() {
@@ -139,7 +137,8 @@ function reset() {
     dragon.charging = false;
     dragon.lastMoveTime = now;
     dragon.fireballs = [];
-    dragon.lastShootTime - now;
+    dragon.lastShootTime = now;
+    explosions.splice(0, explosions.length);
 
     deadTime = 0;
     gameOver = false;
