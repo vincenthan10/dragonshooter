@@ -28,4 +28,11 @@ export default class Bullet {
         this.height = this.imageHeight / mapHeight;
         this.x += this.speed;
     }
+
+    isColliding(entity) {
+        if (this.x + this.width * 0.8 >= entity.x && this.x <= entity.x + entity.width * 0.9 && this.y + this.height * 0.85 >= entity.y && this.y <= entity.y + entity.height * 0.9) {
+            return true;
+        }
+        return false;
+    }
 }
