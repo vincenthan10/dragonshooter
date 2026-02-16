@@ -31,6 +31,11 @@ const projExplosion = {
     BASEIMAGEWIDTH: 80,
     BASEIMAGEHEIGHT: 103
 }
+const basicExplosion = {
+    src: "images/explosion.png",
+    BASEIMAGEWIDTH: 95,
+    BASEIMAGEHEIGHT: 97
+}
 
 let shooting = false;
 
@@ -65,18 +70,25 @@ function update(deltaTime) {
         let fireball = dragon.fireballs[i];
         if (fireball.isColliding(player) && player.alive) {
             player.hp -= fireball.damage;
-            explosions.push(new Explosion(dragon.fireballs[i].x, dragon.fireballs[i].y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400));
+            explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400));
             dragon.fireballs.splice(i, 1);
             continue;
         }
         for (let j = player.bullets.length - 1; j >= 0; j--) {
             let bullet = player.bullets[j];
             if (fireball.isColliding(bullet)) {
-                explosions.push(new Explosion(dragon.fireballs[i].x, dragon.fireballs[i].y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH,projExplosion.BASEIMAGEHEIGHT, 250));
+                explosions.push(new Explosion(fireball.x, fireball.y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250));
                 dragon.fireballs.splice(i, 1);
                 player.bullets.splice(j, 1);
                 break;
             }
+        }
+    }
+    for (let i = player.bullets.length - 1; i >= 0; i--) {
+        let bullet = player.bullets[i];
+        if (bullet.isColliding(dragon)) {
+            explosions.push(new Explosion(bullet.x, bullet.y - 0.05, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250));
+            player.bullets.splice(i, 1);
         }
     }
     explosions.forEach(e => e.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT));
