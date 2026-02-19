@@ -4,6 +4,7 @@ export default class Bullet {
         this.y = y;
         this.baseSpeed = 0.006;
         this.speed = this.baseSpeed * dir;
+        this.damage = 1;
 
         this.img = new Image();
         this.img.src = "images/bullet.png";
