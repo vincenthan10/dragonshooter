@@ -46,7 +46,7 @@ let gameOver = false;
 
 function update(deltaTime) {
     if (gameOver || gameState === "title") return;
-    console.log(explosions);
+    //console.log(explosions);
     const now = performance.now();
     cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     cloud.collisionHandler(player, mapWidth);
@@ -58,7 +58,7 @@ function update(deltaTime) {
         gameOver = true;
         return;
     }
-    if (shooting && now - player.lastShootTime >= player.shootingDelay) {
+    if (shooting && player.alive && now - player.lastShootTime >= player.shootingDelay) {
         player.shoot();
         player.lastShootTime = now;
     }
@@ -87,6 +87,7 @@ function update(deltaTime) {
     for (let i = player.bullets.length - 1; i >= 0; i--) {
         let bullet = player.bullets[i];
         if (bullet.isColliding(dragon)) {
+            dragon.hp -= bullet.damage;
             explosions.push(new Explosion(bullet.x, bullet.y - 0.05, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250));
             player.bullets.splice(i, 1);
         }
@@ -146,7 +147,7 @@ function reset() {
     player.x = playerSpawnX;
     player.y = playerSpawnY;
     player.alive = true;
-    player.hp = 1;
+    player.hp = player.maxHp;
     player.facing = -1;
     shooting = false;
     keysPressed.clear();
@@ -162,6 +163,7 @@ function reset() {
     dragon.x = dragonSpawnX;
     dragon.y = dragonSpawnY;
     dragon.facing = 1;
+    dragon.hp = dragon.maxHp;
     dragon.charging = false;
     dragon.lastMoveTime = now;
     dragon.fireballs = [];
