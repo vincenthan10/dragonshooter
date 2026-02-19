@@ -3,10 +3,11 @@ export default class Player {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.speedX = 0.13;
-        this.speedY = 0.3;
+        this.speedX = 0.15;
+        this.speedY = 0.33;
         this.alive = true;
-        this.hp = 1;
+        this.maxHp = 1;
+        this.hp = this.maxHp;
         this.facing = -1; // - = left, + = right
 
         this.img = new Image();
@@ -21,7 +22,7 @@ export default class Player {
         this.height = 0;
 
         this.bullets = [];
-        this.shootingDelay = 1000;
+        this.shootingDelay = 900;
         this.lastShootTime = this.shootingDelay * -1;
     }
 
