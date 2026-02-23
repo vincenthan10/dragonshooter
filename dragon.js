@@ -83,6 +83,9 @@ export default class Dragon {
         this.width = this.imageWidth / mapWidth;
         this.height = this.imageHeight / mapHeight;
 
+        if (this.hp < 0) {
+            this.hp = 0;
+        }
         if (this.hp >= this.maxHp * 0.6) {
             this.phase = 1;
         } else if (this.hp >= this.maxHp * 0.3 && this.hp < this.maxHp * 0.6) {
