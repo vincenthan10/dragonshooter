@@ -63,6 +63,7 @@ export default class Cloud {
             this.warningActive = false;
             this.lightningActive = true;
             this.canDamage = true;
+            this.damage = Math.random() * 4 + 8;
             this.startTime = now;
         }
         if (this.lightningActive && now - this.startTime >= this.strikeTime) {
@@ -70,7 +71,7 @@ export default class Cloud {
             this.canDamage = false;
             this.lastStrikeTime = now;
             this.strikeInterval = Math.random() * 5000 + 3000;
-            this.lightningDmg = Math.random() * 4 + 8;
+            this.lightningDmg = Math.round(Math.random() * 4 + 8);
         }
     }
 
