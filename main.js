@@ -50,6 +50,7 @@ function update(deltaTime) {
     const now = performance.now();
     cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     cloud.collisionHandler(player, mapWidth);
+    cloud.collisionHandler(dragon, mapWidth);
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     if (!player.alive && deadTime === 0) {
         deadTime = now;
