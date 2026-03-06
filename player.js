@@ -6,6 +6,7 @@ export default class Player {
         this.speedX = 0.15;
         this.speedY = 0.33;
         this.alive = true;
+        this.fading = false;
         this.maxHp = 1;
         this.hp = this.maxHp;
         this.facing = -1; // - = left, + = right
@@ -24,18 +25,20 @@ export default class Player {
         this.bullets = [];
         this.shootingDelay = 900;
         this.lastShootTime = this.shootingDelay * -1;
+        this.fadeTime = 1;
     }
 
     draw(ctx, mapWidth, mapHeight) {
         ctx.save();
-        if (this.alive) {
+        ctx.globalAlpha = this.fadeTime;
+        if (this.alive || this.fading) {
             if (this.facing < 0) {
                 ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             } else {
                 ctx.drawImage(this.imgR, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight)
             }
         }
-
+        ctx.globalAlpha = 1;
         this.bullets.forEach(b => b.draw(ctx, mapWidth, mapHeight));
         ctx.restore();
     }
@@ -93,6 +96,15 @@ export default class Player {
             this.x = newX;
             this.y = newY;
             // console.log(this.x + ", " + this.y);
+        } else {
+            if (this.fading) {
+                this.imageWidth *= 1.06;
+                this.imageHeight *= 1.06;
+                this.fadeTime -= deltaTime / 150;
+                if (this.fadeTime <= 0) {
+                    this.fading = false;
+                }
+            }
         }
     }
 
