@@ -53,6 +53,7 @@ function update(deltaTime) {
     cloud.collisionHandler(dragon, mapWidth);
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     if (!player.alive && deadTime === 0) {
+        player.fading = true;
         deadTime = now;
     }
     if (!player.alive && now - deadTime >= gameOverTime) {
@@ -150,6 +151,7 @@ function reset() {
     player.alive = true;
     player.hp = player.maxHp;
     player.facing = -1;
+    player.fadeTime = 1;
     shooting = false;
     keysPressed.clear();
     player.bullets = [];
