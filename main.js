@@ -41,6 +41,8 @@ let shooting = false;
 
 let deadTime = 0;
 let gameOverTime = 1000;
+let defeatTime = 0;
+let victoryTime = 1500;
 let gameState = "title";
 let gameOver = false;
 
@@ -52,6 +54,10 @@ function update(deltaTime) {
     cloud.collisionHandler(player, mapWidth);
     cloud.collisionHandler(dragon, mapWidth);
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
+    if (!dragon.alive && defeatTime === 0) {
+        dragon.fading = true;
+        defeatTime = now;
+    }
     if (!player.alive && deadTime === 0) {
         player.fading = true;
         deadTime = now;
@@ -65,7 +71,7 @@ function update(deltaTime) {
         player.lastShootTime = now;
     }
     dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player);
-    if (dragon.isColliding(player)) {
+    if (dragon.alive && dragon.isColliding(player)) {
         player.hp = 0;
     }
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
@@ -88,7 +94,7 @@ function update(deltaTime) {
     }
     for (let i = player.bullets.length - 1; i >= 0; i--) {
         let bullet = player.bullets[i];
-        if (bullet.isColliding(dragon)) {
+        if (bullet.isColliding(dragon) && dragon.alive) {
             dragon.hp -= bullet.damage;
             explosions.push(new Explosion(bullet.x, bullet.y - 0.05, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250));
             player.bullets.splice(i, 1);
@@ -165,8 +171,11 @@ function reset() {
 
     dragon.x = dragonSpawnX;
     dragon.y = dragonSpawnY;
+    dragon.alive = true;
     dragon.facing = 1;
+    dragon.fadeTime = 1;
     dragon.hp = dragon.maxHp;
+    dragon.phase = 1;
     dragon.charging = false;
     dragon.lastMoveTime = now;
     dragon.fireballs = [];
@@ -174,6 +183,7 @@ function reset() {
     explosions.splice(0, explosions.length);
 
     deadTime = 0;
+    defeatTime = 0;
     gameOver = false;
     gameState = "game";
 }
