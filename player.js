@@ -98,9 +98,9 @@ export default class Player {
             // console.log(this.x + ", " + this.y);
         } else {
             if (this.fading) {
-                this.imageWidth *= 1.06;
-                this.imageHeight *= 1.06;
-                this.fadeTime -= deltaTime / 150;
+                this.imageWidth *= 1.05;
+                this.imageHeight *= 1.05;
+                this.fadeTime -= deltaTime / 200;
                 if (this.fadeTime <= 0) {
                     this.fading = false;
                 }
