@@ -45,9 +45,14 @@ let defeatTime = 0;
 let victoryTime = 1500;
 let gameState = "title";
 let gameOver = false;
+let victory = false;
+
+let pauseStartTime = 0;
 
 function update(deltaTime) {
-    if (gameOver || gameState === "title") return;
+    if (gameOver || victory || gameState === "title" || gameState === "paused") {
+        return;
+    } 
     //console.log(explosions);
     const now = performance.now();
     cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
@@ -63,7 +68,13 @@ function update(deltaTime) {
         deadTime = now;
     }
     if (!player.alive && now - deadTime >= gameOverTime) {
+        gameState = "gameover";
         gameOver = true;
+        return;
+    }
+    if (!dragon.alive & now - defeatTime >= victoryTime) {
+        gameState = "victory";
+        victory = true;
         return;
     }
     if (shooting && player.alive && now - player.lastShootTime >= player.shootingDelay) {
@@ -136,6 +147,18 @@ function draw() {
         ctx.fillText("Press Enter to start", canvas.width / 2 - 80, canvas.height / 2 + 80);
     }
 
+    if (gameState == "paused") {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "white";
+        ctx.font = "40px Arial";
+        ctx.fillText("Game Paused", canvas.width / 2 - 130, canvas.height / 2 - 40);
+
+        ctx.font = "16px Arial";
+        ctx.fillText("Press Escape to continue", canvas.width / 2 - 95, canvas.height / 2);
+    }
+
     // Game Over screen
     if (gameOver) {
         ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
@@ -148,10 +171,24 @@ function draw() {
         ctx.font = "16px Arial";
         ctx.fillText("Press Enter to respawn", canvas.width / 2 - 92, canvas.height / 2);
     }
+
+    if (victory) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "white";
+        ctx.font = "40px Arial";
+        ctx.fillText("Dragon Defeated", canvas.width / 2 - 147, canvas.height / 2 - 40);
+
+        ctx.font = "16px Arial";
+        ctx.fillText("Press Enter to play again", canvas.width / 2 - 92, canvas.height / 2);
+    }
 }
 
 function reset() {
     let now = performance.now();
+    player.imageWidth = player.BASEIMGWIDTH;
+    player.imageHeight = player.BASEIMGHEIGHT;
     player.x = playerSpawnX;
     player.y = playerSpawnY;
     player.alive = true;
@@ -171,6 +208,8 @@ function reset() {
 
     dragon.x = dragonSpawnX;
     dragon.y = dragonSpawnY;
+    dragon.imageWidth = dragon.BASEIMGWIDTH;
+    dragon.imageHeight = dragon.BASEIMGHEIGHT;
     dragon.alive = true;
     dragon.facing = 1;
     dragon.fadeTime = 1;
@@ -185,6 +224,7 @@ function reset() {
     deadTime = 0;
     defeatTime = 0;
     gameOver = false;
+    victory = false;
     gameState = "game";
 }
 
@@ -215,7 +255,21 @@ document.addEventListener("keydown", (e) => {
         shooting = true;
     }
 
-    if (e.code === "Enter" && (gameOver || gameState === "title")) {
+    if (e.code === "Escape") {
+        if (gameState == "paused") {
+            let pauseDuration = performance.now() - pauseStartTime;
+            dragon.lastMoveTime += pauseDuration;
+            dragon.lastShootTime += pauseDuration;
+            cloud.lastStrikeTime += pauseDuration;
+            cloud.startTime += pauseDuration;
+            gameState = "game";
+        } else if (gameState == "game") {
+            pauseStartTime = performance.now();
+            gameState = "paused";
+        }
+    }
+    if (e.code === "Enter" && (gameOver || victory || gameState === "title")) {
+        gameState = "game";
         reset();
     }
 });
