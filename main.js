@@ -203,8 +203,11 @@ function reset() {
     cloud.warningActive = false;
     cloud.lightningActive = false;
     cloud.canDamage = false;
-    cloud.startTime = now;
-    cloud.lastStrikeTime = now;
+    cloud.strikeTimer = 0;
+    cloud.warningTimer = 0;
+    cloud.lightningTimer = 0;
+
+    cloud.strikeInterval = Math.random() * 5000 + 3000;
 
     dragon.x = dragonSpawnX;
     dragon.y = dragonSpawnY;
@@ -216,9 +219,9 @@ function reset() {
     dragon.hp = dragon.maxHp;
     dragon.phase = 1;
     dragon.charging = false;
-    dragon.lastMoveTime = now;
+    dragon.moveTime = 0;
     dragon.fireballs = [];
-    dragon.lastShootTime = now;
+    dragon.shootingTime = 0;
     explosions.splice(0, explosions.length);
 
     deadTime = 0;
