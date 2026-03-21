@@ -7,7 +7,7 @@ export default class Dragon {
         this.xSpeed = 0;
         this.ySpeed = 0;
         this.facing = 1; // - = left, + = right
-        this.maxHp = 1;
+        this.maxHp = 25;
         this.hp = this.maxHp;
         this.phase = 1;
         this.alive = true;
@@ -27,12 +27,12 @@ export default class Dragon {
         this.charging = false;
         this.restTime = Math.random() * 2000 + 4000;
         this.chargeTime = Math.random() * 750 + 2750;
-        this.lastMoveTime = 0;
+        this.moveTime = 0;
 
         this.fireballs = []
         this.shooting = true;
         this.shootingDelay = 2500;
-        this.lastShootTime = 0;
+        this.shootingTime = 0;
 
         this.fadeTime = 1;
     }
@@ -85,7 +85,6 @@ export default class Dragon {
     }
 
     update(deltaTime, mapWidth, mapHeight, canvas, baseWidth, baseHeight, target) {
-        const now = performance.now();
 
         this.fireballs.forEach(f => f.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
         for (let i = this.fireballs.length - 1; i >= 0; i--) {
@@ -126,12 +125,15 @@ export default class Dragon {
                 this.shootingDelay = 1750;
                 this.speed = 0.115;
             }
-            if (this.shooting && now - this.lastShootTime >= this.shootingDelay) {
-                this.shoot();
-                this.lastShootTime = now;
+            if (this.shooting) {
+                this.shootingTime += deltaTime;
+                if (this.shootingTime >= this.shootingDelay) {
+                    this.shoot();
+                    this.shootingTime = 0;
+                }
             }
-
-            if (!this.charging && now - this.lastMoveTime >= this.restTime) {
+            this.moveTime += deltaTime;
+            if (!this.charging && this.moveTime >= this.restTime) {
                 let dx = target.x + target.width / 2 - this.x - this.width / 2;
                 let dy = target.y + target.height / 2 - this.y - this.height / 2;
                 let dist = Math.sqrt(dx * dx + dy * dy);
@@ -143,16 +145,16 @@ export default class Dragon {
                     this.facing = -1;
                 }
                 this.charging = true;
-                console.log(this.chargeTime);
-                this.lastMoveTime = now;
+                // console.log(this.chargeTime);
+                this.moveTime = 0;
             }
             if (this.charging) {
                 this.x += this.xSpeed * deltaTime / 1000;
                 this.y += this.ySpeed * deltaTime / 1000;
-                if (now - this.lastMoveTime >= this.chargeTime) {
+                if (this.moveTime >= this.chargeTime) {
                     this.charging = false;
-                    console.log(this.restTime);
-                    this.lastMoveTime = now;
+                    // console.log(this.restTime);
+                    this.moveTime = 0;
                 }
             }
         } else {
