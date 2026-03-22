@@ -24,7 +24,7 @@ export default class Player {
 
         this.bullets = [];
         this.shootingDelay = 900;
-        this.lastShootTime = this.shootingDelay * -1;
+        this.shootingTime = 0;
         this.fadeTime = 1;
     }
 
@@ -54,6 +54,7 @@ export default class Player {
 
         if (this.alive) {
             const dt = deltaTime / 1000;
+            this.shootingTime += deltaTime;
             // console.log(this.speedY * (mapHeight / baseHeight));
             this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
             this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
@@ -102,6 +103,7 @@ export default class Player {
                 this.imageHeight *= 1.05;
                 this.fadeTime -= deltaTime / 200;
                 if (this.fadeTime <= 0) {
+                    this.fadeTime = 0;
                     this.fading = false;
                 }
             }
