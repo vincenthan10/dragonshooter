@@ -163,6 +163,7 @@ export default class Dragon {
                 this.imageHeight *= 1.04;
                 this.fadeTime -= deltaTime / 350;
                 if (this.fadeTime <= 0) {
+                    this.fadeTime = 0;
                     this.fading = false;
                 }
             }
