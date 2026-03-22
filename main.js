@@ -47,39 +47,36 @@ let gameState = "title";
 let gameOver = false;
 let victory = false;
 
-let pauseStartTime = 0;
-
 function update(deltaTime) {
     if (gameOver || victory || gameState === "title" || gameState === "paused") {
         return;
     } 
     //console.log(explosions);
-    const now = performance.now();
     cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     cloud.collisionHandler(player, mapWidth);
     cloud.collisionHandler(dragon, mapWidth);
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
-    if (!dragon.alive && defeatTime === 0) {
+    if (!dragon.alive && !dragon.fading) {
         dragon.fading = true;
-        defeatTime = now;
+        defeatTime += deltaTime;
+        if (defeatTime >= victoryTime) {
+            gameState = "victory";
+            victory = true;
+            return;
+        }
     }
-    if (!player.alive && deadTime === 0) {
+    if (!player.alive && !player.fading) {
         player.fading = true;
-        deadTime = now;
+        deadTime += deltaTime;
+        if (deadTime >= gameOverTime) {
+            gameState = "gameover";
+            gameOver = true;
+            return;
+        }
     }
-    if (!player.alive && now - deadTime >= gameOverTime) {
-        gameState = "gameover";
-        gameOver = true;
-        return;
-    }
-    if (!dragon.alive & now - defeatTime >= victoryTime) {
-        gameState = "victory";
-        victory = true;
-        return;
-    }
-    if (shooting && player.alive && now - player.lastShootTime >= player.shootingDelay) {
+    if (shooting && player.alive && player.shootingTime >= player.shootingDelay) {
         player.shoot();
-        player.lastShootTime = now;
+        player.shootingTime = 0;
     }
     dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player);
     if (dragon.alive && dragon.isColliding(player)) {
@@ -186,7 +183,6 @@ function draw() {
 }
 
 function reset() {
-    let now = performance.now();
     player.imageWidth = player.BASEIMGWIDTH;
     player.imageHeight = player.BASEIMGHEIGHT;
     player.x = playerSpawnX;
@@ -198,7 +194,7 @@ function reset() {
     shooting = false;
     keysPressed.clear();
     player.bullets = [];
-    player.lastShootTime = now;
+    player.shootingTime = 0;
 
     cloud.warningActive = false;
     cloud.lightningActive = false;
@@ -260,14 +256,8 @@ document.addEventListener("keydown", (e) => {
 
     if (e.code === "Escape") {
         if (gameState == "paused") {
-            let pauseDuration = performance.now() - pauseStartTime;
-            dragon.lastMoveTime += pauseDuration;
-            dragon.lastShootTime += pauseDuration;
-            cloud.lastStrikeTime += pauseDuration;
-            cloud.startTime += pauseDuration;
             gameState = "game";
         } else if (gameState == "game") {
-            pauseStartTime = performance.now();
             gameState = "paused";
         }
     }
