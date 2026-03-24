@@ -2,6 +2,7 @@ import Dragon from "./dragon.js";
 import Player from "./player.js";
 import Cloud from "./cloud.js";
 import Explosion from "./explosion.js";
+import MysteryBox from "./mysterybox.js";
 
 const canvas = document.getElementById("gameCanvas")
 let mapWidth = canvas.width;
@@ -20,6 +21,7 @@ const dragonSpawnY = 0.3;
 const dragon = new Dragon(dragonSpawnX, dragonSpawnY);
 const player = new Player(playerSpawnX, playerSpawnY);
 const cloud = new Cloud(-0.1 * canvas.width, 0);
+const mystery = new MysteryBox();
 const explosions = [];
 const fireExplosion = {
     src: "images/fireexplosion.png",
@@ -55,6 +57,9 @@ function update(deltaTime) {
     cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     cloud.collisionHandler(player, mapWidth);
     cloud.collisionHandler(dragon, mapWidth);
+    mystery.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
+    mystery.collisionHandler(player);
+    mystery.collisionHandler(dragon);
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     if (!dragon.alive && !dragon.fading) {
         dragon.fading = true;
@@ -126,6 +131,7 @@ function draw() {
     player.draw(ctx, mapWidth, mapHeight);
     dragon.draw(ctx, mapWidth, mapHeight);
     cloud.draw(ctx, mapWidth, mapHeight);
+    mystery.draw(ctx, mapWidth, mapHeight);
     explosions.forEach(e => e.draw(ctx, mapWidth, mapHeight));
 
     if (gameState === "title") {
@@ -202,8 +208,16 @@ function reset() {
     cloud.strikeTimer = 0;
     cloud.warningTimer = 0;
     cloud.lightningTimer = 0;
-
     cloud.strikeInterval = Math.random() * 5000 + 3000;
+
+    mystery.active = false;
+    mystery.collected = false;
+    mystery.affectTime = 0;
+    mystery.activeTime = 0;
+    mystery.inactiveTime = 0;
+    mystery.spawnTime = Math.random() * 12500 + 2500;
+    mystery.x = Math.random() * 0.9 + 0.05;
+    mystery.y = Math.random() * 0.7 + 0.25;
 
     dragon.x = dragonSpawnX;
     dragon.y = dragonSpawnY;
