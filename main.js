@@ -21,7 +21,7 @@ const dragonSpawnY = 0.3;
 const dragon = new Dragon(dragonSpawnX, dragonSpawnY);
 const player = new Player(playerSpawnX, playerSpawnY);
 const cloud = new Cloud(-0.1 * canvas.width, 0);
-const mystery = new MysteryBox();
+const mystery = new MysteryBox(player, dragon);
 const explosions = [];
 const fireExplosion = {
     src: "images/fireexplosion.png",
@@ -58,8 +58,14 @@ function update(deltaTime) {
     cloud.collisionHandler(player, mapWidth);
     cloud.collisionHandler(dragon, mapWidth);
     mystery.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
-    mystery.collisionHandler(player);
-    mystery.collisionHandler(dragon);
+    if (mystery.isColliding(player)) {
+        mystery.playerCollected = true;
+        mystery.playerEffect(player, true, 0);
+    }
+    if (mystery.isColliding(dragon)) {
+        mystery.dragonCollected = true;
+        mystery.dragonEffect(dragon, true);
+    }
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     if (!dragon.alive && !dragon.fading) {
         dragon.fading = true;
@@ -218,6 +224,8 @@ function reset() {
     mystery.spawnTime = Math.random() * 12500 + 2500;
     mystery.x = Math.random() * 0.9 + 0.05;
     mystery.y = Math.random() * 0.7 + 0.25;
+    mystery.playerCollected = false;
+    mystery.dragonCollected = false;
 
     dragon.x = dragonSpawnX;
     dragon.y = dragonSpawnY;
