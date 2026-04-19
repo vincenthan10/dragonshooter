@@ -1,5 +1,9 @@
+import Player from "./player.js";
+import Dragon from "./dragon.js";
 export default class MysteryBox {
-    constructor() {
+    constructor(player, dragon) {
+        this.player = player;
+        this.dragon = dragon;
 
         this.img = new Image();
         this.img.src = "images/mysterybox.png";
@@ -11,13 +15,15 @@ export default class MysteryBox {
         this.height = 0;
 
         this.active = false;
-        this.collected = false;
+        this.playerCollected = false;
+        this.dragonCollected = false;
+        this.effectNumber = 0;
         this.activeTime = 0;
         this.inactiveTime = 0;
         this.affectTime = 0;
         this.spawnTime = Math.random() * 12500 + 2500;
         this.despawnTime = Math.random() * 2500 + 5000;
-        this.effectTime = Math.random() * 1250 + 7500;
+        this.effectTime = Math.random() * 3000 + 4500;
         this.x = Math.random() * 0.9 + 0.05;
         this.y = Math.random() * 0.7 + 0.25;
     }
@@ -52,20 +58,46 @@ export default class MysteryBox {
                 this.spawnTime = Math.random() * 8000 + 9000;
             }
         }
-        if (this.collected) {
+        if (this.playerCollected || this.dragonCollected) {
             this.affectTime += deltaTime;
             if (this.affectTime >= this.effectTime) {
-                this.collected = false;
+                if (this.playerCollected) {
+                    this.playerCollected = false;
+                    this.playerEffect(this.player, false, this.effectNumber);
+                } 
+                if (this.dragonCollected) {
+                    this.dragonCollected = false;
+                    this.dragonEffect(this.dragon, false);
+                }
                 this.affectTime = 0;
-                this.effectTime = Math.random() * 1250 + 7500;
+                this.effectTime = Math.random() * 3000 + 4500;
             }
         }
     }
 
-    collisionHandler(entity) {
+    isColliding(entity) {
         if (this.active && this.x + this.width >= entity.x && this.x <= entity.x + entity.width && this.y + this.height >= entity.y && this.y <= entity.y + entity.height) {
-            this.collected = true;
             this.active = false;
+            return true;
         }
+        return false;
+    }
+
+    playerEffect(player, collected, effectNumber) {
+        let rolled = (effectNumber == 0) ? Math.floor(Math.random() * 2) + 1 : effectNumber;
+        switch (rolled) {
+            case 1:
+                player.speedX = collected ? player.baseSpeedX * 1.4 : player.baseSpeedX;
+                player.speedY = collected ? player.baseSpeedY * 1.4 : player.baseSpeedY;
+                break;
+            case 2:
+                player.shootingDelay = collected ? player.baseShootingDelay * 0.6 : player.baseShootingDelay;
+                break;
+        }
+        this.effectNumber = collected ? rolled : 0;
+    }
+
+    dragonEffect(dragon, collected) {
+        dragon.speedMultiplier = collected ? 1.8 : 1;
     }
 }
