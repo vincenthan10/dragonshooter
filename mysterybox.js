@@ -15,8 +15,6 @@ export default class MysteryBox {
         this.height = 0;
 
         this.active = false;
-        this.playerCollected = false;
-        this.dragonCollected = false;
         this.effectNumber = 0;
         this.activeTime = 0;
         this.inactiveTime = 0;
@@ -58,15 +56,15 @@ export default class MysteryBox {
                 this.spawnTime = Math.random() * 8000 + 9000;
             }
         }
-        if (this.playerCollected || this.dragonCollected) {
+        if (this.player.collected || this.dragon.collected) {
             this.affectTime += deltaTime;
             if (this.affectTime >= this.effectTime) {
-                if (this.playerCollected) {
-                    this.playerCollected = false;
+                if (this.player.collected) {
+                    this.player.collected = false;
                     this.playerEffect(this.player, false, this.effectNumber);
                 } 
-                if (this.dragonCollected) {
-                    this.dragonCollected = false;
+                if (this.dragon.collected) {
+                    this.dragon.collected = false;
                     this.dragonEffect(this.dragon, false);
                 }
                 this.affectTime = 0;
@@ -87,11 +85,10 @@ export default class MysteryBox {
         let rolled = (effectNumber == 0) ? Math.floor(Math.random() * 2) + 1 : effectNumber;
         switch (rolled) {
             case 1:
-                player.speedX = collected ? player.baseSpeedX * 1.4 : player.baseSpeedX;
-                player.speedY = collected ? player.baseSpeedY * 1.4 : player.baseSpeedY;
+                player.speedMultiplier = collected ? 1.4 : 1;
                 break;
             case 2:
-                player.shootingDelay = collected ? player.baseShootingDelay * 0.6 : player.baseShootingDelay;
+                player.fireRateMultiplier = collected ? 0.6 : 1;
                 break;
         }
         this.effectNumber = collected ? rolled : 0;
