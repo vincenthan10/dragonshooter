@@ -17,15 +17,17 @@ export default class Cloud {
 
         this.warningActive = false
         this.lightningActive = false;
-        this.canDamage = false;
+        this.damageInterval = 33;
+        this.damageTime = 0;
+        this.hitEntities = new Set();
         this.strikeInterval = Math.random() * 4500 + 3500;
         this.strikeTimer = 0;
         this.warningTimer = 0;
         this.lightningTimer = 0;
         this.warningTime = 1500;
-        this.strikeTime = 400;
+        this.strikeTime = 360;
         this.strikePosition = 0;
-        this.lightningDmg = 10;
+        this.lightningDmg = 1;
 
     }
 
@@ -71,16 +73,22 @@ export default class Cloud {
                 this.warningActive = false;
                 this.lightningActive = true;
                 this.lightningTimer = 0;
-                this.canDamage = true;
-                this.lightningDmg = Math.round(Math.random() * 4 + 8);
+
+                this.damageTime = 0;
+                this.hitEntities.clear();
             }            
         }
         if (this.lightningActive) {
+            this.damageTime += deltaTime;
+
+            if (this.damageTime >= this.damageInterval) {
+                this.damageTime = 0;
+                this.hitEntities.clear();
+            }
             this.lightningTimer += deltaTime;
 
             if (this.lightningTimer >= this.strikeTime) {
                 this.lightningActive = false;
-                this.canDamage = false;
 
                 this.strikeInterval = Math.random() * 5000 + 3000;
             }
@@ -91,9 +99,11 @@ export default class Cloud {
     collisionHandler(entity, mapWidth) {
         let relativePosition = this.strikePosition / mapWidth;
         let relativeWidth = this.imageWidth / mapWidth;
-        if (this.canDamage && entity.alive && relativePosition - relativeWidth / 3 <= entity.x + entity.width && relativePosition + relativeWidth / 3 >= entity.x) {
+        if (this.lightningActive && entity.alive && !this.hitEntities.has(entity) && 
+        relativePosition - relativeWidth / 3 <= entity.x + entity.width && 
+        relativePosition + relativeWidth / 3 >= entity.x) {
             entity.hp -= this.lightningDmg;
-            this.canDamage = false;
+            this.hitEntities.add(entity);
         }
     }
 }
