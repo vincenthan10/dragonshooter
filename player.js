@@ -5,6 +5,7 @@ export default class Player {
         this.y = y;
         this.baseSpeedX = 0.15;
         this.baseSpeedY = 0.33;
+        this.speedMultiplier = 1;
         this.speedX = this.baseSpeedX;
         this.speedY = this.baseSpeedY;
         this.alive = true;
@@ -26,9 +27,12 @@ export default class Player {
 
         this.bullets = [];
         this.baseShootingDelay = 900;
+        this.fireRateMultiplier = 1;
         this.shootingDelay = this.baseShootingDelay;
         this.shootingTime = 0;
         this.fadeTime = 1;
+
+        this.collected = false;
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -42,6 +46,10 @@ export default class Player {
             }
         }
         ctx.globalAlpha = 1;
+        if (this.collected && this.alive) {
+            ctx.strokeStyle = "#00d057";
+            ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+        }
         this.bullets.forEach(b => b.draw(ctx, mapWidth, mapHeight));
         ctx.restore();
     }
@@ -63,6 +71,9 @@ export default class Player {
             this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
             this.width = this.imageWidth / mapWidth;
             this.height = this.imageHeight / mapHeight;
+            this.speedX = this.baseSpeedX * this.speedMultiplier;
+            this.speedY = this.baseSpeedY * this.speedMultiplier;
+            this.shootingDelay = this.baseShootingDelay * this.fireRateMultiplier;
             let dx = 0;
             let dy = 0;
             if (keysPressed.has("KeyW") || keysPressed.has("ArrowUp")) dy -= this.speedY * dt;
