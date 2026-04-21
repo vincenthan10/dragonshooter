@@ -38,6 +38,8 @@ export default class Dragon {
         this.shootingTime = 0;
 
         this.fadeTime = 1;
+
+        this.collected = false;
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -48,6 +50,11 @@ export default class Dragon {
                 ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             } else {
                 ctx.drawImage(this.imgL, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+            }
+
+            if (this.collected && this.alive) {
+                ctx.strokeStyle = "#00d057";
+                ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             }
             // HP bar
             const barX = this.x * mapWidth;
