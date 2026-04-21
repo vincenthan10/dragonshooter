@@ -59,11 +59,11 @@ function update(deltaTime) {
     cloud.collisionHandler(dragon, mapWidth);
     mystery.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
     if (mystery.isColliding(player)) {
-        mystery.playerCollected = true;
+        player.collected = true;
         mystery.playerEffect(player, true, 0);
     }
     if (mystery.isColliding(dragon)) {
-        mystery.dragonCollected = true;
+        dragon.collected = true;
         mystery.dragonEffect(dragon, true);
     }
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
@@ -210,11 +210,12 @@ function reset() {
 
     cloud.warningActive = false;
     cloud.lightningActive = false;
-    cloud.canDamage = false;
+    cloud.damageTime = 0;
     cloud.strikeTimer = 0;
     cloud.warningTimer = 0;
     cloud.lightningTimer = 0;
     cloud.strikeInterval = Math.random() * 5000 + 3000;
+    cloud.hitEntities.clear();
 
     mystery.active = false;
     mystery.collected = false;
@@ -224,8 +225,8 @@ function reset() {
     mystery.spawnTime = Math.random() * 12500 + 2500;
     mystery.x = Math.random() * 0.9 + 0.05;
     mystery.y = Math.random() * 0.7 + 0.25;
-    mystery.playerCollected = false;
-    mystery.dragonCollected = false;
+    player.collected = false;
+    dragon.collected = false;
 
     dragon.x = dragonSpawnX;
     dragon.y = dragonSpawnY;
@@ -240,6 +241,7 @@ function reset() {
     dragon.moveTime = 0;
     dragon.fireballs = [];
     dragon.shootingTime = 0;
+    dragon.speedMultiplier = 1;
     explosions.splice(0, explosions.length);
 
     deadTime = 0;
