@@ -3,8 +3,8 @@ export default class Player {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.baseSpeedX = 0.15;
-        this.baseSpeedY = 0.33;
+        this.baseSpeedX = 0.2;
+        this.baseSpeedY = 0.38;
         this.speedMultiplier = 1;
         this.speedX = this.baseSpeedX;
         this.speedY = this.baseSpeedY;
@@ -22,15 +22,19 @@ export default class Player {
         this.BASEIMGHEIGHT = 92;
         this.imageWidth = this.BASEIMGWIDTH;
         this.imageHeight = this.BASEIMGHEIGHT;
+        this.sizeMultiplier = 1;
         this.width = 0;
         this.height = 0;
 
         this.bullets = [];
+        this.bulletDmg = 1;
         this.baseShootingDelay = 900;
         this.fireRateMultiplier = 1;
         this.shootingDelay = this.baseShootingDelay;
         this.shootingTime = 0;
         this.fadeTime = 1;
+
+        this.ltnInvinc = false;
 
         this.collected = false;
     }
@@ -44,10 +48,29 @@ export default class Player {
             } else {
                 ctx.drawImage(this.imgR, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight)
             }
+            // HP bar
+            const barX = this.x * mapWidth;
+            const barY = (this.y - 0.02) * mapHeight;
+            const barWidth = this.imageWidth;
+            const barHeight = this.imageHeight / 15;
+
+            ctx.fillStyle = "red";
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+
+            ctx.fillStyle = "limegreen";
+            ctx.fillRect(barX, barY, (this.hp / this.maxHp) * barWidth, barHeight);
+
+            const centerX = barX + barWidth / 2;
+            const centerY = barY + barHeight / 2;
+            ctx.font = "10px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "black";
+            ctx.fillText(this.hp + "/" + this.maxHp, centerX, centerY);
         }
         ctx.globalAlpha = 1;
         if (this.collected && this.alive) {
-            ctx.strokeStyle = "#00d057";
+            ctx.strokeStyle = "#9c7003";
             ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
         }
         this.bullets.forEach(b => b.draw(ctx, mapWidth, mapHeight));
@@ -57,7 +80,7 @@ export default class Player {
     update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, baseWidth, baseHeight) {
         this.bullets.forEach(b => b.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
         for (let i = this.bullets.length - 1; i >= 0; i--) {
-            if (this.bullets[i].x <= -0.1 || this.bullets[i].x + this.bullets[i].imageWidth / mapWidth >= 1.1) {
+            if (this.bullets[i].x <= -0.5 || this.bullets[i].x + this.bullets[i].imageWidth / mapWidth >= 1.5) {
                 this.bullets.splice(i, 1);
             }
         }
@@ -67,8 +90,8 @@ export default class Player {
             const dt = deltaTime / 1000;
             this.shootingTime += deltaTime;
             // console.log(this.speedY * (mapHeight / baseHeight));
-            this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
-            this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
+            this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier;
+            this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier;
             this.width = this.imageWidth / mapWidth;
             this.height = this.imageHeight / mapHeight;
             this.speedX = this.baseSpeedX * this.speedMultiplier;
@@ -126,9 +149,9 @@ export default class Player {
 
     shoot() {
         if (this.facing < 0) {
-            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1));
+            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg, this.sizeMultiplier));
         } else {
-            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1));
+            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg, this.sizeMultiplier));
         }
     }
 }
