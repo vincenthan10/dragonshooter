@@ -3,11 +3,12 @@ export default class Dragon {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.baseSpeed = 0.09;
+        this.baseSpeed = 0.12;
         this.effectiveSpeed = 0;
+        this.yMultiplier = 1.2;
         this.speedMultiplier = 1;
         this.facing = 1; // - = left, + = right
-        this.maxHp = 25;
+        this.maxHp = 40;
         this.hp = this.maxHp;
         this.phase = 1;
         this.alive = true;
@@ -21,6 +22,7 @@ export default class Dragon {
         this.BASEIMGHEIGHT = 233;
         this.imageWidth = this.BASEIMGWIDTH;
         this.imageHeight = this.BASEIMGHEIGHT;
+        this.sizeMultiplier = 1;
         this.width = 0;
         this.height = 0;
 
@@ -31,13 +33,18 @@ export default class Dragon {
         this.restTime = Math.random() * 2000 + 4000;
         this.chargeTime = Math.random() * 750 + 2750;
         this.moveTime = 0;
+        this.moveMultiplier = 1;
 
         this.fireballs = []
         this.shooting = true;
         this.shootingDelay = 2500;
         this.shootingTime = 0;
+        this.fireDmg = 1;
+        this.fireRateMultiplier = 1;
 
         this.fadeTime = 1;
+
+        this.ltnInvinc = false;
 
         this.collected = false;
     }
@@ -53,7 +60,7 @@ export default class Dragon {
             }
 
             if (this.collected && this.alive) {
-                ctx.strokeStyle = "#00d057";
+                ctx.strokeStyle = "#9c7003";
                 ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             }
             // HP bar
@@ -105,34 +112,34 @@ export default class Dragon {
         if (this.hp <= 0) {
             this.hp = 0;
             this.alive = false;
-        } else if (this.hp >= this.maxHp * 0.6) {
+        } else if (this.hp >= this.maxHp * 0.65) {
             this.phase = 1;
-        } else if (this.hp >= this.maxHp * 0.3 && this.hp < this.maxHp * 0.6) {
+        } else if (this.hp >= this.maxHp * 0.3 && this.hp < this.maxHp * 0.65) {
             this.phase = 2;
         } else {
             this.phase = 3;
         }
 
         if (this.alive) {
-            this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
-            this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
+            this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier;
+            this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier;
             this.width = this.imageWidth / mapWidth;
             this.height = this.imageHeight / mapHeight;
             if (this.phase == 1) {
-                this.restTime = Math.random() * 2000 + 4000;
+                this.restTime = (Math.random() * 2000 + 4000) * this.moveMultiplier;
                 this.chargeTime = Math.random() * 750 + 2750;
-                this.shootingDelay = 2500;
-                this.baseSpeed = 0.09;
+                this.shootingDelay = 2500 * this.fireRateMultiplier;
+                this.baseSpeed = 0.12;
             } else if (this.phase == 2) {
-                this.restTime = Math.random() * 1750 + 3250;
+                this.restTime = (Math.random() * 1750 + 3250) * this.moveMultiplier;
                 this.chargeTime = Math.random() * 1000 + 3000;
-                this.shootingDelay = 2200;
-                this.baseSpeed = 0.1;
+                this.shootingDelay = 2200 * this.fireRateMultiplier;
+                this.baseSpeed = 0.132;
             } else {
-                this.restTime = Math.random() * 1000 + 2500;
+                this.restTime = (Math.random() * 1000 + 2500) * this.moveMultiplier;
                 this.chargeTime = Math.random() * 1500 + 3500;
-                this.shootingDelay = 1750;
-                this.baseSpeed = 0.115;
+                this.shootingDelay = 1750 * this.fireRateMultiplier;
+                this.baseSpeed = 0.148;
             }
             if (this.shooting) {
                 this.shootingTime += deltaTime;
@@ -161,7 +168,7 @@ export default class Dragon {
             if (this.charging) {
                 this.effectiveSpeed = this.baseSpeed * this.speedMultiplier;
                 this.x += this.dirX * this.effectiveSpeed * deltaTime / 1000;
-                this.y += this.dirY * this.effectiveSpeed * deltaTime / 1000;
+                this.y += this.dirY * this.yMultiplier * this.effectiveSpeed * deltaTime / 1000;
                 if (this.moveTime >= this.chargeTime) {
                     this.charging = false;
                     // console.log(this.restTime);
@@ -193,9 +200,9 @@ export default class Dragon {
 
     shoot() {
         if (this.facing < 0) {
-            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1));
+            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg, this.sizeMultiplier));
         } else {
-            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1));
+            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg, this.sizeMultiplier));
         }
     }
 }
