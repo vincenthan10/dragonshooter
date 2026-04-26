@@ -1,17 +1,17 @@
 export default class Bullet {
-    constructor(x, y, dir) {
+    constructor(x, y, dir, damage, sizeMultiplier) {
         this.x = x;
         this.y = y;
-        this.baseSpeed = 0.006;
+        this.baseSpeed = 0.0072;
         this.speed = this.baseSpeed * dir;
-        this.damage = 1;
-
+        this.damage = damage;
+        this.sizeMultiplier = sizeMultiplier;
         this.img = new Image();
         this.img.src = "images/bullet.png";
         this.BASEIMGWIDTH = 36;
         this.BASEIMGHEIGHT = 24;
-        this.imageWidth = this.BASEIMGWIDTH;
-        this.imageHeight = this.BASEIMGHEIGHT;
+        this.imageWidth = this.BASEIMGWIDTH * this.sizeMultiplier;
+        this.imageHeight = this.BASEIMGHEIGHT * this.sizeMultiplier;
         this.width = 0;
         this.height = 0;
     }
@@ -23,8 +23,8 @@ export default class Bullet {
     }
 
     update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight) {
-        this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
-        this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
+        this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier;
+        this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier;
         this.width = this.imageWidth / mapWidth;
         this.height = this.imageHeight / mapHeight;
         this.x += this.speed;
