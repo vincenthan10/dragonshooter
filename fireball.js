@@ -1,10 +1,11 @@
-export default class Bullet {
-    constructor(x, y, dir) {
+export default class Fireball {
+    constructor(x, y, dir, damage, sizeMultiplier) {
         this.x = x;
         this.y = y;
-        this.baseSpeed = 0.0045;
+        this.baseSpeed = 0.0065;
         this.speed = this.baseSpeed * dir;
-        this.damage = 1;
+        this.damage = damage;
+        this.sizeMultiplier = sizeMultiplier;
 
         if (dir > 0) {
             this.img = new Image();
@@ -15,8 +16,8 @@ export default class Bullet {
         }
         this.BASEIMGWIDTH = 55;
         this.BASEIMGHEIGHT = 20;
-        this.imageWidth = this.BASEIMGWIDTH;
-        this.imageHeight = this.BASEIMGHEIGHT;
+        this.imageWidth = this.BASEIMGWIDTH * this.sizeMultiplier;
+        this.imageHeight = this.BASEIMGHEIGHT * this.sizeMultiplier;
         this.width = 0;
         this.height = 0;
     }
@@ -28,8 +29,8 @@ export default class Bullet {
     }
 
     update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight) {
-        this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
-        this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
+        this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier;
+        this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier;
         this.width = this.imageWidth / mapWidth;
         this.height = this.imageHeight / mapHeight;
         this.x += this.speed;
