@@ -64,7 +64,7 @@ function update(deltaTime) {
     }
     if (mystery.isColliding(dragon)) {
         dragon.collected = true;
-        mystery.dragonEffect(dragon, true);
+        mystery.dragonEffect(dragon, true, 0);
     }
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     if (!dragon.alive && !dragon.fading) {
@@ -207,6 +207,11 @@ function reset() {
     keysPressed.clear();
     player.bullets = [];
     player.shootingTime = 0;
+    player.bulletDmg = 1;
+    player.speedMultiplier = 1;
+    player.fireRateMultiplier = 1;
+    player.sizeMultiplier = 1;
+    player.ltnInvinc = false;
 
     cloud.warningActive = false;
     cloud.lightningActive = false;
@@ -225,6 +230,7 @@ function reset() {
     mystery.spawnTime = Math.random() * 12500 + 2500;
     mystery.x = Math.random() * 0.9 + 0.05;
     mystery.y = Math.random() * 0.7 + 0.25;
+    mystery.effectNumber = 0;
     player.collected = false;
     dragon.collected = false;
 
@@ -242,6 +248,11 @@ function reset() {
     dragon.fireballs = [];
     dragon.shootingTime = 0;
     dragon.speedMultiplier = 1;
+    dragon.sizeMultiplier = 1;
+    dragon.moveMultiplier = 1;
+    dragon.fireRateMultiplier = 1;
+    dragon.fireDmg = 1;
+    dragon.ltnInvinc = false;
     explosions.splice(0, explosions.length);
 
     deadTime = 0;
