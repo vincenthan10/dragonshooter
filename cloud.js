@@ -24,7 +24,7 @@ export default class Cloud {
         this.strikeTimer = 0;
         this.warningTimer = 0;
         this.lightningTimer = 0;
-        this.warningTime = 1500;
+        this.warningTime = 1000;
         this.strikeTime = 360;
         this.strikePosition = 0;
         this.lightningDmg = 1;
@@ -99,7 +99,7 @@ export default class Cloud {
     collisionHandler(entity, mapWidth) {
         let relativePosition = this.strikePosition / mapWidth;
         let relativeWidth = this.imageWidth / mapWidth;
-        if (this.lightningActive && entity.alive && !this.hitEntities.has(entity) && 
+        if (this.lightningActive && entity.alive && !entity.ltnInvinc && !this.hitEntities.has(entity) && 
         relativePosition - relativeWidth / 3 <= entity.x + entity.width && 
         relativePosition + relativeWidth / 3 >= entity.x) {
             entity.hp -= this.lightningDmg;
