@@ -84,7 +84,7 @@ export default class MysteryBox {
     }
 
     playerEffect(player, collected, effectNumber) {
-        let rolled = (effectNumber == 0) ? Math.floor(Math.random() * 8) + 1 : effectNumber;
+        let rolled = (effectNumber == 0) ? Math.floor(Math.random() * 9) + 1 : effectNumber;
         switch (rolled) {
             case 1:
                 player.speedMultiplier = collected ? 1.5 : 1;
@@ -118,7 +118,15 @@ export default class MysteryBox {
                 player.speedMultiplier = collected ? 2 : 1;
                 player.fireRateMultiplier = collected ? 2 : 1;
                 break;
-
+            case 9:
+                if (collected) {
+                    let coinsEarned = Math.floor(Math.random() * 35) + 5;
+                    player.coins += coinsEarned;
+                    player.coinsThisRun += coinsEarned;
+                    let heal = Math.floor(Math.random() * 2) + 2;
+                    player.hp = Math.min(player.hp + heal, player.maxHp);
+                }
+                break;
         }
         this.effectNumber = collected ? rolled : 0;
     }
