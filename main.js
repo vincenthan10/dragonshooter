@@ -38,6 +38,8 @@ const basicExplosion = {
     BASEIMAGEWIDTH: 95,
     BASEIMAGEHEIGHT: 97
 }
+let coinImage = new Image();
+coinImage.src = "images/coin.png";
 
 let shooting = false;
 
@@ -47,10 +49,84 @@ let defeatTime = 0;
 let victoryTime = 1500;
 let gameState = "title";
 let gameOver = false;
-let victory = false;
+
+let upgradePool = [
+    {   
+        name: "Damage Up",
+        baseCost: 125,
+        apply: (player) => player.dmgUpgrade += 1,
+        maxLevel: 2,
+        currentLevel: 0,
+        getCost() {
+            return this.baseCost + this.currentLevel * 50;
+        }
+    },
+    {
+        name: "Speed Up",
+        baseCost: 30,
+        apply: (player) => player.speedUpgraded *= 1.1,
+        maxLevel: 5,
+        currentLevel: 0,
+        getCost() {
+            return this.baseCost + this.currentLevel * 10;
+        }
+    },
+    {
+        name: "Fire Rate Up",
+        baseCost: 50,
+        apply: (player) => player.fireRateUpgraded *= 0.9,
+        maxLevel: 5,
+        currentLevel: 0,
+        getCost() {
+            return this.baseCost + this.currentLevel * 20;
+        }
+    },
+    {
+        name: "Extra Life",
+        baseCost: 50,
+        apply: (player) => player.lives++,
+        currentLevel: 0,
+        getCost() {
+            return this.baseCost + this.currentLevel * 10;
+        }
+    },
+    {
+        name: "Health Up",
+        baseCost: 150,
+        currentLevel: 0,
+        apply(player) {
+            player.maxHp += (this.currentLevel + 1);
+            player.hp = player.maxHp;
+        },
+        maxLevel: 5,
+        getCost() {
+            return this.baseCost + this.currentLevel * this.currentLevel * 10;
+        }
+    }
+]
+let available = [];
+let chosen = [];
+let upgradeInput = 0;
+
+function applyUpgradeChoice(index) {
+    if (index < 0 || index >= chosen.length) {
+        return;
+    }
+
+    const upgrade = chosen[index];
+    const cost = upgrade.getCost();
+
+    if (player.coins >= cost) {
+        player.coins -= cost;
+        upgrade.apply(player);
+        upgrade.currentLevel++;
+        chosen.splice(index, 1);
+        upgradeInput = 0;
+    }
+}
 
 function update(deltaTime) {
-    if (gameOver || victory || gameState === "title" || gameState === "paused") {
+    if (gameState != "game") {
         return;
     } 
     //console.log(explosions);
@@ -72,7 +148,8 @@ function update(deltaTime) {
         defeatTime += deltaTime;
         if (defeatTime >= victoryTime) {
             gameState = "victory";
-            victory = true;
+            player.coins += 50;
+            player.coinsThisRun = 0;
             return;
         }
     }
@@ -80,8 +157,15 @@ function update(deltaTime) {
         player.fading = true;
         deadTime += deltaTime;
         if (deadTime >= gameOverTime) {
-            gameState = "gameover";
-            gameOver = true;
+            player.lives--;
+            if (player.lives <= 0) {
+                gameState = "gameover";
+                gameOver = true;
+            } else {
+                gameState = "deathscreen";
+            }
+            player.coins -= player.coinsThisRun;
+            player.coinsThisRun = 0;
             return;
         }
     }
@@ -91,7 +175,7 @@ function update(deltaTime) {
     }
     dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player);
     if (dragon.alive && dragon.isColliding(player)) {
-        player.hp = 0;
+        player.hp--;
     }
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
         let fireball = dragon.fireballs[i];
@@ -146,14 +230,14 @@ function draw() {
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        ctx.fillText("Dragon Shooter", canvas.width / 2 - 140, canvas.height / 2 - 50);
+        ctx.fillText("Dragon Shooter", canvas.width / 2 - 135, canvas.height / 2 - 50);
 
         ctx.font = "18px Arial";
-        ctx.fillText("Use WASD or arrow keys to move, space to shoot", canvas.width / 2 - 200, canvas.height / 2 - 5);
-        ctx.fillText("Defeat the dragon without getting hit!", canvas.width / 2 - 150, canvas.height / 2 + 25);
+        ctx.fillText("Use WASD or arrow keys to move, space to shoot", canvas.width / 2 - 192, canvas.height / 2 - 5);
+        ctx.fillText("Defeat the dragon without getting hit!", canvas.width / 2 - 142, canvas.height / 2 + 25);
 
         ctx.font = "16px Arial";
-        ctx.fillText("Press Enter to start", canvas.width / 2 - 80, canvas.height / 2 + 80);
+        ctx.fillText("Press Enter to start", canvas.width / 2 - 70, canvas.height / 2 + 80);
     }
 
     if (gameState == "paused") {
@@ -162,36 +246,92 @@ function draw() {
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        ctx.fillText("Game Paused", canvas.width / 2 - 130, canvas.height / 2 - 40);
+        ctx.fillText("Game Paused", canvas.width / 2 - 125, canvas.height / 2 - 40);
 
         ctx.font = "16px Arial";
-        ctx.fillText("Press Escape to continue", canvas.width / 2 - 95, canvas.height / 2);
+        ctx.fillText("Press Escape to continue", canvas.width / 2 - 90, canvas.height / 2);
     }
 
-    // Game Over screen
-    if (gameOver) {
+    // Death screen
+    if (gameState == "deathscreen") {
         ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        ctx.fillText("You Died", canvas.width / 2 - 90, canvas.height / 2 - 40);
+        ctx.fillText("You Died", canvas.width / 2 - 85, canvas.height / 2 - 40);
 
         ctx.font = "16px Arial";
-        ctx.fillText("Press Enter to respawn", canvas.width / 2 - 92, canvas.height / 2);
+        ctx.fillText("Press Enter to respawn", canvas.width / 2 - 86, canvas.height / 2);
     }
 
-    if (victory) {
+    if (gameState == "gameover") {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "white";
+        ctx.font = "40px Arial";
+        ctx.fillText("Game Over", canvas.width / 2 - 93, canvas.height / 2 - 40);
+
+        ctx.font = "16px Arial";
+        ctx.fillText("Press Enter to restart the game", canvas.width / 2 - 102, canvas.height / 2);
+    }
+
+    if (gameState == "victory") {
         ctx.fillStyle = "rgba(0, 0, 0, 0.7";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        ctx.fillText("Dragon Defeated", canvas.width / 2 - 147, canvas.height / 2 - 40);
+        ctx.fillText("Dragon Defeated", canvas.width / 2 - 135, canvas.height / 2 - 40);
+
+        ctx.drawImage(coinImage, canvas.width / 2 - 30, canvas.height / 2 - 22);
+        ctx.font = "14px Arial";
+        ctx.fillText("+50", canvas.width / 2 + 15, canvas.height / 2);
 
         ctx.font = "16px Arial";
-        ctx.fillText("Press Enter to play again", canvas.width / 2 - 92, canvas.height / 2);
+        ctx.fillText("Press Enter to continue", canvas.width / 2 - 80, canvas.height / 2 + 60);
     }
+
+    if (gameState == "upgrade") {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "white";
+        ctx.font = "40px Arial";
+        ctx.fillText("Pick an Upgrade", canvas.width / 2 - 140, canvas.height / 2 - 40);
+
+        ctx.font = "20px Arial";
+        const optionOffsets = [10, 40, 70];
+
+        for (let i = 0; i < chosen.length; i++) {
+            const y = canvas.height / 2 + optionOffsets[i];
+            const cost = chosen[i].getCost();
+            const affordable = player.coins >= cost;
+            const selected = upgradeInput == "Digit" + (i + 1);
+
+            ctx.fillText("[" + (i + 1) + "] " + chosen[i].name, canvas.width / 2 - 110, y);
+            ctx.drawImage(coinImage, canvas.width / 2 + 40, y - 25);
+            ctx.fillStyle = selected && !affordable ? "red" : "white";
+            ctx.fillText(cost, canvas.width / 2 + 83, y);
+            ctx.fillStyle = "white";
+
+            if (selected && !affordable) {
+                ctx.fillStyle = "red";
+                ctx.fillText("Not enough coins", canvas.width / 2 - 75, canvas.height / 2 + 120);
+                ctx.fillStyle = "white";
+            }
+        }
+    }
+
+    ctx.drawImage(coinImage, canvas.width - 68, 0);
+    ctx.fillStyle = "white";
+    ctx.font = "14px Arial";
+    ctx.fillText(player.coins, canvas.width - 25, 22);
+
+    ctx.font = "14px Arial";
+    ctx.fillStyle = "black";
+    ctx.fillText("Lives: " + player.lives, 50, 50);
 }
 
 function reset() {
@@ -212,6 +352,18 @@ function reset() {
     player.fireRateMultiplier = 1;
     player.sizeMultiplier = 1;
     player.ltnInvinc = false;
+    if (gameOver) {
+        player.lives = player.maxLives;
+        player.coins = 0;
+        player.maxHp = 1;
+        player.dmgUpgrade = 0;
+        player.fireRateUpgraded = 1;
+        player.speedUpgraded = 1;
+        upgradePool.forEach(upgrade => {
+            upgrade.currentLevel = 0;
+        })
+        gameOver = false;
+    }
 
     cloud.warningActive = false;
     cloud.lightningActive = false;
@@ -257,8 +409,6 @@ function reset() {
 
     deadTime = 0;
     defeatTime = 0;
-    gameOver = false;
-    victory = false;
     gameState = "game";
 }
 
@@ -296,9 +446,33 @@ document.addEventListener("keydown", (e) => {
             gameState = "paused";
         }
     }
-    if (e.code === "Enter" && (gameOver || victory || gameState === "title")) {
-        gameState = "game";
-        reset();
+    if (gameState == "upgrade") {
+        upgradeInput = e.code;
+        const index = parseInt(e.code.replace("Digit", ""), 10) - 1;
+        if (!Number.isNaN(index) && index >= 0 && index < chosen.length) {
+            applyUpgradeChoice(index);
+        }
+    }
+    if (e.code === "Enter") {
+        if (gameState == "deathscreen" || gameState == "title" || gameState == "upgrade") {
+            gameState = "game";
+            reset();
+        } else if (gameState == "victory") {
+            available = upgradePool.filter(upgrade =>
+                upgrade.maxLevel == undefined ||
+                upgrade.currentLevel < upgrade.maxLevel
+            );
+            chosen = [];
+            for (let i = 0; i < 3; i++) {
+                let index = Math.floor(Math.random() * available.length);
+                chosen.push(available[index]);
+                available.splice(index, 1);
+            }
+            gameState = "upgrade";
+        } else if (gameState == "gameover") {
+            reset();
+            gameState = "title";
+        }
     }
 });
 
