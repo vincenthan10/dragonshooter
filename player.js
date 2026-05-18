@@ -3,9 +3,10 @@ export default class Player {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.baseSpeedX = 0.2;
-        this.baseSpeedY = 0.38;
+        this.baseSpeedX = 0.22;
+        this.baseSpeedY = 0.42;
         this.speedMultiplier = 1;
+        this.speedUpgraded = 1;
         this.speedX = this.baseSpeedX;
         this.speedY = this.baseSpeedY;
         this.alive = true;
@@ -28,8 +29,10 @@ export default class Player {
 
         this.bullets = [];
         this.bulletDmg = 1;
+        this.dmgUpgrade = 0;
         this.baseShootingDelay = 900;
         this.fireRateMultiplier = 1;
+        this.fireRateUpgraded = 1;
         this.shootingDelay = this.baseShootingDelay;
         this.shootingTime = 0;
         this.fadeTime = 1;
@@ -37,6 +40,11 @@ export default class Player {
         this.ltnInvinc = false;
 
         this.collected = false;
+
+        this.maxLives = 3;
+        this.lives = this.maxLives;
+        this.coins = 0;
+        this.coinsThisRun = 0;
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -84,7 +92,10 @@ export default class Player {
                 this.bullets.splice(i, 1);
             }
         }
-        if (this.hp <= 0) this.alive = false;
+        if (this.hp <= 0) {
+            this.hp = 0;
+            this.alive = false;
+        }
 
         if (this.alive) {
             const dt = deltaTime / 1000;
@@ -94,9 +105,9 @@ export default class Player {
             this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier;
             this.width = this.imageWidth / mapWidth;
             this.height = this.imageHeight / mapHeight;
-            this.speedX = this.baseSpeedX * this.speedMultiplier;
-            this.speedY = this.baseSpeedY * this.speedMultiplier;
-            this.shootingDelay = this.baseShootingDelay * this.fireRateMultiplier;
+            this.speedX = this.baseSpeedX * this.speedMultiplier * this.speedUpgraded;
+            this.speedY = this.baseSpeedY * this.speedMultiplier * this.speedUpgraded;
+            this.shootingDelay = this.baseShootingDelay * this.fireRateMultiplier * this.fireRateUpgraded;
             let dx = 0;
             let dy = 0;
             if (keysPressed.has("KeyW") || keysPressed.has("ArrowUp")) dy -= this.speedY * dt;
@@ -149,9 +160,9 @@ export default class Player {
 
     shoot() {
         if (this.facing < 0) {
-            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg, this.sizeMultiplier));
+            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + this.dmgUpgrade, this.sizeMultiplier));
         } else {
-            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg, this.sizeMultiplier));
+            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg + this.dmgUpgrade, this.sizeMultiplier));
         }
     }
 }
