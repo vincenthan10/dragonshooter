@@ -43,6 +43,9 @@ coinImage.src = "images/coin.png";
 
 let shooting = false;
 
+let lastHit = 0;
+let bodyHitTime = 275;
+
 let deadTime = 0;
 let gameOverTime = 1000;
 let defeatTime = 0;
@@ -174,9 +177,11 @@ function update(deltaTime) {
         player.shootingTime = 0;
     }
     dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player);
-    if (dragon.alive && dragon.isColliding(player)) {
+    if (dragon.alive && dragon.isColliding(player) && lastHit >= bodyHitTime) {
         player.hp--;
+        lastHit = 0;
     }
+    lastHit += deltaTime;
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
         let fireball = dragon.fireballs[i];
         if (fireball.isColliding(player) && player.alive) {
@@ -407,6 +412,7 @@ function reset() {
     dragon.ltnInvinc = false;
     explosions.splice(0, explosions.length);
 
+    lastHit = 0;
     deadTime = 0;
     defeatTime = 0;
     gameState = "game";
