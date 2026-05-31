@@ -59,6 +59,13 @@ let deathButton = { x: 0, y: 0, w: 0, h: 0, hover: false };
 let gameOverButton = { x: 0, y: 0, w: 0, h: 0, hover: false };
 let victoryButton = { x: 0, y: 0, w: 0, h: 0, hover: false };
 let pauseButton = { x: 0, y: 0, w: 0, h: 0, hover: false };
+let gamePauseButton = { x: 0, y: 0, w: 0, h: 0, hover: false };
+let upgradeOptionButtons = [
+    { x: 0, y: 0, w: 0, h: 0, hover: false },
+    { x: 0, y: 0, w: 0, h: 0, hover: false },
+    { x: 0, y: 0, w: 0, h: 0, hover: false }
+];
+let upgradeContinueButton = { x: 0, y: 0, w: 0, h: 0, hover: false };
 
 let upgradePool = [
     {   
@@ -351,7 +358,7 @@ function draw() {
     }
 
     if (gameState == "victory") {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.7";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.fillStyle = "white";
@@ -379,12 +386,15 @@ function draw() {
     }
 
     if (gameState == "upgrade") {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.7";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
         ctx.fillText("Pick an Upgrade", canvas.width / 2 - 138, canvas.height / 2 - 100);
+        ctx.font = "16px Arial";
+        ctx.fillText("Press the button or the Enter key to continue", canvas.width / 2 - 153, canvas.height / 2 + 105);
+        
         ctx.font = "20px Arial";
         const optionOffsets = [-40, -10, 20];
 
@@ -392,8 +402,21 @@ function draw() {
             const y = canvas.height / 2 + optionOffsets[i];
             const cost = chosen[i].getCost();
             const affordable = player.coins >= cost;
-            const selected = upgradeInput == "Digit" + (i + 1);
+            const selected = upgradeInput == "Digit" + (i + 1) || upgradeOptionButtons[i].hover;
+            const btnW = Math.min(360, canvas.width * 0.44);
+            const btnH = 30;
+            const btnX = canvas.width / 2 - btnW / 2;
+            const btnY = y - 20;
+            upgradeOptionButtons[i].x = btnX;
+            upgradeOptionButtons[i].y = btnY;
+            upgradeOptionButtons[i].w = btnW;
+            upgradeOptionButtons[i].h = btnH;
+            if (upgradeOptionButtons[i].hover) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';   
+                ctx.fillRect(btnX, btnY, btnW, btnH);
+            }
 
+            ctx.fillStyle = "white";
             ctx.fillText("[" + (i + 1) + "] " + chosen[i].name, canvas.width / 2 - 107, y);
             ctx.drawImage(coinImage, canvas.width / 2 + 42, y - 25);
             ctx.fillStyle = selected && !affordable ? "red" : "white";
@@ -406,16 +429,50 @@ function draw() {
                 ctx.fillStyle = "white";
             }
         }
+
+        const cW = Math.min(100, canvas.width * 0.15);
+        const cH = 48;
+        const cX = canvas.width / 2 - cW / 2;
+        const cY = canvas.height / 2 + 140;
+        upgradeContinueButton.x = cX;
+        upgradeContinueButton.y = cY;
+        upgradeContinueButton.w = cW;
+        upgradeContinueButton.h = cH;
+        ctx.fillStyle = upgradeContinueButton.hover ? '#4CAF50' : '#2E8B57';
+        ctx.fillRect(cX, cY, cW, cH);
+        ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeRect(cX, cY, cW, cH);
+        ctx.fillStyle = 'white'; ctx.font = '18px Arial';
+        const continueLabel = 'Continue';
+        ctx.fillText(continueLabel, canvas.width / 2 - ctx.measureText(continueLabel).width / 2, cY + cH / 2 + 6);
     }
 
-    ctx.drawImage(coinImage, canvas.width - 68, 0);
-    ctx.fillStyle = "white";
+    ctx.drawImage(coinImage, canvas.width - 68, 20);
+    ctx.fillStyle = gameState == "game" ? "black" : "white";
     ctx.font = "14px Arial";
-    ctx.fillText(player.coins, canvas.width - 25, 22);
+    ctx.fillText(player.coins, canvas.width - 25, 42);
+    ctx.fillText("Lives: " + player.lives, 135, 42);
 
-    ctx.font = "14px Arial";
-    ctx.fillStyle = "black";
-    ctx.fillText("Lives: " + player.lives, 50, 50);
+    const pauseW = 100;
+    const pauseH = 32;
+    const pauseX = 10;
+    const pauseY = 21;
+    gamePauseButton.x = pauseX;
+    gamePauseButton.y = pauseY;
+    gamePauseButton.w = pauseW;
+    gamePauseButton.h = pauseH;
+    if (gameState === "game") {
+        ctx.fillStyle = gamePauseButton.hover ? '#4CAF50' : '#2E8B57';
+    } else {
+        ctx.fillStyle = '#555';
+    }
+    ctx.fillRect(pauseX, pauseY, pauseW, pauseH);
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(pauseX, pauseY, pauseW, pauseH);
+    ctx.fillStyle = 'white';
+    ctx.font = '16px Arial';
+    const pauseText = 'Pause';
+    ctx.fillText(pauseText, pauseX + pauseW / 2 - ctx.measureText(pauseText).width / 2, pauseY + pauseH / 2 + 6);
 }
 
 function reset() {
@@ -495,6 +552,7 @@ function reset() {
     deadTime = 0;
     defeatTime = 0;
     gameState = "game";
+    upgradeInput = 0;
 }
 
 let lastTimestamp = 0;
@@ -582,26 +640,56 @@ canvas.addEventListener("mousemove", (e) => {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
-    // Clear hovers
-    titleButton.hover = deathButton.hover = gameOverButton.hover = victoryButton.hover = pauseButton.hover = false;
-    let active = null;
-    if (gameState === "title") active = titleButton;
-    else if (gameState === "deathscreen") active = deathButton;
-    else if (gameState === "gameover") active = gameOverButton;
-    else if (gameState === "victory") active = victoryButton;
-    else if (gameState === "paused") active = pauseButton;
+    // Clear all hover states
+    titleButton.hover = deathButton.hover = gameOverButton.hover = victoryButton.hover = pauseButton.hover = gamePauseButton.hover = false;
+    upgradeOptionButtons.forEach(btn => btn.hover = false);
+    upgradeContinueButton.hover = false;
 
-    if (active) {
-        const over = mx >= active.x && mx <= active.x + active.w && my >= active.y && my <= active.y + active.h;
-        active.hover = over;
-        canvas.style.cursor = over ? 'pointer' : 'default';
-    } else {
-        canvas.style.cursor = 'default';
+    let anyHover = false;
+    if (gameState === "title") {
+        const over = mx >= titleButton.x && mx <= titleButton.x + titleButton.w && my >= titleButton.y && my <= titleButton.y + titleButton.h;
+        titleButton.hover = over;
+        anyHover = over;
+    } else if (gameState === "deathscreen") {
+        const over = mx >= deathButton.x && mx <= deathButton.x + deathButton.w && my >= deathButton.y && my <= deathButton.y + deathButton.h;
+        deathButton.hover = over;
+        anyHover = over;
+    } else if (gameState === "gameover") {
+        const over = mx >= gameOverButton.x && mx <= gameOverButton.x + gameOverButton.w && my >= gameOverButton.y && my <= gameOverButton.y + gameOverButton.h;
+        gameOverButton.hover = over;
+        anyHover = over;
+    } else if (gameState === "victory") {
+        const over = mx >= victoryButton.x && mx <= victoryButton.x + victoryButton.w && my >= victoryButton.y && my <= victoryButton.y + victoryButton.h;
+        victoryButton.hover = over;
+        anyHover = over;
+    } else if (gameState === "paused") {
+        const over = mx >= pauseButton.x && mx <= pauseButton.x + pauseButton.w && my >= pauseButton.y && my <= pauseButton.y + pauseButton.h;
+        pauseButton.hover = over;
+        anyHover = over;
+    } else if (gameState === "game") {
+        const over = mx >= gamePauseButton.x && mx <= gamePauseButton.x + gamePauseButton.w && my >= gamePauseButton.y && my <= gamePauseButton.y + gamePauseButton.h;
+        gamePauseButton.hover = over;
+        anyHover = over;
+    } else if (gameState === "upgrade") {
+        upgradeOptionButtons.forEach((btn) => {
+            const over = mx >= btn.x && mx <= btn.x + btn.w && my >= btn.y && my <= btn.y + btn.h;
+            if (over) {
+                btn.hover = true;
+                anyHover = true;
+            }
+        });
+        const overContinue = mx >= upgradeContinueButton.x && mx <= upgradeContinueButton.x + upgradeContinueButton.w && my >= upgradeContinueButton.y && my <= upgradeContinueButton.y + upgradeContinueButton.h;
+        upgradeContinueButton.hover = overContinue;
+        anyHover = anyHover || overContinue;
     }
+
+    canvas.style.cursor = anyHover ? 'pointer' : 'default';
 });
 
 canvas.addEventListener("mouseleave", () => {
     titleButton.hover = deathButton.hover = gameOverButton.hover = victoryButton.hover = pauseButton.hover = false;
+    upgradeOptionButtons.forEach(btn => btn.hover = false);
+    upgradeContinueButton.hover = false;
     canvas.style.cursor = 'default';
 });
 
@@ -629,6 +717,19 @@ canvas.addEventListener("mousedown", (e) => {
         gameState = "upgrade";
     } else if (gameState === "paused" && pauseButton.hover) {
         gameState = "game";
+    } else if (gameState === "game" && gamePauseButton.hover) {
+        gameState = "paused";
+    } else if (gameState === "upgrade") {
+        for (let i = 0; i < upgradeOptionButtons.length; i++) {
+            if (upgradeOptionButtons[i].hover) {
+                applyUpgradeChoice(i);
+                return;
+            }
+        }
+        if (upgradeContinueButton.hover) {
+            gameState = "game";
+            reset();
+        }
     }
 });
 
@@ -638,35 +739,49 @@ canvas.addEventListener("touchstart", (e) => {
     const rect = canvas.getBoundingClientRect();
     const mx = touch.clientX - rect.left;
     const my = touch.clientY - rect.top;
-    // determine active button for current state
-    let active = null;
-    if (gameState === "title") active = titleButton;
-    else if (gameState === "deathscreen") active = deathButton;
-    else if (gameState === "gameover") active = gameOverButton;
-    else if (gameState === "victory") active = victoryButton;
-    else if (gameState === "paused") active = pauseButton;
-
-    if (active) {
-        const over = mx >= active.x && mx <= active.x + active.w && my >= active.y && my <= active.y + active.h;
+    if (gameState === "title") {
+        const over = mx >= titleButton.x && mx <= titleButton.x + titleButton.w && my >= titleButton.y && my <= titleButton.y + titleButton.h;
+        if (over) { e.preventDefault(); gameState = "game"; reset(); }
+    } else if (gameState === "deathscreen") {
+        const over = mx >= deathButton.x && mx <= deathButton.x + deathButton.w && my >= deathButton.y && my <= deathButton.y + deathButton.h;
+        if (over) { e.preventDefault(); gameState = "game"; reset(); }
+    } else if (gameState === "gameover") {
+        const over = mx >= gameOverButton.x && mx <= gameOverButton.x + gameOverButton.w && my >= gameOverButton.y && my <= gameOverButton.y + gameOverButton.h;
+        if (over) { e.preventDefault(); reset(); gameState = "title"; }
+    } else if (gameState === "victory") {
+        const over = mx >= victoryButton.x && mx <= victoryButton.x + victoryButton.w && my >= victoryButton.y && my <= victoryButton.y + victoryButton.h;
         if (over) {
             e.preventDefault();
-            if (gameState === "title") { gameState = "game"; reset(); }
-            else if (gameState === "deathscreen") { gameState = "game"; reset(); }
-            else if (gameState === "gameover") { reset(); gameState = "title"; }
-            else if (gameState === "victory") {
-                available = upgradePool.filter(upgrade =>
-                    upgrade.maxLevel == undefined ||
-                    upgrade.currentLevel < upgrade.maxLevel
-                );
-                chosen = [];
-                for (let i = 0; i < 3; i++) {
-                    let index = Math.floor(Math.random() * available.length);
-                    chosen.push(available[index]);
-                    available.splice(index, 1);
-                }
-                gameState = "upgrade";
-            } else if (gameState === "paused") { gameState = "game"; }
+            available = upgradePool.filter(upgrade =>
+                upgrade.maxLevel == undefined ||
+                upgrade.currentLevel < upgrade.maxLevel
+            );
+            chosen = [];
+            for (let i = 0; i < 3; i++) {
+                let index = Math.floor(Math.random() * available.length);
+                chosen.push(available[index]);
+                available.splice(index, 1);
+            }
+            gameState = "upgrade";
         }
+    } else if (gameState === "paused") {
+        const over = mx >= pauseButton.x && mx <= pauseButton.x + pauseButton.w && my >= pauseButton.y && my <= pauseButton.y + pauseButton.h;
+        if (over) { e.preventDefault(); gameState = "game"; }
+    } else if (gameState === "game") {
+        const over = mx >= gamePauseButton.x && mx <= gamePauseButton.x + gamePauseButton.w && my >= gamePauseButton.y && my <= gamePauseButton.y + gamePauseButton.h;
+        if (over) { e.preventDefault(); gameState = "paused"; }
+    } else if (gameState === "upgrade") {
+        for (let i = 0; i < upgradeOptionButtons.length; i++) {
+            const btn = upgradeOptionButtons[i];
+            const over = mx >= btn.x && mx <= btn.x + btn.w && my >= btn.y && my <= btn.y + btn.h;
+            if (over) {
+                e.preventDefault();
+                applyUpgradeChoice(i);
+                return;
+            }
+        }
+        const overContinue = mx >= upgradeContinueButton.x && mx <= upgradeContinueButton.x + upgradeContinueButton.w && my >= upgradeContinueButton.y && my <= upgradeContinueButton.y + upgradeContinueButton.h;
+        if (overContinue) { e.preventDefault(); gameState = "game"; reset(); }
     }
 });
 requestAnimationFrame(gameLoop);
