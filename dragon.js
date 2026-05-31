@@ -30,7 +30,7 @@ export default class Dragon {
         this.dirY = 0;
 
         this.charging = false;
-        this.restTime = Math.random() * 2000 + 4000;
+        this.restTime = Math.random() * 1500 + 3000;
         this.chargeTime = Math.random() * 750 + 2750;
         this.moveTime = 0;
         this.moveMultiplier = 1;
@@ -126,17 +126,17 @@ export default class Dragon {
             this.width = this.imageWidth / mapWidth;
             this.height = this.imageHeight / mapHeight;
             if (this.phase == 1) {
-                this.restTime = (Math.random() * 2000 + 4000) * this.moveMultiplier;
+                this.restTime = (Math.random() * 1500 + 3000) * this.moveMultiplier;
                 this.chargeTime = Math.random() * 750 + 2750;
                 this.shootingDelay = 2500 * this.fireRateMultiplier;
                 this.baseSpeed = 0.12;
             } else if (this.phase == 2) {
-                this.restTime = (Math.random() * 1750 + 3250) * this.moveMultiplier;
+                this.restTime = (Math.random() * 1300 + 2700) * this.moveMultiplier;
                 this.chargeTime = Math.random() * 1000 + 3000;
                 this.shootingDelay = 2200 * this.fireRateMultiplier;
                 this.baseSpeed = 0.132;
             } else {
-                this.restTime = (Math.random() * 1000 + 2500) * this.moveMultiplier;
+                this.restTime = (Math.random() * 900 + 2100) * this.moveMultiplier;
                 this.chargeTime = Math.random() * 1500 + 3500;
                 this.shootingDelay = 1750 * this.fireRateMultiplier;
                 this.baseSpeed = 0.148;
@@ -151,7 +151,7 @@ export default class Dragon {
             this.moveTime += deltaTime;
             if (!this.charging && this.moveTime >= this.restTime) {
                 let dx = target.x + target.width / 2 - this.x - this.width / 2;
-                let dy = target.y + target.height / 2 - this.y - this.height / 2;
+                let dy = target.y + target.height / 2 - this.y - this.height / 3;
                 let dist = Math.sqrt(dx * dx + dy * dy);
                 this.dirX = dx / dist;
                 this.dirY = dy / dist;
