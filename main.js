@@ -125,6 +125,8 @@ let available = [];
 let chosen = [];
 let upgradeInput = 0;
 
+let level = 1;
+
 function applyUpgradeChoice(index) {
     if (index < 0 || index >= chosen.length) {
         return;
@@ -147,17 +149,19 @@ function update(deltaTime) {
         return;
     } 
     //console.log(explosions);
-    cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
-    cloud.collisionHandler(player, mapWidth);
-    cloud.collisionHandler(dragon, mapWidth);
-    mystery.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
-    if (mystery.isColliding(player)) {
-        player.collected = true;
-        mystery.playerEffect(player, true, 0);
-    }
-    if (mystery.isColliding(dragon)) {
-        dragon.collected = true;
-        mystery.dragonEffect(dragon, true, 0);
+    if (level >= 2) {
+        cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
+        cloud.collisionHandler(player, mapWidth);
+        cloud.collisionHandler(dragon, mapWidth);
+        mystery.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
+        if (mystery.isColliding(player)) {
+            player.collected = true;
+            mystery.playerEffect(player, true, 0);
+        }
+        if (mystery.isColliding(dragon)) {
+            dragon.collected = true;
+            mystery.dragonEffect(dragon, true, 0);
+        }
     }
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
     if (!dragon.alive && !dragon.fading) {
@@ -190,7 +194,7 @@ function update(deltaTime) {
         player.shoot();
         player.shootingTime = 0;
     }
-    dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player);
+    dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player, level);
     if (dragon.alive && dragon.isColliding(player) && lastHit >= bodyHitTime) {
         player.hp--;
         lastHit = 0;
@@ -238,9 +242,11 @@ function draw() {
     ctx.fillStyle = "skyblue";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     player.draw(ctx, mapWidth, mapHeight);
-    dragon.draw(ctx, mapWidth, mapHeight);
-    cloud.draw(ctx, mapWidth, mapHeight);
-    mystery.draw(ctx, mapWidth, mapHeight);
+    dragon.draw(ctx, mapWidth, mapHeight, level);
+    if (level >= 2) {
+        cloud.draw(ctx, mapWidth, mapHeight);
+        mystery.draw(ctx, mapWidth, mapHeight);
+    }
     explosions.forEach(e => e.draw(ctx, mapWidth, mapHeight));
 
     if (gameState === "title") {
@@ -494,6 +500,7 @@ function reset() {
     player.sizeMultiplier = 1;
     player.ltnInvinc = false;
     if (gameOver) {
+        level = 1;
         player.lives = player.maxLives;
         player.coins = 0;
         player.maxHp = 1;
@@ -534,7 +541,8 @@ function reset() {
     dragon.alive = true;
     dragon.facing = 1;
     dragon.fadeTime = 1;
-    dragon.hp = dragon.maxHp;
+    dragon.hpChooser = Math.min(level - 1, dragon.maxHp.length - 1);
+    dragon.hp = dragon.maxHp[dragon.hpChooser];
     dragon.phase = 1;
     dragon.charging = false;
     dragon.moveTime = 0;
@@ -597,8 +605,12 @@ document.addEventListener("keydown", (e) => {
         }
     }
     if (e.code === "Enter") {
-        if (gameState == "deathscreen" || gameState == "title" || gameState == "upgrade") {
+        if (gameState == "deathscreen" || gameState == "title") {
             gameState = "game";
+            reset();
+        } else if (gameState == "upgrade") {
+            gameState = "game";
+            level++;
             reset();
         } else if (gameState == "victory") {
             available = upgradePool.filter(upgrade =>
@@ -728,6 +740,7 @@ canvas.addEventListener("mousedown", (e) => {
         }
         if (upgradeContinueButton.hover) {
             gameState = "game";
+            level++;
             reset();
         }
     }
