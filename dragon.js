@@ -8,8 +8,9 @@ export default class Dragon {
         this.yMultiplier = 1.2;
         this.speedMultiplier = 1;
         this.facing = 1; // - = left, + = right
-        this.maxHp = 40;
-        this.hp = this.maxHp;
+        this.hpChooser = 0;
+        this.maxHp = [25, 40];
+        this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
         this.fading = false;
@@ -49,7 +50,7 @@ export default class Dragon {
         this.collected = false;
     }
 
-    draw(ctx, mapWidth, mapHeight) {
+    draw(ctx, mapWidth, mapHeight, level) {
         ctx.save();
         ctx.globalAlpha = this.fadeTime;
         if (this.alive || this.fading) {
@@ -73,7 +74,7 @@ export default class Dragon {
             ctx.fillRect(barX, barY, barWidth, barHeight);
 
             ctx.fillStyle = "limegreen";
-            ctx.fillRect(barX, barY, (this.hp / this.maxHp) * barWidth, barHeight);
+            ctx.fillRect(barX, barY, (this.hp / this.maxHp[this.hpChooser]) * barWidth, barHeight);
 
             if (this.phase == 1) {
                 ctx.strokeStyle = "green";
@@ -92,7 +93,7 @@ export default class Dragon {
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillStyle = "black";
-            ctx.fillText(this.hp + "/" + this.maxHp, centerX, centerY);
+            ctx.fillText(this.hp + "/" + this.maxHp[this.hpChooser], centerX, centerY);
         }
 
 
@@ -101,7 +102,7 @@ export default class Dragon {
         ctx.restore();
     }
 
-    update(deltaTime, mapWidth, mapHeight, canvas, baseWidth, baseHeight, target) {
+    update(deltaTime, mapWidth, mapHeight, canvas, baseWidth, baseHeight, target, level) {
         this.fireballs.forEach(f => f.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
         for (let i = this.fireballs.length - 1; i >= 0; i--) {
             if (this.fireballs[i].x <= -0.1 || this.fireballs[i].x + this.fireballs[i].imageWidth / mapWidth >= 1.1) {
@@ -112,9 +113,9 @@ export default class Dragon {
         if (this.hp <= 0) {
             this.hp = 0;
             this.alive = false;
-        } else if (this.hp >= this.maxHp * 0.65) {
+        } else if (this.hp >= this.maxHp[this.hpChooser] * 0.65) {
             this.phase = 1;
-        } else if (this.hp >= this.maxHp * 0.3 && this.hp < this.maxHp * 0.65) {
+        } else if (this.hp >= this.maxHp[this.hpChooser] * 0.3 && this.hp < this.maxHp[this.hpChooser] * 0.65) {
             this.phase = 2;
         } else {
             this.phase = 3;
