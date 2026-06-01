@@ -155,7 +155,7 @@ export default class MysteryBox {
             case 5:
                 if (collected) {
                     let heal = Math.round(Math.random() * 12 + 6);
-                    dragon.hp = Math.min(dragon.hp + heal, dragon.maxHp);
+                    dragon.hp = Math.min(dragon.hp + heal, dragon.maxHp[dragon.hpChooser]);
                 }
                 break;
         }
