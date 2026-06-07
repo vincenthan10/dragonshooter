@@ -452,11 +452,12 @@ function draw() {
         ctx.fillText(continueLabel, canvas.width / 2 - ctx.measureText(continueLabel).width / 2, cY + cH / 2 + 6);
     }
 
-    ctx.drawImage(coinImage, canvas.width - 68, 20);
+    ctx.drawImage(coinImage, canvas.width - 73, 20);
     ctx.fillStyle = gameState == "game" ? "black" : "white";
     ctx.font = "14px Arial";
-    ctx.fillText(player.coins, canvas.width - 25, 42);
+    ctx.fillText(player.coins, canvas.width - 30, 42);
     ctx.fillText("Lives: " + player.lives, 135, 42);
+    ctx.fillText("Level: " + level, canvas.width - 135, 42);
 
     const pauseW = 100;
     const pauseH = 32;
