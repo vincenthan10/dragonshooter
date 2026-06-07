@@ -9,7 +9,7 @@ export default class Dragon {
         this.speedMultiplier = 1;
         this.facing = 1; // - = left, + = right
         this.hpChooser = 0;
-        this.maxHp = [25, 40];
+        this.maxHp = [25, 40, 60];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
