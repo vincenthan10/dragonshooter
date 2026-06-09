@@ -9,11 +9,19 @@ export default class Dragon {
         this.speedMultiplier = 1;
         this.facing = 1; // - = left, + = right
         this.hpChooser = 0;
-        this.maxHp = [25, 40, 60];
+        this.rewards = [
+            Math.round(Math.random() * 11 + 26), 
+            Math.round(Math.random() * 13 + 43), 
+            Math.round(Math.random() * 20 + 62), 
+            Math.round(Math.random() * 15 + 143)];
+        this.reward = this.rewards[this.hpChooser];
+        this.maxHp = [25, 40, 60, 100];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
         this.fading = false;
+        this.boss = false;
+        this.bossMultiplier = 1;
 
         this.img = new Image();
         this.img.src = "images/greendragon.png";
@@ -122,24 +130,29 @@ export default class Dragon {
         }
 
         if (this.alive) {
-            this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier;
-            this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier;
+            if (this.boss) {
+                this.bossMultiplier = 1.25;
+            } else {
+                this.bossMultiplier = 1;
+            }
+            this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier * this.bossMultiplier;
+            this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier * this.bossMultiplier;
             this.width = this.imageWidth / mapWidth;
             this.height = this.imageHeight / mapHeight;
             if (this.phase == 1) {
-                this.restTime = (Math.random() * 1500 + 3000) * this.moveMultiplier;
-                this.chargeTime = Math.random() * 750 + 2750;
-                this.shootingDelay = 2500 * this.fireRateMultiplier;
+                this.restTime = (Math.random() * 1500 + 3000) * this.moveMultiplier / this.bossMultiplier;
+                this.chargeTime = (Math.random() * 750 + 2750) * this.bossMultiplier;
+                this.shootingDelay = 2500 * this.fireRateMultiplier / this.bossMultiplier;
                 this.baseSpeed = 0.12;
             } else if (this.phase == 2) {
-                this.restTime = (Math.random() * 1300 + 2700) * this.moveMultiplier;
-                this.chargeTime = Math.random() * 1000 + 3000;
-                this.shootingDelay = 2200 * this.fireRateMultiplier;
+                this.restTime = (Math.random() * 1300 + 2700) * this.moveMultiplier / this.bossMultiplier;
+                this.chargeTime = (Math.random() * 1000 + 3000) * this.bossMultiplier;
+                this.shootingDelay = 2200 * this.fireRateMultiplier / this.bossMultiplier;
                 this.baseSpeed = 0.132;
             } else {
-                this.restTime = (Math.random() * 900 + 2100) * this.moveMultiplier;
-                this.chargeTime = Math.random() * 1500 + 3500;
-                this.shootingDelay = 1750 * this.fireRateMultiplier;
+                this.restTime = (Math.random() * 900 + 2100) * this.moveMultiplier / this.bossMultiplier;
+                this.chargeTime = (Math.random() * 1500 + 3500) * this.bossMultiplier;
+                this.shootingDelay = 1750 * this.fireRateMultiplier / this.bossMultiplier;
                 this.baseSpeed = 0.148;
             }
             if (this.shooting) {
@@ -201,9 +214,9 @@ export default class Dragon {
 
     shoot() {
         if (this.facing < 0) {
-            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg, this.sizeMultiplier));
+            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg, this.sizeMultiplier * this.bossMultiplier));
         } else {
-            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg, this.sizeMultiplier));
+            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg, this.sizeMultiplier * this.bossMultiplier));
         }
     }
 }
