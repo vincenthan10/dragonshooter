@@ -169,7 +169,7 @@ function update(deltaTime) {
         defeatTime += deltaTime;
         if (defeatTime >= victoryTime) {
             gameState = "victory";
-            player.coins += 50;
+            player.coins += dragon.reward;
             player.coinsThisRun = 0;
             return;
         }
@@ -373,7 +373,7 @@ function draw() {
 
         ctx.drawImage(coinImage, canvas.width / 2 - 33, canvas.height / 2 - 42);
         ctx.font = "14px Arial";
-        ctx.fillText("+50", canvas.width / 2 + 12, canvas.height / 2 - 20);
+        ctx.fillText("+" + dragon.reward, canvas.width / 2 + 12, canvas.height / 2 - 20);
 
         ctx.font = "16px Arial";
         ctx.fillText("Press the button or the Enter key to continue", canvas.width / 2 - 153, canvas.height / 2 + 60);
@@ -544,6 +544,7 @@ function reset() {
     dragon.fadeTime = 1;
     dragon.hpChooser = Math.min(level - 1, dragon.maxHp.length - 1);
     dragon.hp = dragon.maxHp[dragon.hpChooser];
+    dragon.reward = dragon.rewards[dragon.hpChooser];
     dragon.phase = 1;
     dragon.charging = false;
     dragon.moveTime = 0;
@@ -742,6 +743,11 @@ canvas.addEventListener("mousedown", (e) => {
         if (upgradeContinueButton.hover) {
             gameState = "game";
             level++;
+            if (level == 4) {
+                dragon.boss = true;
+            } else {
+                dragon.boss = false;
+            }
             reset();
         }
     }
