@@ -133,13 +133,17 @@ function applyUpgradeChoice(index) {
     }
 
     const upgrade = chosen[index];
+    if (!upgrade) {
+        return;
+    }
+
     const cost = upgrade.getCost();
 
     if (player.coins >= cost) {
         player.coins -= cost;
         upgrade.apply(player);
         upgrade.currentLevel++;
-        chosen.splice(index, 1);
+        chosen[index] = null;
         upgradeInput = 0;
     }
 }
@@ -369,7 +373,11 @@ function draw() {
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        ctx.fillText("Dragon Defeated", canvas.width / 2 - 138, canvas.height / 2 - 60);
+        if (dragon.boss) {
+            ctx.fillText("Boss Defeated", canvas.width / 2 - 123, canvas.height / 2 - 60);
+        } else {
+            ctx.fillText("Dragon Defeated", canvas.width / 2 - 138, canvas.height / 2 - 60);
+        }
 
         ctx.drawImage(coinImage, canvas.width / 2 - 33, canvas.height / 2 - 42);
         ctx.font = "14px Arial";
@@ -406,9 +414,10 @@ function draw() {
 
         for (let i = 0; i < chosen.length; i++) {
             const y = canvas.height / 2 + optionOffsets[i];
-            const cost = chosen[i].getCost();
-            const affordable = player.coins >= cost;
-            const selected = upgradeInput == "Digit" + (i + 1) || upgradeOptionButtons[i].hover;
+            const slot = chosen[i];
+            const cost = slot ? slot.getCost() : 0;
+            const affordable = slot ? player.coins >= cost : false;
+            const selected = slot && (upgradeInput == "Digit" + (i + 1) || upgradeOptionButtons[i].hover);
             const btnW = Math.min(360, canvas.width * 0.44);
             const btnH = 30;
             const btnX = canvas.width / 2 - btnW / 2;
@@ -417,19 +426,24 @@ function draw() {
             upgradeOptionButtons[i].y = btnY;
             upgradeOptionButtons[i].w = btnW;
             upgradeOptionButtons[i].h = btnH;
-            if (upgradeOptionButtons[i].hover) {
+            if (slot && upgradeOptionButtons[i].hover) {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';   
                 ctx.fillRect(btnX, btnY, btnW, btnH);
             }
 
             ctx.fillStyle = "white";
-            ctx.fillText("[" + (i + 1) + "] " + chosen[i].name, canvas.width / 2 - 107, y);
-            ctx.drawImage(coinImage, canvas.width / 2 + 42, y - 25);
-            ctx.fillStyle = selected && !affordable ? "red" : "white";
-            ctx.fillText(cost, canvas.width / 2 + 85, y);
+            if (slot) {
+                ctx.fillText("[" + (i + 1) + "] " + slot.name, canvas.width / 2 - 107, y);
+                ctx.drawImage(coinImage, canvas.width / 2 + 42, y - 25);
+                ctx.fillStyle = selected && !affordable ? "red" : "white";
+                ctx.fillText(cost, canvas.width / 2 + 85, y);
+            } else {
+                ctx.fillStyle = "gray";
+                ctx.fillText("[" + (i + 1) + "] Purchased", canvas.width / 2 - 107, y);
+            }
             ctx.fillStyle = "white";
 
-            if (selected && !affordable) {
+            if (slot && selected && !affordable) {
                 ctx.fillStyle = "red";
                 ctx.fillText("Not enough coins", canvas.width / 2 - 72, canvas.height / 2 + 65);
                 ctx.fillStyle = "white";
@@ -511,6 +525,11 @@ function reset() {
         upgradePool.forEach(upgrade => {
             upgrade.currentLevel = 0;
         })
+        dragon.rewards = [
+            Math.round(Math.random() * 11 + 26), 
+            Math.round(Math.random() * 13 + 43), 
+            Math.round(Math.random() * 20 + 62), 
+            Math.round(Math.random() * 15 + 143)];
         gameOver = false;
     }
 
