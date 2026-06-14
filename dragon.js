@@ -27,6 +27,10 @@ export default class Dragon {
         this.img.src = "images/greendragon.png";
         this.imgL = new Image();
         this.imgL.src = "images/greendragonL.png";
+        this.bossImg = new Image();
+        this.bossImg.src = "images/bossdragon.png";
+        this.bossImgL = new Image();
+        this.bossImgL.src = "images/bossdragonL.png";
         this.BASEIMGWIDTH = 210;
         this.BASEIMGHEIGHT = 233;
         this.imageWidth = this.BASEIMGWIDTH;
@@ -63,9 +67,9 @@ export default class Dragon {
         ctx.globalAlpha = this.fadeTime;
         if (this.alive || this.fading) {
             if (this.facing > 0) {
-                ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+                ctx.drawImage(this.boss ? this.bossImg : this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             } else {
-                ctx.drawImage(this.imgL, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+                ctx.drawImage(this.boss ? this.bossImgL : this.imgL, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             }
 
             if (this.collected && this.alive) {
