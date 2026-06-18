@@ -525,6 +525,7 @@ function reset() {
         upgradePool.forEach(upgrade => {
             upgrade.currentLevel = 0;
         })
+        dragon.boss = false;
         dragon.rewards = [
             Math.round(Math.random() * 11 + 26), 
             Math.round(Math.random() * 13 + 43), 
@@ -575,6 +576,12 @@ function reset() {
     dragon.fireRateMultiplier = 1;
     dragon.fireDmg = 1;
     dragon.ltnInvinc = false;
+    dragon.abilityActive = false;
+    dragon.warningActive = false;
+    dragon.abilityCooldown = 0;
+    dragon.abilityWarning = 0;
+    dragon.abilityDuration = 0;
+    dragon.spawnCooldown = 0;
     explosions.splice(0, explosions.length);
 
     lastHit = 0;
