@@ -60,6 +60,17 @@ export default class Dragon {
         this.ltnInvinc = false;
 
         this.collected = false;
+
+        this.abilityActive = false;
+        this.warningActive = false;
+        this.abilityWarning = 0;
+        this.warningTime = 1500;
+        this.abilityCooldown = 0;
+        this.cooldownTime = Math.random() * 12500 + 15000;
+        this.abilityDuration = 0;
+        this.durationTime = Math.random() * 10000 + 8000;
+        this.spawnCooldown = 0;
+        this.spawnTime = Math.random() * 300 + 900;
     }
 
     draw(ctx, mapWidth, mapHeight, level) {
@@ -74,6 +85,16 @@ export default class Dragon {
 
             if (this.collected && this.alive) {
                 ctx.strokeStyle = "#9c7003";
+                ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+            }
+            if (this.warningActive) {
+                ctx.strokeStyle = "rgb(151, 134, 5)";
+                ctx.lineWidth = 4;
+                ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+            }
+            if (this.abilityActive) {
+                ctx.strokeStyle = "rgb(151, 134, 5)";
+                ctx.lineWidth = 2;
                 ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             }
             // HP bar
@@ -136,8 +157,41 @@ export default class Dragon {
         if (this.alive) {
             if (this.boss) {
                 this.bossMultiplier = 1.25;
+                if (!this.warningActive && !this.abilityActive) {
+                    this.abilityCooldown += deltaTime;
+            
+                    if (this.abilityCooldown >= this.cooldownTime) {
+                        this.warningActive = true;
+                        this.abilityCooldown = 0;
+                        this.cooldownTime = Math.random() * 12500 + 15000;
+                    }
+                }
+                if (this.warningActive) {
+                    this.abilityWarning += deltaTime;
+
+                    if (this.abilityWarning >= this.warningTime) {
+                        this.warningActive = false;
+                        this.abilityActive = true;
+                        this.abilityWarning = 0;
+                    }
+                }
+                if (this.abilityActive) {
+                    this.abilityDuration += deltaTime;
+
+                    if (this.abilityDuration >= this.durationTime) {
+                        this.abilityActive = false;
+                        this.abilityDuration = 0;
+                        this.durationTime = Math.random() * 10000 + 8000;
+                    }
+                }
             } else {
                 this.bossMultiplier = 1;
+            }
+            if (this.warningActive || this.abilityActive) {
+                this.shooting = false;
+                this.charging = false;
+            } else {
+                this.shooting = true;
             }
             this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier * this.bossMultiplier;
             this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier * this.bossMultiplier;
@@ -167,7 +221,7 @@ export default class Dragon {
                 }
             }
             this.moveTime += deltaTime;
-            if (!this.charging && this.moveTime >= this.restTime) {
+            if (!this.charging && !this.warningActive && !this.abilityActive && this.moveTime >= this.restTime) {
                 let dx = target.x + target.width / 2 - this.x - this.width / 2;
                 let dy = target.y + target.height / 2 - this.y - this.height / 3;
                 let dist = Math.sqrt(dx * dx + dy * dy);
