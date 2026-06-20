@@ -1,4 +1,5 @@
 import Fireball from "./fireball.js";
+import Meteorite from "./meteorite.js";
 export default class Dragon {
     constructor(x, y) {
         this.x = x;
@@ -69,8 +70,10 @@ export default class Dragon {
         this.cooldownTime = Math.random() * 12500 + 15000;
         this.abilityDuration = 0;
         this.durationTime = Math.random() * 10000 + 8000;
-        this.spawnCooldown = 0;
         this.spawnTime = Math.random() * 300 + 900;
+        this.spawnCooldown = this.spawnTime;
+        this.spawnPosition = 0;
+        this.meteorites = [];
     }
 
     draw(ctx, mapWidth, mapHeight, level) {
@@ -132,6 +135,7 @@ export default class Dragon {
 
         ctx.globalAlpha = 1;
         this.fireballs.forEach(f => f.draw(ctx, mapWidth, mapHeight));
+        this.meteorites.forEach(m => m.draw(ctx, mapWidth, mapHeight));
         ctx.restore();
     }
 
@@ -140,6 +144,12 @@ export default class Dragon {
         for (let i = this.fireballs.length - 1; i >= 0; i--) {
             if (this.fireballs[i].x <= -0.1 || this.fireballs[i].x + this.fireballs[i].imageWidth / mapWidth >= 1.1) {
                 this.fireballs.splice(i, 1);
+            }
+        }
+        this.meteorites.forEach(m => m.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
+        for (let i = this.meteorites.length - 1; i >= 0; i--) {
+            if (this.meteorites[i].y >= 1.1) {
+                this.meteorites.splice(i, 1);
             }
         }
 
@@ -176,6 +186,14 @@ export default class Dragon {
                     }
                 }
                 if (this.abilityActive) {
+                    this.spawnCooldown += deltaTime;
+
+                    if (this.spawnCooldown >= this.spawnTime) {
+                        this.strikePosition = Math.random() * 0.90 + 0.05;
+                        this.meteorites.push(new Meteorite(this.strikePosition, -0.1, this.fireDmg));
+                        this.spawnCooldown = 0;
+                        this.spawnTime = Math.random() * 300 + 900;
+                    }
                     this.abilityDuration += deltaTime;
 
                     if (this.abilityDuration >= this.durationTime) {
