@@ -81,7 +81,7 @@ let upgradePool = [
     {
         name: "Speed Up",
         baseCost: 30,
-        apply: (player) => player.speedUpgraded *= 1.1,
+        apply: (player) => player.speedUpgraded *= 1.12,
         maxLevel: 5,
         currentLevel: 0,
         getCost() {
@@ -91,7 +91,7 @@ let upgradePool = [
     {
         name: "Fire Rate Up",
         baseCost: 50,
-        apply: (player) => player.fireRateUpgraded *= 0.9,
+        apply: (player) => player.fireRateUpgraded *= 0.88,
         maxLevel: 5,
         currentLevel: 0,
         getCost() {
@@ -228,6 +228,16 @@ function update(deltaTime) {
             dragon.hp -= bullet.damage;
             explosions.push(new Explosion(bullet.x, bullet.y - 0.05, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250));
             player.bullets.splice(i, 1);
+        }
+    }
+    if (dragon.boss) {
+        for (let i = dragon.meteorites.length - 1; i >= 0; i--) {
+            let meteorite = dragon.meteorites[i];
+            if (meteorite.isColliding(player) && player.alive) {
+                player.hp -= meteorite.damage;
+                explosions.push(new Explosion(meteorite.x - 0.05, meteorite.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400));
+                dragon.meteorites.splice(i, 1);
+            }
         }
     }
     explosions.forEach(e => e.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT));
@@ -583,6 +593,12 @@ function reset() {
     dragon.abilityDuration = 0;
     dragon.spawnCooldown = 0;
     explosions.splice(0, explosions.length);
+    if (level == 4) {
+        dragon.boss = true;
+    } else {
+        dragon.boss = false;
+    }
+    dragon.meteorites = [];
 
     lastHit = 0;
     deadTime = 0;
@@ -769,11 +785,6 @@ canvas.addEventListener("mousedown", (e) => {
         if (upgradeContinueButton.hover) {
             gameState = "game";
             level++;
-            if (level == 4) {
-                dragon.boss = true;
-            } else {
-                dragon.boss = false;
-            }
             reset();
         }
     }
