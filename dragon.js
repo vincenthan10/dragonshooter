@@ -166,7 +166,7 @@ export default class Dragon {
 
         if (this.alive) {
             if (this.boss) {
-                this.bossMultiplier = 1.25;
+                this.bossMultiplier = 1.2;
                 if (!this.warningActive && !this.abilityActive) {
                     this.abilityCooldown += deltaTime;
             
