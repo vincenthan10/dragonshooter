@@ -235,9 +235,18 @@ function update(deltaTime) {
             let meteorite = dragon.meteorites[i];
             if (meteorite.isColliding(player) && player.alive) {
                 player.hp -= meteorite.damage;
-                explosions.push(new Explosion(meteorite.x - 0.05, meteorite.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400));
+                explosions.push(new Explosion(meteorite.x - 0.05, meteorite.y - 0.02, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400));
                 dragon.meteorites.splice(i, 1);
             }
+            for (let j = player.bullets.length - 1; j >= 0; j--) {
+            let bullet = player.bullets[j];
+            if (meteorite.isColliding(bullet)) {
+                explosions.push(new Explosion(meteorite.x - 0.02, meteorite.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250));
+                dragon.meteorites.splice(i, 1);
+                player.bullets.splice(j, 1);
+                break;
+            }
+        }
         }
     }
     explosions.forEach(e => e.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT));
