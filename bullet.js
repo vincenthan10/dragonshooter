@@ -1,5 +1,5 @@
 export default class Bullet {
-    constructor(x, y, dir, damage, sizeMultiplier) {
+    constructor(x, y, dir, damage, sizeMultiplier, superType) {
         this.x = x;
         this.y = y;
         this.baseSpeed = 0.0072;
@@ -14,6 +14,7 @@ export default class Bullet {
         this.imageHeight = this.BASEIMGHEIGHT * this.sizeMultiplier;
         this.width = 0;
         this.height = 0;
+        this.super = superType;
     }
 
     draw(ctx, mapWidth, mapHeight) {
