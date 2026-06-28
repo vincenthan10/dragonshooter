@@ -40,6 +40,7 @@ export default class Player {
         this.ltnInvinc = false;
 
         this.collected = false;
+        this.superShotReady = false;
 
         this.maxLives = 3;
         this.lives = this.maxLives;
@@ -160,9 +161,21 @@ export default class Player {
 
     shoot() {
         if (this.facing < 0) {
-            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + this.dmgUpgrade, this.sizeMultiplier));
+            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + this.dmgUpgrade, this.sizeMultiplier, false));
         } else {
-            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg + this.dmgUpgrade, this.sizeMultiplier));
+            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg + this.dmgUpgrade, this.sizeMultiplier, false));
         }
+    }
+
+    shootSuperBullet() {
+        if (this.superShotReady) {
+            if (this.facing < 0) {
+                this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 10 + this.dmgUpgrade, this.sizeMultiplier * 4, true));
+            } else {
+                this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg * 10 + this.dmgUpgrade, this.sizeMultiplier * 4, true));
+            }   
+            this.superShotReady = false;
+        }
+       
     }
 }
