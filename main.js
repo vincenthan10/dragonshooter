@@ -208,14 +208,18 @@ function update(deltaTime) {
         let fireball = dragon.fireballs[i];
         if (fireball.isColliding(player) && player.alive) {
             player.hp -= fireball.damage;
-            explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400));
+            explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
             dragon.fireballs.splice(i, 1);
             continue;
         }
         for (let j = player.bullets.length - 1; j >= 0; j--) {
             let bullet = player.bullets[j];
             if (fireball.isColliding(bullet)) {
-                explosions.push(new Explosion(fireball.x, fireball.y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250));
+                if (bullet.super) {
+                    explosions.push(new Explosion(fireball.x, fireball.y - 0.1, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+                } else {
+                    explosions.push(new Explosion(fireball.x, fireball.y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                }
                 dragon.fireballs.splice(i, 1);
                 player.bullets.splice(j, 1);
                 break;
@@ -226,7 +230,11 @@ function update(deltaTime) {
         let bullet = player.bullets[i];
         if (bullet.isColliding(dragon) && dragon.alive) {
             dragon.hp -= bullet.damage;
-            explosions.push(new Explosion(bullet.x, bullet.y - 0.05, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250));
+            if (bullet.super) {
+                explosions.push(new Explosion(bullet.x - 0.08, bullet.y - 0.2, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
+            } else {
+                explosions.push(new Explosion(bullet.x - 0.02, bullet.y - 0.05, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+            }
             player.bullets.splice(i, 1);
         }
     }
@@ -235,13 +243,17 @@ function update(deltaTime) {
             let meteorite = dragon.meteorites[i];
             if (meteorite.isColliding(player) && player.alive) {
                 player.hp -= meteorite.damage;
-                explosions.push(new Explosion(meteorite.x - 0.05, meteorite.y - 0.02, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400));
+                explosions.push(new Explosion(meteorite.x - 0.04, meteorite.y - 0.02, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
                 dragon.meteorites.splice(i, 1);
             }
             for (let j = player.bullets.length - 1; j >= 0; j--) {
             let bullet = player.bullets[j];
             if (meteorite.isColliding(bullet)) {
-                explosions.push(new Explosion(meteorite.x - 0.02, meteorite.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250));
+                if (bullet.super) {
+                    explosions.push(new Explosion(meteorite.x - 0.09, meteorite.y - 0.2, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+                } else {
+                    explosions.push(new Explosion(meteorite.x - 0.01, meteorite.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                }
                 dragon.meteorites.splice(i, 1);
                 player.bullets.splice(j, 1);
                 break;
@@ -501,7 +513,12 @@ function draw() {
     gamePauseButton.w = pauseW;
     gamePauseButton.h = pauseH;
     if (gameState === "game") {
+        if (player.superShotReady) {
+            ctx.font = "24px Arial";
+            ctx.fillText("Super Shot Ready! Press R to use", canvas.width / 2 - 170, canvas.height / 2 - 25);
+        }
         ctx.fillStyle = gamePauseButton.hover ? '#4CAF50' : '#2E8B57';
+        
     } else {
         ctx.fillStyle = '#555';
     }
@@ -533,6 +550,7 @@ function reset() {
     player.fireRateMultiplier = 1;
     player.sizeMultiplier = 1;
     player.ltnInvinc = false;
+    player.superShotReady = false;
     if (gameOver) {
         level = 1;
         player.lives = player.maxLives;
@@ -639,9 +657,16 @@ document.addEventListener("keydown", (e) => {
 
     keysPressed.add(e.code);
 
-    if (e.code === "Space") {
-        shooting = true;
+    if (gameState == "game") {
+        if (e.code === "Space") {
+            shooting = true;
+        }
+        if (player.alive && e.code === "KeyR" && player.superShotReady) {
+            player.shootSuperBullet();
+        }
     }
+    
+
 
     if (e.code === "Escape") {
         if (gameState == "paused") {
