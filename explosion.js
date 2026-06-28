@@ -1,5 +1,5 @@
 export default class Explosion {
-    constructor(x, y, src, baseWidth, baseHeight) {
+    constructor(x, y, src, baseWidth, baseHeight, drawTime, sizeMultiplier) {
         this.x = x;
         this.y = y;
         this.img = new Image();
@@ -10,8 +10,9 @@ export default class Explosion {
         this.imageHeight = this.BASEIMAGEHEIGHT;
 
         this.active = true;
-        this.drawTime = 400;
+        this.drawTime = drawTime;
         this.timeAlive = 0;
+        this.sizeMultiplier = sizeMultiplier;
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -23,8 +24,8 @@ export default class Explosion {
     }
 
     update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight) {
-        this.imageWidth = this.BASEIMAGEWIDTH * (mapWidth / baseWidth);
-        this.imageHeight = this.BASEIMAGEHEIGHT * (mapHeight / baseHeight);
+        this.imageWidth = this.BASEIMAGEWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier;
+        this.imageHeight = this.BASEIMAGEHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier;
         this.timeAlive += deltaTime;
         if (this.timeAlive >= this.drawTime) {
             this.active = false;
