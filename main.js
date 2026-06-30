@@ -127,6 +127,47 @@ let upgradeInput = 0;
 
 let level = 1;
 
+function formatStat(value) {
+    return Number(value).toFixed(3);
+}
+
+function getCurrentPlayerStats() {
+    const speed = player.baseSpeedX * player.speedUpgraded;
+    const reloadTime = (player.baseShootingDelay * player.fireRateUpgraded) / 1000;
+    const damage = player.bulletDmg + player.dmgUpgrade;
+
+    return {
+        hp: player.maxHp,
+        reloadTime,
+        speed,
+        damage,
+        lives: player.lives
+    };
+}
+
+function getUpgradePreviewText(upgrade) {
+    if (!upgrade) {
+        return null;
+    }
+
+    const current = getCurrentPlayerStats();
+
+    switch (upgrade.name) {
+        case "Damage Up":
+            return { line: "damage", text: ` → ${current.damage + 1}` };
+        case "Speed Up":
+            return { line: "speed", text: ` → ${formatStat(current.speed * 1.12)}` };
+        case "Fire Rate Up":
+            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 0.88)}s` };
+        case "Extra Life":
+            return { line: "lives", text: ` → ${current.lives + 1}` };
+        case "Health Up":
+            return { line: "hp", text: ` → ${player.maxHp + (upgrade.currentLevel + 1)}` };
+        default:
+            return null;
+    }
+}
+
 function applyUpgradeChoice(index) {
     if (index < 0 || index >= chosen.length) {
         return;
@@ -439,6 +480,33 @@ function draw() {
         ctx.fillText("Pick an Upgrade", canvas.width / 2 - 138, canvas.height / 2 - 100);
         ctx.font = "16px Arial";
         ctx.fillText("Press the button or the Enter key to continue", canvas.width / 2 - 153, canvas.height / 2 + 105);
+
+        const stats = getCurrentPlayerStats();
+        const statPanelX = Math.max(20, canvas.width - 240);
+        const statPanelY = 90;
+        const hoveredIndex = upgradeOptionButtons.findIndex(btn => btn.hover);
+        const hoveredPreview = hoveredIndex >= 0 ? getUpgradePreviewText(chosen[hoveredIndex]) : null;
+        ctx.font = "18px Arial";
+        ctx.fillStyle = "white";
+        ctx.fillText("Current Stats", statPanelX, statPanelY);
+        ctx.font = "14px Arial";
+
+        const statRows = [
+            { key: "hp", label: `HP: ${stats.hp}`, y: statPanelY + 24 },
+            { key: "reload", label: `Reload: ${formatStat(stats.reloadTime)}s`, y: statPanelY + 44 },
+            { key: "speed", label: `Speed: ${formatStat(stats.speed)}`, y: statPanelY + 64 },
+            { key: "damage", label: `Damage: ${stats.damage}`, y: statPanelY + 84 },
+            { key: "lives", label: `Lives: ${stats.lives}`, y: statPanelY + 104 }
+        ];
+
+        statRows.forEach(({ key, label, y }) => {
+            ctx.fillStyle = "white";
+            ctx.fillText(label, statPanelX, y);
+            if (hoveredPreview && hoveredPreview.line === key) {
+                ctx.fillStyle = "#4cff7a";
+                ctx.fillText(hoveredPreview.text, statPanelX + ctx.measureText(label).width, y);
+            }
+        });
         
         ctx.font = "20px Arial";
         const optionOffsets = [-40, -10, 20];
