@@ -70,41 +70,41 @@ let upgradeContinueButton = { x: 0, y: 0, w: 0, h: 0, hover: false };
 let upgradePool = [
     {   
         name: "Damage Up",
-        baseCost: 125,
+        baseCost: 250,
         apply: (player) => player.dmgUpgrade += 1,
         maxLevel: 2,
         currentLevel: 0,
         getCost() {
-            return this.baseCost + this.currentLevel * 50;
+            return this.baseCost + this.currentLevel * 25;
         }
     },
     {
         name: "Speed Up",
         baseCost: 30,
-        apply: (player) => player.speedUpgraded *= 1.12,
-        maxLevel: 5,
+        apply: (player) => player.speedUpgraded *= 1.09,
+        maxLevel: 6,
         currentLevel: 0,
         getCost() {
-            return this.baseCost + this.currentLevel * 10;
+            return this.baseCost + this.currentLevel * 30;
         }
     },
     {
         name: "Fire Rate Up",
-        baseCost: 50,
-        apply: (player) => player.fireRateUpgraded *= 0.88,
-        maxLevel: 5,
+        baseCost: 30,
+        apply: (player) => player.fireRateUpgraded *= 0.91,
+        maxLevel: 6,
         currentLevel: 0,
         getCost() {
-            return this.baseCost + this.currentLevel * 20;
+            return this.baseCost + this.currentLevel * 35;
         }
     },
     {
         name: "Extra Life",
-        baseCost: 50,
+        baseCost: 75,
         apply: (player) => player.lives++,
         currentLevel: 0,
         getCost() {
-            return this.baseCost + this.currentLevel * 10;
+            return this.baseCost + this.currentLevel * 25;
         }
     },
     {
@@ -117,13 +117,13 @@ let upgradePool = [
         },
         maxLevel: 5,
         getCost() {
-            return this.baseCost + this.currentLevel * this.currentLevel * 10;
+            return this.baseCost + this.currentLevel * this.currentLevel * 15;
         }
     }
 ]
 let available = [];
 let chosen = [];
-let upgradeInput = 0;
+let upgradeHoverIndex = -1;
 
 let level = 1;
 
@@ -156,9 +156,9 @@ function getUpgradePreviewText(upgrade) {
         case "Damage Up":
             return { line: "damage", text: ` → ${current.damage + 1}` };
         case "Speed Up":
-            return { line: "speed", text: ` → ${formatStat(current.speed * 1.12)}` };
+            return { line: "speed", text: ` → ${formatStat(current.speed * 1.09)}` };
         case "Fire Rate Up":
-            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 0.88)}s` };
+            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 0.91)}s` };
         case "Extra Life":
             return { line: "lives", text: ` → ${current.lives + 1}` };
         case "Health Up":
@@ -313,6 +313,13 @@ function resizeCanvas() {
     mapHeight = canvas.height;
 }
 
+function drawCenteredText(text, x, y) {
+    const previousAlign = ctx.textAlign;
+    ctx.textAlign = "center";
+    ctx.fillText(text, x, y);
+    ctx.textAlign = previousAlign;
+}
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "skyblue";
@@ -331,15 +338,15 @@ function draw() {
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        ctx.fillText("Dragon Shooter", canvas.width / 2 - 135, canvas.height / 2 - 80);
+        drawCenteredText("Dragon Shooter", canvas.width / 2, canvas.height / 2 - 80);
 
         ctx.font = "18px Arial";
-        ctx.fillText("Use WASD or arrow keys to move, space to shoot", canvas.width / 2 - 192, canvas.height / 2 - 35);
-        ctx.fillText("Defeat the dragon without getting hit!", canvas.width / 2 - 142, canvas.height / 2 - 12);
+        drawCenteredText("Use WASD or arrow keys to move, space to shoot", canvas.width / 2, canvas.height / 2 - 35);
+        drawCenteredText("Defeat the dragon without getting hit!", canvas.width / 2, canvas.height / 2 - 12);
 
         ctx.font = "16px Arial";
-        ctx.fillText("Press Play to start.", canvas.width / 2 - 67, canvas.height / 2 + 43);
-        ctx.fillText("Or, press Enter on your keyboard.", canvas.width / 2 - 120, canvas.height / 2 + 63);
+        drawCenteredText("Press Play to start.", canvas.width / 2, canvas.height / 2 + 43);
+        drawCenteredText("Or, press Enter on your keyboard.", canvas.width / 2, canvas.height / 2 + 63);
 
         // Draw Play button
         const btnW = Math.min(100, canvas.width * 0.1);
@@ -362,8 +369,7 @@ function draw() {
         ctx.fillStyle = 'white';
         ctx.font = '18px Arial';
         const label = 'Play';
-        const labelW = ctx.measureText(label).width;
-        ctx.fillText(label, canvas.width / 2 - labelW / 2, btnY + btnH / 2 + 8);
+        drawCenteredText(label, canvas.width / 2, btnY + btnH / 2 + 8);
     }
 
     if (gameState == "paused") {
@@ -372,10 +378,10 @@ function draw() {
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        ctx.fillText("Game Paused", canvas.width / 2 - 123, canvas.height / 2 - 60);
+        drawCenteredText("Game Paused", canvas.width / 2, canvas.height / 2 - 60);
 
         ctx.font = "16px Arial";
-        ctx.fillText("Press the button or the Escape key to continue", canvas.width / 2 - 163, canvas.height / 2 - 20);
+        drawCenteredText("Press the button or the Escape key to continue", canvas.width / 2, canvas.height / 2 - 20);
         // Draw Resume button
         const pW = Math.min(100, canvas.width * 0.15);
         const pH = 48;
@@ -387,7 +393,7 @@ function draw() {
         ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeRect(pX, pY, pW, pH);
         ctx.fillStyle = 'white'; ctx.font = '18px Arial';
         const resumeLabel = 'Resume';
-        ctx.fillText(resumeLabel, canvas.width / 2 - ctx.measureText(resumeLabel).width / 2, pY + pH / 2 + 6);
+        drawCenteredText(resumeLabel, canvas.width / 2, pY + pH / 2 + 6);
     }
 
     // Death screen
@@ -397,10 +403,10 @@ function draw() {
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        ctx.fillText("You Died", canvas.width / 2 - 81, canvas.height / 2 - 60);
+        drawCenteredText("You Died", canvas.width / 2, canvas.height / 2 - 60);
 
         ctx.font = "16px Arial";
-        ctx.fillText("Press the button or the Enter key to respawn", canvas.width / 2 - 153, canvas.height / 2 - 20);
+        drawCenteredText("Press the button or the Enter key to respawn", canvas.width / 2, canvas.height / 2 - 20);
         // Draw Respawn button
         const dW = Math.min(100, canvas.width * 0.15);
         const dH = 48;
@@ -412,7 +418,7 @@ function draw() {
         ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeRect(dX, dY, dW, dH);
         ctx.fillStyle = 'white'; ctx.font = '18px Arial';
         const respawnLabel = 'Respawn';
-        ctx.fillText(respawnLabel, canvas.width / 2 - ctx.measureText(respawnLabel).width / 2, dY + dH / 2 + 6);
+        drawCenteredText(respawnLabel, canvas.width / 2, dY + dH / 2 + 6);
     }
 
     if (gameState == "gameover") {
@@ -421,10 +427,10 @@ function draw() {
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        ctx.fillText("Game Over", canvas.width / 2 - 97, canvas.height / 2 - 60);
+        drawCenteredText("Game Over", canvas.width / 2, canvas.height / 2 - 60);
 
         ctx.font = "16px Arial";
-        ctx.fillText("Press the button or the Enter key to restart the game", canvas.width / 2 - 168, canvas.height / 2 - 20);
+        drawCenteredText("Press the button or the Enter key to restart the game", canvas.width / 2, canvas.height / 2 - 20);
         // Draw Restart button
         const gW = Math.min(100, canvas.width * 0.15);
         const gH = 48;
@@ -436,7 +442,7 @@ function draw() {
         ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeRect(gX, gY, gW, gH);
         ctx.fillStyle = 'white'; ctx.font = '18px Arial';
         const restartLabel = 'Restart';
-        ctx.fillText(restartLabel, canvas.width / 2 - ctx.measureText(restartLabel).width / 2, gY + gH / 2 + 6);
+        drawCenteredText(restartLabel, canvas.width / 2, gY + gH / 2 + 6);
     }
 
     if (gameState == "victory") {
@@ -446,17 +452,17 @@ function draw() {
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
         if (dragon.boss) {
-            ctx.fillText("Boss Defeated", canvas.width / 2 - 123, canvas.height / 2 - 60);
+            drawCenteredText("Boss Defeated", canvas.width / 2, canvas.height / 2 - 60);
         } else {
-            ctx.fillText("Dragon Defeated", canvas.width / 2 - 138, canvas.height / 2 - 60);
+            drawCenteredText("Dragon Defeated", canvas.width / 2, canvas.height / 2 - 60);
         }
 
         ctx.drawImage(coinImage, canvas.width / 2 - 33, canvas.height / 2 - 42);
         ctx.font = "14px Arial";
-        ctx.fillText("+" + dragon.reward, canvas.width / 2 + 12, canvas.height / 2 - 20);
+        ctx.fillText("+" + dragon.reward, canvas.width / 2 + 9, canvas.height / 2 - 20);
 
         ctx.font = "16px Arial";
-        ctx.fillText("Press the button or the Enter key to continue", canvas.width / 2 - 153, canvas.height / 2 + 60);
+        drawCenteredText("Press the button or the Enter key to continue", canvas.width / 2, canvas.height / 2 + 60);
         // Draw Continue button
         const vW = Math.min(100, canvas.width * 0.15);
         const vH = 48;
@@ -468,7 +474,7 @@ function draw() {
         ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeRect(vX, vY, vW, vH);
         ctx.fillStyle = 'white'; ctx.font = '18px Arial';
         const contLabel = 'Continue';
-        ctx.fillText(contLabel, canvas.width / 2 - ctx.measureText(contLabel).width / 2, vY + vH / 2 + 6);
+        drawCenteredText(contLabel, canvas.width / 2, vY + vH / 2 + 6);
     }
 
     if (gameState == "upgrade") {
@@ -477,15 +483,16 @@ function draw() {
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        ctx.fillText("Pick an Upgrade", canvas.width / 2 - 138, canvas.height / 2 - 100);
+        drawCenteredText("Pick an Upgrade", canvas.width / 2, canvas.height / 2 - 100);
         ctx.font = "16px Arial";
-        ctx.fillText("Press the button or the Enter key to continue", canvas.width / 2 - 153, canvas.height / 2 + 105);
+        drawCenteredText("Use number keys to highlight an upgrade, Space to buy it, or Enter to continue", canvas.width / 2, canvas.height / 2 + 105);
 
         const stats = getCurrentPlayerStats();
         const statPanelX = Math.max(20, canvas.width - 240);
         const statPanelY = 90;
         const hoveredIndex = upgradeOptionButtons.findIndex(btn => btn.hover);
-        const hoveredPreview = hoveredIndex >= 0 ? getUpgradePreviewText(chosen[hoveredIndex]) : null;
+        const activeHoverIndex = hoveredIndex >= 0 ? hoveredIndex : upgradeHoverIndex;
+        const hoveredPreview = activeHoverIndex >= 0 ? getUpgradePreviewText(chosen[activeHoverIndex]) : null;
         ctx.font = "18px Arial";
         ctx.fillStyle = "white";
         ctx.fillText("Current Stats", statPanelX, statPanelY);
@@ -516,7 +523,7 @@ function draw() {
             const slot = chosen[i];
             const cost = slot ? slot.getCost() : 0;
             const affordable = slot ? player.coins >= cost : false;
-            const selected = slot && (upgradeInput == "Digit" + (i + 1) || upgradeOptionButtons[i].hover);
+            const selected = slot && ((activeHoverIndex === i) || upgradeOptionButtons[i].hover);
             const btnW = Math.min(360, canvas.width * 0.44);
             const btnH = 30;
             const btnX = canvas.width / 2 - btnW / 2;
@@ -525,7 +532,7 @@ function draw() {
             upgradeOptionButtons[i].y = btnY;
             upgradeOptionButtons[i].w = btnW;
             upgradeOptionButtons[i].h = btnH;
-            if (slot && upgradeOptionButtons[i].hover) {
+            if (slot && selected) {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';   
                 ctx.fillRect(btnX, btnY, btnW, btnH);
             }
@@ -538,13 +545,13 @@ function draw() {
                 ctx.fillText(cost, canvas.width / 2 + 85, y);
             } else {
                 ctx.fillStyle = "gray";
-                ctx.fillText("[" + (i + 1) + "] Purchased", canvas.width / 2 - 107, y);
+                drawCenteredText("[" + (i + 1) + "] Purchased", canvas.width / 2, y);
             }
             ctx.fillStyle = "white";
 
             if (slot && selected && !affordable) {
                 ctx.fillStyle = "red";
-                ctx.fillText("Not enough coins", canvas.width / 2 - 72, canvas.height / 2 + 65);
+                drawCenteredText("Not enough coins", canvas.width / 2, canvas.height / 2 + 65);
                 ctx.fillStyle = "white";
             }
         }
@@ -562,7 +569,7 @@ function draw() {
         ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeRect(cX, cY, cW, cH);
         ctx.fillStyle = 'white'; ctx.font = '18px Arial';
         const continueLabel = 'Continue';
-        ctx.fillText(continueLabel, canvas.width / 2 - ctx.measureText(continueLabel).width / 2, cY + cH / 2 + 6);
+        drawCenteredText(continueLabel, canvas.width / 2, cY + cH / 2 + 6);
     }
 
     ctx.drawImage(coinImage, canvas.width - 73, 20);
@@ -583,7 +590,7 @@ function draw() {
     if (gameState === "game") {
         if (player.superShotReady) {
             ctx.font = "24px Arial";
-            ctx.fillText("Super Shot Ready! Press R to use", canvas.width / 2 - 170, canvas.height / 2 - 25);
+            drawCenteredText("Super Shot Ready! Press R to use", canvas.width / 2, canvas.height / 2 - 25);
         }
         ctx.fillStyle = gamePauseButton.hover ? '#4CAF50' : '#2E8B57';
         
@@ -597,10 +604,10 @@ function draw() {
     ctx.fillStyle = 'white';
     ctx.font = '16px Arial';
     const pauseText = 'Pause';
-    ctx.fillText(pauseText, pauseX + pauseW / 2 - ctx.measureText(pauseText).width / 2, pauseY + pauseH / 2 + 6);
+    drawCenteredText(pauseText, pauseX + pauseW / 2, pauseY + pauseH / 2 + 6);
 }
 
-function reset() {
+function reset(isLevelCleared) {
     player.imageWidth = player.BASEIMGWIDTH;
     player.imageHeight = player.BASEIMGHEIGHT;
     player.x = playerSpawnX;
@@ -624,6 +631,7 @@ function reset() {
         player.lives = player.maxLives;
         player.coins = 0;
         player.maxHp = 1;
+        player.hp = 1;
         player.dmgUpgrade = 0;
         player.fireRateUpgraded = 1;
         player.speedUpgraded = 1;
@@ -631,11 +639,15 @@ function reset() {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
+        dragon.hp = dragon.maxHp[0];
         dragon.rewards = [
             Math.round(Math.random() * 11 + 26), 
             Math.round(Math.random() * 13 + 43), 
             Math.round(Math.random() * 20 + 62), 
-            Math.round(Math.random() * 15 + 143)];
+            Math.round(Math.random() * 15 + 143),
+            Math.round(Math.random() * 20 + 40),
+            Math.round(Math.random() * 18 + 70),
+            Math.round(Math.random() * 15 + 38)];
         gameOver = false;
     }
 
@@ -668,7 +680,11 @@ function reset() {
     dragon.facing = 1;
     dragon.fadeTime = 1;
     dragon.hpChooser = Math.min(level - 1, dragon.maxHp.length - 1);
-    dragon.hp = dragon.maxHp[dragon.hpChooser];
+    if (isLevelCleared) {
+        dragon.hp = dragon.maxHp[dragon.hpChooser];
+    } else {
+        dragon.hp = Math.min(dragon.hp + Math.round(dragon.maxHp[dragon.hpChooser] / 3), dragon.maxHp[dragon.hpChooser]);
+    }
     dragon.reward = dragon.rewards[dragon.hpChooser];
     dragon.phase = 1;
     dragon.charging = false;
@@ -744,20 +760,21 @@ document.addEventListener("keydown", (e) => {
         }
     }
     if (gameState == "upgrade") {
-        upgradeInput = e.code;
         const index = parseInt(e.code.replace("Digit", ""), 10) - 1;
         if (!Number.isNaN(index) && index >= 0 && index < chosen.length) {
-            applyUpgradeChoice(index);
+            upgradeHoverIndex = index;
+        } else if (e.code === "Space" && upgradeHoverIndex >= 0 && upgradeHoverIndex < chosen.length) {
+            applyUpgradeChoice(upgradeHoverIndex);
         }
     }
     if (e.code === "Enter") {
         if (gameState == "deathscreen" || gameState == "title") {
             gameState = "game";
-            reset();
+            reset(false);
         } else if (gameState == "upgrade") {
             gameState = "game";
             level++;
-            reset();
+            reset(true);
         } else if (gameState == "victory") {
             available = upgradePool.filter(upgrade =>
                 upgrade.maxLevel == undefined ||
@@ -769,9 +786,10 @@ document.addEventListener("keydown", (e) => {
                 chosen.push(available[index]);
                 available.splice(index, 1);
             }
+            upgradeHoverIndex = -1;
             gameState = "upgrade";
         } else if (gameState == "gameover") {
-            reset();
+            reset(false);
             gameState = "title";
         }
     }
@@ -854,12 +872,12 @@ canvas.addEventListener("mouseleave", () => {
 canvas.addEventListener("mousedown", (e) => {
     if (gameState === "title" && titleButton.hover) {
         gameState = "game";
-        reset();
+        reset(false);
     } else if (gameState === "deathscreen" && deathButton.hover) {
         gameState = "game";
-        reset();
+        reset(false);
     } else if (gameState === "gameover" && gameOverButton.hover) {
-        reset();
+        reset(false);
         gameState = "title";
     } else if (gameState === "victory" && victoryButton.hover) {
         available = upgradePool.filter(upgrade =>
@@ -887,7 +905,7 @@ canvas.addEventListener("mousedown", (e) => {
         if (upgradeContinueButton.hover) {
             gameState = "game";
             level++;
-            reset();
+            reset(true);
         }
     }
 });
@@ -900,13 +918,13 @@ canvas.addEventListener("touchstart", (e) => {
     const my = touch.clientY - rect.top;
     if (gameState === "title") {
         const over = mx >= titleButton.x && mx <= titleButton.x + titleButton.w && my >= titleButton.y && my <= titleButton.y + titleButton.h;
-        if (over) { e.preventDefault(); gameState = "game"; reset(); }
+        if (over) { e.preventDefault(); gameState = "game"; reset(false); }
     } else if (gameState === "deathscreen") {
         const over = mx >= deathButton.x && mx <= deathButton.x + deathButton.w && my >= deathButton.y && my <= deathButton.y + deathButton.h;
-        if (over) { e.preventDefault(); gameState = "game"; reset(); }
+        if (over) { e.preventDefault(); gameState = "game"; reset(false); }
     } else if (gameState === "gameover") {
         const over = mx >= gameOverButton.x && mx <= gameOverButton.x + gameOverButton.w && my >= gameOverButton.y && my <= gameOverButton.y + gameOverButton.h;
-        if (over) { e.preventDefault(); reset(); gameState = "title"; }
+        if (over) { e.preventDefault(); reset(false); gameState = "title"; }
     } else if (gameState === "victory") {
         const over = mx >= victoryButton.x && mx <= victoryButton.x + victoryButton.w && my >= victoryButton.y && my <= victoryButton.y + victoryButton.h;
         if (over) {
@@ -921,6 +939,7 @@ canvas.addEventListener("touchstart", (e) => {
                 chosen.push(available[index]);
                 available.splice(index, 1);
             }
+            upgradeHoverIndex = -1;
             gameState = "upgrade";
         }
     } else if (gameState === "paused") {
@@ -940,7 +959,7 @@ canvas.addEventListener("touchstart", (e) => {
             }
         }
         const overContinue = mx >= upgradeContinueButton.x && mx <= upgradeContinueButton.x + upgradeContinueButton.w && my >= upgradeContinueButton.y && my <= upgradeContinueButton.y + upgradeContinueButton.h;
-        if (overContinue) { e.preventDefault(); gameState = "game"; reset(); }
+        if (overContinue) { e.preventDefault(); gameState = "game"; reset(true); }
     }
 });
 requestAnimationFrame(gameLoop);
