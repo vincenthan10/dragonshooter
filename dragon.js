@@ -4,19 +4,23 @@ export default class Dragon {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.baseSpeed = 0.12;
+        this.hpChooser = 0;
+        this.baseSpeeds = [0.12, 0.12, 0.12, 0.12, 0.133, 0.118, 0.264];
+        this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
         this.speedMultiplier = 1;
         this.facing = 1; // - = left, + = right
-        this.hpChooser = 0;
         this.rewards = [
             Math.round(Math.random() * 11 + 26), 
             Math.round(Math.random() * 13 + 43), 
             Math.round(Math.random() * 20 + 62), 
-            Math.round(Math.random() * 15 + 143)];
+            Math.round(Math.random() * 15 + 143),
+            Math.round(Math.random() * 20 + 40),
+            Math.round(Math.random() * 18 + 70),
+            Math.round(Math.random() * 15 + 38)];
         this.reward = this.rewards[this.hpChooser];
-        this.maxHp = [25, 40, 60, 100];
+        this.maxHp = [25, 40, 60, 100, 50, 80, 20];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
@@ -44,16 +48,33 @@ export default class Dragon {
         this.dirY = 0;
 
         this.charging = false;
-        this.restTime = Math.random() * 1500 + 3000;
-        this.chargeTime = Math.random() * 750 + 2750;
+        this.restTimes = [
+            Math.random() * 1500 + 3000,
+            Math.random() * 1500 + 3000,
+            Math.random() * 1500 + 3000,
+            Math.random() * 1500 + 3000,
+            Math.random() * 1250 + 2750,
+            Math.random() * 1500 + 3500,
+            Math.random() * 1500 + 500];
+        this.restTime = this.restTimes[this.hpChooser];
+        this.chargeTimes = [
+            Math.random() * 750 + 2750,
+            Math.random() * 750 + 2750,
+            Math.random() * 750 + 2750,
+            Math.random() * 750 + 2750,
+            Math.random() * 1000 + 3000,
+            Math.random() * 1500 + 3500,
+            Math.random() * 1500 + 1500];
+        this.chargeTime = this.chargeTimes[this.hpChooser];
         this.moveTime = 0;
         this.moveMultiplier = 1;
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelay = 2500;
+        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2500, 1400];
+        this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
-        this.fireDmg = 1;
+        this.fireDmg = [1, 1, 1, 1, 1, 1, 1];
         this.fireRateMultiplier = 1;
 
         this.fadeTime = 1;
@@ -216,20 +237,23 @@ export default class Dragon {
             this.width = this.imageWidth / mapWidth;
             this.height = this.imageHeight / mapHeight;
             if (this.phase == 1) {
-                this.restTime = (Math.random() * 1500 + 3000) * this.moveMultiplier / this.bossMultiplier;
-                this.chargeTime = (Math.random() * 750 + 2750) * this.bossMultiplier;
-                this.shootingDelay = 2500 * this.fireRateMultiplier / this.bossMultiplier;
-                this.baseSpeed = 0.12;
+                this.restTime = this.restTimes[this.hpChooser] * this.moveMultiplier / this.bossMultiplier;
+                this.chargeTime = this.chargeTimes[this.hpChooser] * this.bossMultiplier;
+                this.shootingDelay = this.shootingDelays[this.hpChooser] * this.fireRateMultiplier / this.bossMultiplier;
+                this.baseSpeed = this.baseSpeeds[this.hpChooser];
             } else if (this.phase == 2) {
-                this.restTime = (Math.random() * 1300 + 2700) * this.moveMultiplier / this.bossMultiplier;
-                this.chargeTime = (Math.random() * 1000 + 3000) * this.bossMultiplier;
-                this.shootingDelay = 2200 * this.fireRateMultiplier / this.bossMultiplier;
-                this.baseSpeed = 0.132;
+                this.restTime = this.restTimes[this.hpChooser] * 0.9 * this.moveMultiplier / this.bossMultiplier;
+                this.chargeTime = this.chargeTimes[this.hpChooser] * 1.1 * this.bossMultiplier;
+                this.shootingDelay = this.shootingDelays[this.hpChooser] * 0.9 * this.fireRateMultiplier / this.bossMultiplier;
+                this.baseSpeed = this.baseSpeeds[this.hpChooser] * 1.1;
             } else {
-                this.restTime = (Math.random() * 900 + 2100) * this.moveMultiplier / this.bossMultiplier;
-                this.chargeTime = (Math.random() * 1500 + 3500) * this.bossMultiplier;
-                this.shootingDelay = 1750 * this.fireRateMultiplier / this.bossMultiplier;
-                this.baseSpeed = 0.148;
+                this.restTime = this.restTimes[this.hpChooser] * 0.7 * this.moveMultiplier / this.bossMultiplier;
+                this.chargeTime = this.chargeTimes[this.hpChooser] * 1.3 * this.bossMultiplier;
+                this.shootingDelay = this.shootingDelays[this.hpChooser] * 0.7 * this.fireRateMultiplier / this.bossMultiplier;
+                this.baseSpeed = this.baseSpeeds[this.hpChooser] * 1.3;
+            }
+            if (this.hpChooser == 6) {
+                this.ltnInvinc = true;
             }
             if (this.shooting) {
                 this.shootingTime += deltaTime;
