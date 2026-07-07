@@ -108,7 +108,7 @@ export default class MysteryBox {
                 player.sizeMultiplier = collected ? 0.65 : 1;
                 break;
             case 6:
-                player.fireRateMultiplier = collected ? 1.8 : 1;
+                player.fireRateMultiplier = collected ? 1.5 : 1;
                 if (collected) {
                     player.superShotReady = true;
                 } else {
