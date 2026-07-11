@@ -41,6 +41,12 @@ const basicExplosion = {
 let coinImage = new Image();
 coinImage.src = "images/coin.png";
 
+let fireShieldImage = new Image();
+fireShieldImage.src = "images/fireshield.png";
+
+let lightningHelmetImage = new Image();
+lightningHelmetImage.src = "images/lightninghelmet.png";
+
 let shooting = false;
 
 let lastHit = 0;
@@ -71,6 +77,8 @@ let upgradePool = [
     {   
         name: "Damage Up",
         baseCost: 250,
+        availableLevel: 4,
+        target: "player",
         apply: (player) => player.dmgUpgrade += 1,
         maxLevel: 2,
         currentLevel: 0,
@@ -81,6 +89,8 @@ let upgradePool = [
     {
         name: "Speed Up",
         baseCost: 30,
+        availableLevel: 1,
+        target: "player",
         apply: (player) => player.speedUpgraded *= 1.09,
         maxLevel: 6,
         currentLevel: 0,
@@ -91,6 +101,8 @@ let upgradePool = [
     {
         name: "Fire Rate Up",
         baseCost: 30,
+        availableLevel: 1,
+        target: "player",
         apply: (player) => player.fireRateUpgraded *= 0.91,
         maxLevel: 6,
         currentLevel: 0,
@@ -101,6 +113,8 @@ let upgradePool = [
     {
         name: "Extra Life",
         baseCost: 75,
+        availableLevel: 1,
+        target: "player",
         apply: (player) => player.lives++,
         currentLevel: 0,
         getCost() {
@@ -110,6 +124,8 @@ let upgradePool = [
     {
         name: "Health Up",
         baseCost: 150,
+        availableLevel: 3,
+        target: "player",
         currentLevel: 0,
         apply(player) {
             player.maxHp += (this.currentLevel + 1);
@@ -117,7 +133,44 @@ let upgradePool = [
         },
         maxLevel: 5,
         getCost() {
-            return this.baseCost + this.currentLevel * this.currentLevel * 15;
+            return this.baseCost + this.currentLevel * this.currentLevel * 50;
+        }
+    },
+    {
+        name: "Fire Shield",
+        baseCost: 175,
+        availableLevel: 4,
+        target: "player",
+        currentLevel: 0,
+        apply(player) {
+        },
+        getCost() {
+            return this.baseCost + this.currentLevel * 25;
+        }
+    },
+    {
+        name: "Lightning Helmet",
+        baseCost: 175,
+        availableLevel: 4,
+        target: "player",
+        currentLevel: 0,
+        apply(player) {
+        },
+        getCost() {
+            return this.baseCost + this.currentLevel * 25;
+        }
+    },
+    {
+        name: "Reduce Dragon HP",
+        baseCost: 50,
+        availableLevel: 1,
+        target: "dragon",
+        currentLevel: 0,
+        apply(dragon) {
+            dragon.maxHp[level] = Math.round(dragon.maxHp[level] * 0.8);
+        },
+        getCost() {
+            return this.baseCost + this.currentLevel * 15;
         }
     }
 ]
@@ -182,7 +235,8 @@ function applyUpgradeChoice(index) {
 
     if (player.coins >= cost) {
         player.coins -= cost;
-        upgrade.apply(player);
+        const target = upgrade.target === "dragon" ? dragon : player;
+        upgrade.apply(target);
         upgrade.currentLevel++;
         chosen[index] = null;
         upgradeInput = 0;
@@ -515,7 +569,7 @@ function draw() {
             }
         });
         
-        ctx.font = "20px Arial";
+        ctx.font = "18px Arial";
         const optionOffsets = [-40, -10, 20];
 
         for (let i = 0; i < chosen.length; i++) {
@@ -525,7 +579,7 @@ function draw() {
             const affordable = slot ? player.coins >= cost : false;
             const selected = slot && ((activeHoverIndex === i) || upgradeOptionButtons[i].hover);
             const btnW = Math.min(360, canvas.width * 0.44);
-            const btnH = 30;
+            const btnH = 28;
             const btnX = canvas.width / 2 - btnW / 2;
             const btnY = y - 20;
             upgradeOptionButtons[i].x = btnX;
@@ -539,10 +593,11 @@ function draw() {
 
             ctx.fillStyle = "white";
             if (slot) {
-                ctx.fillText("[" + (i + 1) + "] " + slot.name, canvas.width / 2 - 107, y);
-                ctx.drawImage(coinImage, canvas.width / 2 + 42, y - 25);
+                ctx.fillText("[" + (i + 1) + "] " + slot.name, canvas.width / 2 - 135, y);
+                
+                ctx.drawImage(coinImage, canvas.width / 2 + 48, y - 25);
                 ctx.fillStyle = selected && !affordable ? "red" : "white";
-                ctx.fillText(cost, canvas.width / 2 + 85, y);
+                ctx.fillText(cost, canvas.width / 2 + 90, y);
             } else {
                 ctx.fillStyle = "gray";
                 drawCenteredText("[" + (i + 1) + "] Purchased", canvas.width / 2, y);
@@ -639,6 +694,7 @@ function reset(isLevelCleared) {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
+        dragon.maxHp = [25, 40, 60, 100, 50, 80, 20];
         dragon.hp = dragon.maxHp[0];
         dragon.rewards = [
             Math.round(Math.random() * 11 + 26), 
@@ -777,8 +833,9 @@ document.addEventListener("keydown", (e) => {
             reset(true);
         } else if (gameState == "victory") {
             available = upgradePool.filter(upgrade =>
-                upgrade.maxLevel == undefined ||
-                upgrade.currentLevel < upgrade.maxLevel
+                (upgrade.maxLevel == undefined ||
+                upgrade.currentLevel < upgrade.maxLevel) &&
+                upgrade.availableLevel <= level
             );
             chosen = [];
             for (let i = 0; i < 3; i++) {
@@ -881,8 +938,9 @@ canvas.addEventListener("mousedown", (e) => {
         gameState = "title";
     } else if (gameState === "victory" && victoryButton.hover) {
         available = upgradePool.filter(upgrade =>
-            upgrade.maxLevel == undefined ||
-            upgrade.currentLevel < upgrade.maxLevel
+            (upgrade.maxLevel == undefined ||
+            upgrade.currentLevel < upgrade.maxLevel) &&
+            upgrade.availableLevel <= level
         );
         chosen = [];
         for (let i = 0; i < 3; i++) {
@@ -890,6 +948,7 @@ canvas.addEventListener("mousedown", (e) => {
             chosen.push(available[index]);
             available.splice(index, 1);
         }
+        upgradeHoverIndex = -1;
         gameState = "upgrade";
     } else if (gameState === "paused" && pauseButton.hover) {
         gameState = "game";
@@ -930,8 +989,9 @@ canvas.addEventListener("touchstart", (e) => {
         if (over) {
             e.preventDefault();
             available = upgradePool.filter(upgrade =>
-                upgrade.maxLevel == undefined ||
-                upgrade.currentLevel < upgrade.maxLevel
+                (upgrade.maxLevel == undefined ||
+                upgrade.currentLevel < upgrade.maxLevel) &&
+                upgrade.availableLevel <= level
             );
             chosen = [];
             for (let i = 0; i < 3; i++) {
