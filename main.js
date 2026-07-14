@@ -139,7 +139,7 @@ let upgradePool = [
     {
         name: "Fire Shield",
         baseCost: 175,
-        availableLevel: 4,
+        availableLevel: 6,
         target: "player",
         currentLevel: 0,
         apply(player) {
@@ -303,6 +303,8 @@ function update(deltaTime) {
         let fireball = dragon.fireballs[i];
         if (fireball.isColliding(player) && player.alive) {
             player.hp -= fireball.damage;
+            const knockbackAmount = 0.02 * fireball.sizeMultiplier * fireball.sizeMultiplier / player.sizeMultiplier / player.sizeMultiplier;
+            player.x = player.x + fireball.dir * knockbackAmount;
             explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
             dragon.fireballs.splice(i, 1);
             continue;
@@ -325,6 +327,9 @@ function update(deltaTime) {
         let bullet = player.bullets[i];
         if (bullet.isColliding(dragon) && dragon.alive) {
             dragon.hp -= bullet.damage;
+            const knockbackAmount = 0.001 * bullet.sizeMultiplier * bullet.sizeMultiplier * (bullet.super ? 4 : 1) / 
+            dragon.sizeMultiplier / dragon.sizeMultiplier / (dragon.boss ? dragon.bossMultiplier * dragon.bossMultiplier : 1);
+            dragon.x = dragon.x + bullet.dir * knockbackAmount;
             if (bullet.super) {
                 explosions.push(new Explosion(bullet.x - 0.08, bullet.y - 0.2, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
             } else {
@@ -338,6 +343,8 @@ function update(deltaTime) {
             let meteorite = dragon.meteorites[i];
             if (meteorite.isColliding(player) && player.alive) {
                 player.hp -= meteorite.damage;
+                const knockbackAmount = 0.04 / player.sizeMultiplier / player.sizeMultiplier;
+                player.y = player.y + knockbackAmount;
                 explosions.push(new Explosion(meteorite.x - 0.04, meteorite.y - 0.02, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
                 dragon.meteorites.splice(i, 1);
             }
