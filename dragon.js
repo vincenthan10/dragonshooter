@@ -5,7 +5,7 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.12, 0.12, 0.12, 0.12, 0.133, 0.118, 0.264];
+        this.baseSpeeds = [0.12, 0.12, 0.12, 0.12, 0.135, 0.12, 0.26];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
@@ -14,10 +14,10 @@ export default class Dragon {
         this.rewards = [
             Math.round(Math.random() * 11 + 26), 
             Math.round(Math.random() * 13 + 43), 
-            Math.round(Math.random() * 20 + 62), 
+            Math.round(Math.random() * 16 + 60), 
             Math.round(Math.random() * 15 + 143),
             Math.round(Math.random() * 20 + 40),
-            Math.round(Math.random() * 18 + 70),
+            Math.round(Math.random() * 18 + 62),
             Math.round(Math.random() * 15 + 38)];
         this.reward = this.rewards[this.hpChooser];
         this.maxHp = [25, 40, 60, 100, 50, 80, 20];
@@ -55,7 +55,7 @@ export default class Dragon {
             Math.random() * 1500 + 3000,
             Math.random() * 1250 + 2750,
             Math.random() * 1500 + 3500,
-            Math.random() * 1500 + 500];
+            Math.random() * 1500 + 750];
         this.restTime = this.restTimes[this.hpChooser];
         this.chargeTimes = [
             Math.random() * 750 + 2750,
@@ -64,7 +64,7 @@ export default class Dragon {
             Math.random() * 750 + 2750,
             Math.random() * 1000 + 3000,
             Math.random() * 1500 + 3500,
-            Math.random() * 1500 + 1500];
+            Math.random() * 1500 + 1000];
         this.chargeTime = this.chargeTimes[this.hpChooser];
         this.moveTime = 0;
         this.moveMultiplier = 1;
