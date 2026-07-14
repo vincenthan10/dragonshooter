@@ -1,3 +1,4 @@
+import Player from "./player.js";
 export default class Cloud {
     constructor(x, y) {
         this.x = x;
@@ -103,6 +104,11 @@ export default class Cloud {
         relativePosition - relativeWidth / 3 <= entity.x + entity.width && 
         relativePosition + relativeWidth / 3 >= entity.x) {
             entity.hp -= this.lightningDmg;
+            if (entity instanceof Player) {
+                entity.y += 0.025 / entity.sizeMultiplier / entity.sizeMultiplier;
+            } else {
+                entity.y += 0.008 / entity.sizeMultiplier / entity.sizeMultiplier / (entity.boss ? entity.bossMultiplier * entity.bossMultiplier : 1);
+            }
             this.hitEntities.add(entity);
         }
     }
