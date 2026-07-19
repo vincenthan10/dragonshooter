@@ -211,7 +211,7 @@ export default class Dragon {
 
                     if (this.spawnCooldown >= this.spawnTime) {
                         this.strikePosition = Math.random() * 0.90 + 0.05;
-                        this.meteorites.push(new Meteorite(this.strikePosition, -0.1, this.fireDmg));
+                        this.meteorites.push(new Meteorite(this.strikePosition, -0.1, 2));
                         this.spawnCooldown = 0;
                         this.spawnTime = Math.random() * 300 + 900;
                     }
