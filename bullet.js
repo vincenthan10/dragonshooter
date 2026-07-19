@@ -1,11 +1,13 @@
 export default class Bullet {
-    constructor(x, y, dir, damage, sizeMultiplier, superType) {
+    constructor(x, y, dir, damage, sizeMultiplier, health, superType) {
         this.x = x;
         this.y = y;
         this.baseSpeed = 0.0072;
-        this.speed = this.baseSpeed * dir;
+        this.dir = dir;
+        this.speed = this.baseSpeed * this.dir;
         this.damage = damage;
         this.sizeMultiplier = sizeMultiplier;
+        this.health = health;
         this.img = new Image();
         this.img.src = "images/bullet.png";
         this.BASEIMGWIDTH = 36;
