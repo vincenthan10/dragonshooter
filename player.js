@@ -30,12 +30,15 @@ export default class Player {
         this.bullets = [];
         this.bulletDmg = 1;
         this.dmgUpgrade = 0;
+        this.bulletHealth = 1;
+        this.bhealthUpgrade = 0;
         this.baseShootingDelay = 900;
         this.fireRateMultiplier = 1;
         this.fireRateUpgraded = 1;
         this.shootingDelay = this.baseShootingDelay;
         this.shootingTime = 0;
         this.fadeTime = 1;
+        this.bulletSizeMultiplier = 1;
 
         this.ltnInvinc = false;
 
@@ -161,18 +164,18 @@ export default class Player {
 
     shoot() {
         if (this.facing < 0) {
-            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + this.dmgUpgrade, this.sizeMultiplier, false));
+            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + this.dmgUpgrade, this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false));
         } else {
-            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg + this.dmgUpgrade, this.sizeMultiplier, false));
+            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg + this.dmgUpgrade, this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false));
         }
     }
 
     shootSuperBullet() {
         if (this.superShotReady) {
             if (this.facing < 0) {
-                this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 10 + this.dmgUpgrade, this.sizeMultiplier * 4, true));
+                this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 10 + this.dmgUpgrade, this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true));
             } else {
-                this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg * 10 + this.dmgUpgrade, this.sizeMultiplier * 4, true));
+                this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg * 10 + this.dmgUpgrade, this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true));
             }   
             this.superShotReady = false;
         }
