@@ -5,22 +5,22 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.12, 0.12, 0.12, 0.12, 0.135, 0.12, 0.26];
+        this.baseSpeeds = [0.12, 0.12, 0.12, 0.12, 0.135, 0.25, 0.064];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
         this.speedMultiplier = 1;
         this.facing = 1; // - = left, + = right
         this.rewards = [
-            Math.round(Math.random() * 11 + 26), 
-            Math.round(Math.random() * 13 + 43), 
-            Math.round(Math.random() * 16 + 60), 
-            Math.round(Math.random() * 15 + 143),
-            Math.round(Math.random() * 20 + 40),
-            Math.round(Math.random() * 18 + 62),
-            Math.round(Math.random() * 15 + 38)];
+            Math.round(Math.random() * 16 + 26), 
+            Math.round(Math.random() * 18 + 42), 
+            Math.round(Math.random() * 20 + 62), 
+            Math.round(Math.random() * 16 + 145),
+            Math.round(Math.random() * 27 + 44),
+            Math.round(Math.random() * 15 + 49),
+            Math.round(Math.random() * 18 + 88)];
         this.reward = this.rewards[this.hpChooser];
-        this.maxHp = [25, 40, 60, 100, 50, 80, 20];
+        this.maxHp = [25, 40, 60, 100, 50, 20, 80];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
@@ -53,9 +53,9 @@ export default class Dragon {
             Math.random() * 1500 + 3000,
             Math.random() * 1500 + 3000,
             Math.random() * 1500 + 3000,
-            Math.random() * 1250 + 2750,
-            Math.random() * 1500 + 3500,
-            Math.random() * 1500 + 750];
+            Math.random() * 1250 + 2500,
+            Math.random() * 1500 + 1000,
+            0];
         this.restTime = this.restTimes[this.hpChooser];
         this.chargeTimes = [
             Math.random() * 750 + 2750,
@@ -63,15 +63,15 @@ export default class Dragon {
             Math.random() * 750 + 2750,
             Math.random() * 750 + 2750,
             Math.random() * 1000 + 3000,
-            Math.random() * 1500 + 3500,
-            Math.random() * 1500 + 1000];
+            Math.random() * 1500 + 1250,
+            Math.random() * 750 + 750];
         this.chargeTime = this.chargeTimes[this.hpChooser];
         this.moveTime = 0;
         this.moveMultiplier = 1;
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2500, 1400];
+        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 1400, 2500];
         this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
         this.fireDmg = [1, 1, 1, 1, 1, 1, 1];
@@ -210,7 +210,7 @@ export default class Dragon {
                     this.spawnCooldown += deltaTime;
 
                     if (this.spawnCooldown >= this.spawnTime) {
-                        this.strikePosition = Math.random() * 0.90 + 0.05;
+                        this.strikePosition = Math.random();
                         this.meteorites.push(new Meteorite(this.strikePosition, -0.1, 2));
                         this.spawnCooldown = 0;
                         this.spawnTime = Math.random() * 300 + 900;
@@ -252,7 +252,7 @@ export default class Dragon {
                 this.shootingDelay = this.shootingDelays[this.hpChooser] * 0.7 * this.fireRateMultiplier / this.bossMultiplier;
                 this.baseSpeed = this.baseSpeeds[this.hpChooser] * 1.3;
             }
-            if (this.hpChooser == 6) {
+            if (this.hpChooser == 5) {
                 this.ltnInvinc = true;
             }
             if (this.shooting) {
