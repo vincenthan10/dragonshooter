@@ -125,7 +125,7 @@ export default class MysteryBox {
                 break;
             case 9:
                 if (collected) {
-                    let coinsEarned = Math.floor(Math.random() * 35) + 15;
+                    let coinsEarned = Math.floor(Math.random() * 30) + 20;
                     player.coins += coinsEarned;
                     player.coinsThisRun += coinsEarned;
                     let heal = Math.floor(Math.random() * 2) + 2;
