@@ -162,7 +162,7 @@ let upgradePool = [
     },
     {
         name: "Reduce Dragon HP",
-        baseCost: 50,
+        baseCost: 60,
         availableLevel: 1,
         target: "dragon",
         currentLevel: 0,
@@ -170,7 +170,35 @@ let upgradePool = [
             dragon.maxHp[level] = Math.round(dragon.maxHp[level] * 0.8);
         },
         getCost() {
-            return this.baseCost + this.currentLevel * 15;
+            return this.baseCost;
+        }
+    },
+    {
+        name: "Bullet Health Up",
+        baseCost: 125,
+        availableLevel: 3,
+        target: "player",
+        currentLevel: 0,
+        apply(player) {
+            player.bhealthUpgrade += this.currentLevel + 1;
+        },
+        maxLevel: 5,
+        getCost() {
+            return this.baseCost + this.currentLevel * 25;
+        }
+    },
+    {
+        name: "Bullet Size Up",
+        baseCost: 25,
+        availableLevel: 1,
+        target: "player",
+        currentLevel: 0,
+        apply(player) {
+            player.bulletSizeMultiplier *= 1.1;
+        },
+        maxLevel: 4,
+        getCost() {
+            return this.baseCost + this.currentLevel * 75;
         }
     }
 ]
@@ -303,7 +331,7 @@ function update(deltaTime) {
         let fireball = dragon.fireballs[i];
         if (fireball.isColliding(player) && player.alive) {
             player.hp -= fireball.damage;
-            const knockbackAmount = 0.02 * fireball.sizeMultiplier * fireball.sizeMultiplier / player.sizeMultiplier / player.sizeMultiplier;
+            const knockbackAmount = 0.02 * Math.pow(fireball.sizeMultiplier, 4) / Math.pow(player.sizeMultiplier, 4);
             player.x = player.x + fireball.dir * knockbackAmount;
             explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
             dragon.fireballs.splice(i, 1);
@@ -317,8 +345,13 @@ function update(deltaTime) {
                 } else {
                     explosions.push(new Explosion(fireball.x, fireball.y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
                 }
+
+                bullet.health -= fireball.damage;
                 dragon.fireballs.splice(i, 1);
-                player.bullets.splice(j, 1);
+
+                if (bullet.health <= 0) {
+                    player.bullets.splice(j, 1);
+                }
                 break;
             }
         }
@@ -327,8 +360,8 @@ function update(deltaTime) {
         let bullet = player.bullets[i];
         if (bullet.isColliding(dragon) && dragon.alive) {
             dragon.hp -= bullet.damage;
-            const knockbackAmount = 0.001 * bullet.sizeMultiplier * bullet.sizeMultiplier * (bullet.super ? 4 : 1) / 
-            dragon.sizeMultiplier / dragon.sizeMultiplier / (dragon.boss ? dragon.bossMultiplier * dragon.bossMultiplier : 1);
+            const knockbackAmount = 0.001 * Math.pow(bullet.sizeMultiplier, 4)  / 
+            Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1);
             dragon.x = dragon.x + bullet.dir * knockbackAmount;
             if (bullet.super) {
                 explosions.push(new Explosion(bullet.x - 0.08, bullet.y - 0.2, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
@@ -343,7 +376,7 @@ function update(deltaTime) {
             let meteorite = dragon.meteorites[i];
             if (meteorite.isColliding(player) && player.alive) {
                 player.hp -= meteorite.damage;
-                const knockbackAmount = 0.04 / player.sizeMultiplier / player.sizeMultiplier;
+                const knockbackAmount = 0.04 / Math.pow(player.sizeMultiplier, 4);
                 player.y = player.y + knockbackAmount;
                 explosions.push(new Explosion(meteorite.x - 0.04, meteorite.y - 0.02, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
                 dragon.meteorites.splice(i, 1);
@@ -356,8 +389,11 @@ function update(deltaTime) {
                 } else {
                     explosions.push(new Explosion(meteorite.x - 0.01, meteorite.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
                 }
+                bullet.health -= meteorite.damage;
                 dragon.meteorites.splice(i, 1);
-                player.bullets.splice(j, 1);
+                if (bullet.health <= 0) {
+                    player.bullets.splice(j, 1);
+                }
                 break;
             }
         }
@@ -697,6 +733,8 @@ function reset(isLevelCleared) {
         player.dmgUpgrade = 0;
         player.fireRateUpgraded = 1;
         player.speedUpgraded = 1;
+        player.bhealthUpgrade = 0;
+        player.bulletSizeMultiplier = 1;
         upgradePool.forEach(upgrade => {
             upgrade.currentLevel = 0;
         })
