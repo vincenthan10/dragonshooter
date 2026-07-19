@@ -49,6 +49,7 @@ export default class Player {
         this.lives = this.maxLives;
         this.coins = 0;
         this.coinsThisRun = 0;
+        this.unlockedMysteryBox = false;
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -132,16 +133,16 @@ export default class Player {
                 dx /= Math.sqrt(2);
                 dy /= Math.sqrt(2);
             }
-            if (this.x <= -0.05 && dx < 0) {
+            if (this.x <= -0.1 && dx < 0) {
                 dx = 0;
             }
-            if (this.x + this.width >= 1.05 && dx > 0) {
+            if (this.x + this.width >= 1.1 && dx > 0) {
                 dx = 0;
             }
-            if (this.y <= 0.12 && dy < 0) {
+            if (this.y <= 0.1 && dy < 0) {
                 dy = 0;
             }
-            if (this.y + this.height >= 1.05 && dy > 0) {
+            if (this.y + this.height >= 1.1 && dy > 0) {
                 dy = 0;
             }
             let newX = this.x + dx;
