@@ -95,7 +95,7 @@ let upgradePool = [
         maxLevel: 6,
         currentLevel: 0,
         getCost() {
-            return this.baseCost + this.currentLevel * 30;
+            return this.baseCost + this.currentLevel * 25;
         }
     },
     {
@@ -107,13 +107,13 @@ let upgradePool = [
         maxLevel: 6,
         currentLevel: 0,
         getCost() {
-            return this.baseCost + this.currentLevel * 35;
+            return this.baseCost + this.currentLevel * 30;
         }
     },
     {
         name: "Extra Life",
-        baseCost: 75,
-        availableLevel: 1,
+        baseCost: 50,
+        availableLevel: 2,
         target: "player",
         apply: (player) => player.lives++,
         currentLevel: 0,
@@ -139,13 +139,13 @@ let upgradePool = [
     {
         name: "Fire Shield",
         baseCost: 175,
-        availableLevel: 6,
+        availableLevel: 4,
         target: "player",
         currentLevel: 0,
         apply(player) {
         },
         getCost() {
-            return this.baseCost + this.currentLevel * 25;
+            return this.baseCost;
         }
     },
     {
@@ -157,12 +157,12 @@ let upgradePool = [
         apply(player) {
         },
         getCost() {
-            return this.baseCost + this.currentLevel * 25;
+            return this.baseCost;
         }
     },
     {
         name: "Reduce Dragon HP",
-        baseCost: 60,
+        baseCost: 40,
         availableLevel: 1,
         target: "dragon",
         currentLevel: 0,
@@ -198,7 +198,21 @@ let upgradePool = [
         },
         maxLevel: 4,
         getCost() {
-            return this.baseCost + this.currentLevel * 75;
+            return this.baseCost + this.currentLevel * 50;
+        }
+    },
+    {
+        name: "Unlock Mystery Box",
+        baseCost: 35,
+        availableLevel: 1,
+        target: "player",
+        currentLevel: 0,
+        apply(player) {
+            player.unlockedMysteryBox = true;
+        },
+        maxLevel: 1,
+        getCost() {
+            return this.baseCost;
         }
     }
 ]
@@ -280,6 +294,8 @@ function update(deltaTime) {
         cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
         cloud.collisionHandler(player, mapWidth);
         cloud.collisionHandler(dragon, mapWidth);
+    }
+    if (player.unlockedMysteryBox) {
         mystery.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
         if (mystery.isColliding(player)) {
             player.collected = true;
@@ -735,20 +751,21 @@ function reset(isLevelCleared) {
         player.speedUpgraded = 1;
         player.bhealthUpgrade = 0;
         player.bulletSizeMultiplier = 1;
+        player.unlockedMysteryBox = false;
         upgradePool.forEach(upgrade => {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
-        dragon.maxHp = [25, 40, 60, 100, 50, 80, 20];
+        dragon.maxHp = [25, 40, 60, 100, 50, 20, 80];
         dragon.hp = dragon.maxHp[0];
         dragon.rewards = [
-            Math.round(Math.random() * 11 + 26), 
-            Math.round(Math.random() * 13 + 43), 
+            Math.round(Math.random() * 16 + 26), 
+            Math.round(Math.random() * 18 + 42), 
             Math.round(Math.random() * 20 + 62), 
-            Math.round(Math.random() * 15 + 143),
-            Math.round(Math.random() * 20 + 40),
-            Math.round(Math.random() * 18 + 70),
-            Math.round(Math.random() * 15 + 38)];
+            Math.round(Math.random() * 16 + 145),
+            Math.round(Math.random() * 27 + 44),
+            Math.round(Math.random() * 15 + 49),
+            Math.round(Math.random() * 18 + 88)];
         gameOver = false;
     }
 
