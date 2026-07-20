@@ -174,9 +174,9 @@ export default class Player {
     shootSuperBullet() {
         if (this.superShotReady) {
             if (this.facing < 0) {
-                this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 10 + this.dmgUpgrade, this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true));
+                this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 15 + this.dmgUpgrade, this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true));
             } else {
-                this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg * 10 + this.dmgUpgrade, this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true));
+                this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg * 15 + this.dmgUpgrade, this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true));
             }   
             this.superShotReady = false;
         }
