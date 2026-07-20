@@ -26,7 +26,7 @@ export default class Cloud {
         this.warningTimer = 0;
         this.lightningTimer = 0;
         this.warningTime = 1000;
-        this.strikeTime = 360;
+        this.strikeTime = Math.random() * 130 + 300;
         this.strikePosition = 0;
         this.lightningDmg = 1;
 
@@ -92,6 +92,7 @@ export default class Cloud {
                 this.lightningActive = false;
 
                 this.strikeInterval = Math.random() * 5000 + 3000;
+                this.strikeTime = Math.random() * 130 + 300;
             }
         }
     }
