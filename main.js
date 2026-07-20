@@ -1,5 +1,6 @@
 import Dragon from "./dragon.js";
 import Player from "./player.js";
+import Bullet from "./bullet.js";
 import Cloud from "./cloud.js";
 import Explosion from "./explosion.js";
 import MysteryBox from "./mysterybox.js";
@@ -230,13 +231,19 @@ function getCurrentPlayerStats() {
     const speed = player.baseSpeedX * player.speedUpgraded;
     const reloadTime = (player.baseShootingDelay * player.fireRateUpgraded) / 1000;
     const damage = player.bulletDmg + player.dmgUpgrade;
+    const bulletHealth = player.bulletHealth + player.bhealthUpgrade;
+    const previewBullet = new Bullet(-500, -500, 1, damage, player.sizeMultiplier * player.bulletSizeMultiplier, bulletHealth, false);
+    previewBullet.update(0, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
+    const bulletSize = previewBullet.width;
 
     return {
         hp: player.maxHp,
         reloadTime,
         speed,
         damage,
-        lives: player.lives
+        lives: player.lives,
+        bulletHealth,
+        bulletSize
     };
 }
 
@@ -258,6 +265,10 @@ function getUpgradePreviewText(upgrade) {
             return { line: "lives", text: ` → ${current.lives + 1}` };
         case "Health Up":
             return { line: "hp", text: ` → ${player.maxHp + (upgrade.currentLevel + 1)}` };
+        case "Bullet Health Up":
+            return { line: "bulletHealth", text: ` → ${current.bulletHealth + (upgrade.currentLevel + 1)}` };
+        case "Bullet Size Up":
+            return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.1)}` };
         default:
             return null;
     }
@@ -616,7 +627,9 @@ function draw() {
             { key: "reload", label: `Reload: ${formatStat(stats.reloadTime)}s`, y: statPanelY + 44 },
             { key: "speed", label: `Speed: ${formatStat(stats.speed)}`, y: statPanelY + 64 },
             { key: "damage", label: `Damage: ${stats.damage}`, y: statPanelY + 84 },
-            { key: "lives", label: `Lives: ${stats.lives}`, y: statPanelY + 104 }
+            { key: "bulletHealth", label: `Bullet Health: ${stats.bulletHealth}`, y: statPanelY + 104 },
+            { key: "bulletSize", label: `Bullet Size: ${formatStat(stats.bulletSize)}`, y: statPanelY + 124 },
+            { key: "lives", label: `Lives: ${stats.lives}`, y: statPanelY + 144 }
         ];
 
         statRows.forEach(({ key, label, y }) => {
