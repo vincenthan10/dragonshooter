@@ -76,15 +76,15 @@ let upgradeContinueButton = { x: 0, y: 0, w: 0, h: 0, hover: false };
 
 let upgradePool = [
     {   
-        name: "Damage Up",
-        baseCost: 250,
+        name: "Critical Hit Up",
+        baseCost: 100,
         availableLevel: 4,
         target: "player",
         apply: (player) => player.dmgUpgrade += 1,
-        maxLevel: 2,
+        maxLevel: 3,
         currentLevel: 0,
         getCost() {
-            return this.baseCost + this.currentLevel * 25;
+            return this.baseCost + this.currentLevel * 75;
         }
     },
     {
@@ -183,7 +183,7 @@ let upgradePool = [
         apply(player) {
             player.bhealthUpgrade += this.currentLevel + 1;
         },
-        maxLevel: 5,
+        maxLevel: 2,
         getCost() {
             return this.baseCost + this.currentLevel * 25;
         }
@@ -195,7 +195,7 @@ let upgradePool = [
         target: "player",
         currentLevel: 0,
         apply(player) {
-            player.bulletSizeMultiplier *= 1.1;
+            player.bulletSizeMultiplier *= 1.15;
         },
         maxLevel: 4,
         getCost() {
@@ -255,8 +255,8 @@ function getUpgradePreviewText(upgrade) {
     const current = getCurrentPlayerStats();
 
     switch (upgrade.name) {
-        case "Damage Up":
-            return { line: "damage", text: ` → ${current.damage + 1}` };
+        case "Critical Hit Up":
+            return { line: "max damage", text: ` → ${current.damage + 1}` };
         case "Speed Up":
             return { line: "speed", text: ` → ${formatStat(current.speed * 1.09)}` };
         case "Fire Rate Up":
@@ -387,8 +387,8 @@ function update(deltaTime) {
         let bullet = player.bullets[i];
         if (bullet.isColliding(dragon) && dragon.alive) {
             dragon.hp -= bullet.damage;
-            const knockbackAmount = 0.001 * Math.pow(bullet.sizeMultiplier, 4)  / 
-            Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1);
+            const knockbackAmount = 0.001 * Math.pow(bullet.sizeMultiplier, 2)  / 
+            Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1) * bullet.damage;
             dragon.x = dragon.x + bullet.dir * knockbackAmount;
             if (bullet.super) {
                 explosions.push(new Explosion(bullet.x - 0.08, bullet.y - 0.2, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
@@ -626,7 +626,7 @@ function draw() {
             { key: "hp", label: `HP: ${stats.hp}`, y: statPanelY + 24 },
             { key: "reload", label: `Reload: ${formatStat(stats.reloadTime)}s`, y: statPanelY + 44 },
             { key: "speed", label: `Speed: ${formatStat(stats.speed)}`, y: statPanelY + 64 },
-            { key: "damage", label: `Damage: ${stats.damage}`, y: statPanelY + 84 },
+            { key: "damage", label: `Max Damage: ${stats.damage}`, y: statPanelY + 84 },
             { key: "bulletHealth", label: `Bullet Health: ${stats.bulletHealth}`, y: statPanelY + 104 },
             { key: "bulletSize", label: `Bullet Size: ${formatStat(stats.bulletSize)}`, y: statPanelY + 124 },
             { key: "lives", label: `Lives: ${stats.lives}`, y: statPanelY + 144 }
