@@ -4,6 +4,7 @@ import Bullet from "./bullet.js";
 import Cloud from "./cloud.js";
 import Explosion from "./explosion.js";
 import MysteryBox from "./mysterybox.js";
+import LightningHelmet from "./lightninghelmet.js";
 
 const canvas = document.getElementById("gameCanvas")
 let mapWidth = canvas.width;
@@ -29,6 +30,7 @@ const fireExplosion = {
     BASEIMAGEWIDTH: 200,
     BASEIMAGEHEIGHT: 113
 }
+const lightningHelmetPreview = new LightningHelmet(0, 0);
 const projExplosion = {
     src: "images/bulExplosion.png",
     BASEIMAGEWIDTH: 80,
@@ -78,7 +80,7 @@ let upgradePool = [
     {   
         name: "Critical Hit Up",
         baseCost: 100,
-        availableLevel: 4,
+        availableLevel: 3,
         target: "player",
         apply: (player) => player.dmgUpgrade += 1,
         maxLevel: 3,
@@ -125,7 +127,7 @@ let upgradePool = [
     {
         name: "Health Up",
         baseCost: 150,
-        availableLevel: 3,
+        availableLevel: 4,
         target: "player",
         currentLevel: 0,
         apply(player) {
@@ -156,6 +158,8 @@ let upgradePool = [
         target: "player",
         currentLevel: 0,
         apply(player) {
+            player.lightningHelmet.hp = player.lightningHelmet.maxHp;
+            player.lightningHelmet.alive = true;
         },
         getCost() {
             return this.baseCost;
@@ -256,7 +260,9 @@ function getUpgradePreviewText(upgrade) {
 
     switch (upgrade.name) {
         case "Critical Hit Up":
-            return { line: "max damage", text: ` → ${current.damage + 1}` };
+            return { line: "maxDamage", text: ` → ${current.damage + 1}` };
+        case "Lightning Helmet":
+            return { line: "lightningHelmet", text: ` → ${player.lightningHelmet.hp}` };
         case "Speed Up":
             return { line: "speed", text: ` → ${formatStat(current.speed * 1.09)}` };
         case "Fire Rate Up":
@@ -632,6 +638,10 @@ function draw() {
             { key: "lives", label: `Lives: ${stats.lives}`, y: statPanelY + 144 }
         ];
 
+        const lightningHelmetUpgrade = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
+        const hasLightningHelmet = lightningHelmetUpgrade ? lightningHelmetUpgrade.currentLevel > 0 : false;
+        const showLightningHelmetPreview = hasLightningHelmet || (hoveredPreview && hoveredPreview.line === "lightningHelmet");
+
         statRows.forEach(({ key, label, y }) => {
             ctx.fillStyle = "white";
             ctx.fillText(label, statPanelX, y);
@@ -640,6 +650,22 @@ function draw() {
                 ctx.fillText(hoveredPreview.text, statPanelX + ctx.measureText(label).width, y);
             }
         });
+
+        if (showLightningHelmetPreview) {
+            if (!hasLightningHelmet) {
+                const previewY = statPanelY + 168;
+                ctx.fillStyle = "#4cff7a";
+                ctx.drawImage(lightningHelmetPreview.icon, statPanelX, previewY - 10, 28, 18);
+                ctx.fillText("Lightning Helmet", statPanelX + 34, previewY);
+                ctx.fillText(`HP: ${player.lightningHelmet.hp}`, statPanelX + 34, previewY + 18);
+            } else if (hasLightningHelmet && player.lightningHelmet.alive) {
+                const previewY = statPanelY + 168;
+                ctx.fillStyle = "white";
+                ctx.drawImage(lightningHelmetPreview.icon, statPanelX, previewY - 10, 28, 18);
+                ctx.fillText("Lightning Helmet", statPanelX + 34, previewY);
+                ctx.fillText(`HP: ${player.lightningHelmet.hp}`, statPanelX + 34, previewY + 18);
+            }
+        }
         
         ctx.font = "18px Arial";
         const optionOffsets = [-40, -10, 20];
@@ -765,6 +791,8 @@ function reset(isLevelCleared) {
         player.bhealthUpgrade = 0;
         player.bulletSizeMultiplier = 1;
         player.unlockedMysteryBox = false;
+        player.lightningHelmet.hp = player.lightningHelmet.maxHp;
+        player.lightningHelmet.alive = false;
         upgradePool.forEach(upgrade => {
             upgrade.currentLevel = 0;
         })
