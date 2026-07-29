@@ -104,11 +104,20 @@ export default class Cloud {
         if (this.lightningActive && entity.alive && !entity.ltnInvinc && !this.hitEntities.has(entity) && 
         relativePosition - relativeWidth / 3 <= entity.x + entity.width && 
         relativePosition + relativeWidth / 3 >= entity.x) {
-            entity.hp -= this.lightningDmg;
+            
             if (entity instanceof Player) {
+                if (entity.lightningHelmet.alive) {
+                    entity.lightningHelmet.hp -= this.lightningDmg;
+                    if (entity.lightningHelmet.hp <= 0) {
+                        entity.lightningHelmet.alive = false;
+                    }
+                } else {
+                    entity.hp -= this.lightningDmg;
+                }
                 entity.y += 0.025 / Math.pow(entity.sizeMultiplier, 4);
             } else {
                 entity.y += 0.008 / Math.pow(entity.sizeMultiplier, 4) / (entity.boss ? Math.pow(entity.bossMultiplier, 3) : 1);
+                entity.hp -= this.lightningDmg;
             }
             this.hitEntities.add(entity);
         }
