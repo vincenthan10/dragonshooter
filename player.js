@@ -1,4 +1,5 @@
 import Bullet from "./bullet.js";
+import LightningHelmet from "./lightninghelmet.js";
 export default class Player {
     constructor(x, y) {
         this.x = x;
@@ -50,6 +51,8 @@ export default class Player {
         this.coins = 0;
         this.coinsThisRun = 0;
         this.unlockedMysteryBox = false;
+
+        this.lightningHelmet = new LightningHelmet(-2, -2);
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -60,6 +63,9 @@ export default class Player {
                 ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             } else {
                 ctx.drawImage(this.imgR, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight)
+            }
+            if (this.lightningHelmet.alive) {
+                this.lightningHelmet.draw(ctx, mapWidth, mapHeight);
             }
             // HP bar
             const barX = this.x * mapWidth;
@@ -149,6 +155,11 @@ export default class Player {
             let newY = this.y + dy;
             this.x = newX;
             this.y = newY;
+            if (this.lightningHelmet.alive) {
+                this.lightningHelmet.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight);
+                this.lightningHelmet.x = this.x + this.width / 3.6;
+                this.lightningHelmet.y = this.y - this.width / 20;
+            }
             // console.log(this.x + ", " + this.y);
         } else {
             if (this.fading) {
