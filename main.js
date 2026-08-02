@@ -274,7 +274,7 @@ function getUpgradePreviewText(upgrade) {
         case "Bullet Health Up":
             return { line: "bulletHealth", text: ` → ${current.bulletHealth + (upgrade.currentLevel + 1)}` };
         case "Bullet Size Up":
-            return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.1)}` };
+            return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.15)}` };
         default:
             return null;
     }
@@ -940,6 +940,9 @@ document.addEventListener("keydown", (e) => {
                 upgrade.currentLevel < upgrade.maxLevel) &&
                 upgrade.availableLevel <= level
             );
+            if (available.includes(upgradePool.find(upgrade => upgrade.name === "Lightning Helmet")) && player.lightningHelmet.alive) {
+                available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
+            }
             chosen = [];
             for (let i = 0; i < 3; i++) {
                 let index = Math.floor(Math.random() * available.length);
