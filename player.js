@@ -52,7 +52,7 @@ export default class Player {
         this.coinsThisRun = 0;
         this.unlockedMysteryBox = false;
 
-        this.lightningHelmet = new LightningHelmet(-2, -2);
+        this.lightningHelmet = new LightningHelmet(-2, -2, this.sizeMultiplier);
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -159,6 +159,7 @@ export default class Player {
                 this.lightningHelmet.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight);
                 this.lightningHelmet.x = this.x + this.width / 3.6;
                 this.lightningHelmet.y = this.y - this.width / 20;
+                this.lightningHelmet.sizeMultiplier = this.sizeMultiplier;
             }
             // console.log(this.x + ", " + this.y);
         } else {
