@@ -1,5 +1,5 @@
 export default class LightningHelmet {
-    constructor(x, y) {
+    constructor(x, y, sizeMultiplier) {
         this.x = x;
         this.y = y;
         this.maxHp = 45;
@@ -16,7 +16,7 @@ export default class LightningHelmet {
         this.icon.src = "images/lightninghelmeticon.png";
         this.BASEICONWIDTH = 54;
         this.BASEICONHEIGHT = 33;
-        this.sizeMultiplier = 1;
+        this.sizeMultiplier = sizeMultiplier;
         this.width = 0;
         this.height = 0;
     }
@@ -28,8 +28,8 @@ export default class LightningHelmet {
     }
 
     update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight) {
-        this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
-        this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
+        this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier;
+        this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier;
         this.width = this.imageWidth / mapWidth;
         this.height = this.imageHeight / mapHeight;
     }
