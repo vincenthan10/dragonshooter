@@ -5,6 +5,7 @@ import Cloud from "./cloud.js";
 import Explosion from "./explosion.js";
 import MysteryBox from "./mysterybox.js";
 import LightningHelmet from "./lightninghelmet.js";
+import FireShield from "./fireshield.js";
 
 const canvas = document.getElementById("gameCanvas")
 let mapWidth = canvas.width;
@@ -30,7 +31,8 @@ const fireExplosion = {
     BASEIMAGEWIDTH: 200,
     BASEIMAGEHEIGHT: 113
 }
-const lightningHelmetPreview = new LightningHelmet(0, 0);
+const lightningHelmetPreview = new LightningHelmet(0, 0, 1);
+const fireShieldPreview = new FireShield(0, 0, 1);
 const projExplosion = {
     src: "images/bulExplosion.png",
     BASEIMAGEWIDTH: 80,
@@ -146,6 +148,8 @@ let upgradePool = [
         target: "player",
         currentLevel: 0,
         apply(player) {
+            player.fireShield.hp = player.fireShield.maxHp;
+            player.fireShield.alive = true;
         },
         getCost() {
             return this.baseCost;
@@ -260,9 +264,11 @@ function getUpgradePreviewText(upgrade) {
 
     switch (upgrade.name) {
         case "Critical Hit Up":
-            return { line: "maxDamage", text: ` → ${current.damage + 1}` };
+            return { line: "damage", text: ` → ${current.damage + 1}` };
         case "Lightning Helmet":
             return { line: "lightningHelmet", text: ` → ${player.lightningHelmet.hp}` };
+        case "Fire Shield":
+            return { line: "fireShield", text: ` → ${player.fireShield.hp}` };
         case "Speed Up":
             return { line: "speed", text: ` → ${formatStat(current.speed * 1.09)}` };
         case "Fire Rate Up":
@@ -363,7 +369,14 @@ function update(deltaTime) {
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
         let fireball = dragon.fireballs[i];
         if (fireball.isColliding(player) && player.alive) {
-            player.hp -= fireball.damage;
+            if (player.fireShield.alive && player.facing * fireball.dir < 0) {
+                player.fireShield.hp -= fireball.damage;
+                if (player.fireShield.hp <= 0) {
+                    player.fireShield.alive = false;
+                } 
+            } else {
+                player.hp -= fireball.damage;
+            }
             const knockbackAmount = 0.02 * Math.pow(fireball.sizeMultiplier, 4) / Math.pow(player.sizeMultiplier, 4);
             player.x = player.x + fireball.dir * knockbackAmount;
             explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
@@ -639,8 +652,9 @@ function draw() {
         ];
 
         const lightningHelmetUpgrade = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
-        const hasLightningHelmet = lightningHelmetUpgrade ? lightningHelmetUpgrade.currentLevel > 0 : false;
-        const showLightningHelmetPreview = hasLightningHelmet || (hoveredPreview && hoveredPreview.line === "lightningHelmet");
+        const fireShieldUpgrade = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
+        const hasLightningHelmet = player.lightningHelmet && player.lightningHelmet.alive;
+        const hasFireShield = player.fireShield && player.fireShield.alive;
 
         statRows.forEach(({ key, label, y }) => {
             ctx.fillStyle = "white";
@@ -651,21 +665,61 @@ function draw() {
             }
         });
 
-        if (showLightningHelmetPreview) {
-            if (!hasLightningHelmet) {
-                const previewY = statPanelY + 168;
-                ctx.fillStyle = "#4cff7a";
-                ctx.drawImage(lightningHelmetPreview.icon, statPanelX, previewY - 10, 28, 18);
-                ctx.fillText("Lightning Helmet", statPanelX + 34, previewY);
-                ctx.fillText(`HP: ${player.lightningHelmet.hp}`, statPanelX + 34, previewY + 18);
-            } else if (hasLightningHelmet && player.lightningHelmet.alive) {
-                const previewY = statPanelY + 168;
-                ctx.fillStyle = "white";
-                ctx.drawImage(lightningHelmetPreview.icon, statPanelX, previewY - 10, 28, 18);
-                ctx.fillText("Lightning Helmet", statPanelX + 34, previewY);
-                ctx.fillText(`HP: ${player.lightningHelmet.hp}`, statPanelX + 34, previewY + 18);
+        // Determine which equipment to show in the top slot and optional bottom slot
+        let topEquip = null;
+        let bottomEquip = null;
+        let topIsHovered = false;
+        let bottomIsHovered = false;
+
+        const hoveredName = hoveredPreview ? (hoveredPreview.line === "lightningHelmet" ? "Lightning Helmet" : (hoveredPreview.line === "fireShield" ? "Fire Shield" : null)) : null;
+
+        if (hasLightningHelmet && hasFireShield) {
+            // both owned: show Lightning top, Fire bottom; hovering can still highlight the hovered row
+            topEquip = "Lightning Helmet";
+            bottomEquip = "Fire Shield";
+            if (hoveredName === "Lightning Helmet") topIsHovered = true;
+            if (hoveredName === "Fire Shield") bottomIsHovered = true;
+        } else if (hasLightningHelmet || hasFireShield) {
+            // one owned: owned goes to top (white). If hovering the other, show it in bottom (green) only while hovering.
+            const ownedName = hasLightningHelmet ? "Lightning Helmet" : "Fire Shield";
+            const otherName = ownedName === "Lightning Helmet" ? "Fire Shield" : "Lightning Helmet";
+            topEquip = ownedName;
+            if (hoveredName === otherName) {
+                bottomEquip = otherName;
+                bottomIsHovered = true;
+            }
+            if (hoveredName === ownedName) topIsHovered = true; // still allow hover highlight if hovering the owned item
+        } else {
+            // owns none: top shows hovered equipment in green; bottom empty unless both hovered somehow
+            if (hoveredName) {
+                topEquip = hoveredName;
+                topIsHovered = true;
             }
         }
+
+        const drawEquipPreview = (name, yOffset, isHovered) => {
+            if (!name) return;
+            const previewY = statPanelY + yOffset;
+            const owned = (name === "Lightning Helmet" && hasLightningHelmet) || (name === "Fire Shield" && hasFireShield);
+            // color: owned -> white, otherwise hovered -> green
+            if (owned) ctx.fillStyle = "white";
+            else if (isHovered) ctx.fillStyle = "#4cff7a";
+            else ctx.fillStyle = "#4cff7a";
+
+            if (name === "Lightning Helmet") {
+                ctx.drawImage(lightningHelmetPreview.icon, statPanelX, previewY - 10, 28, 18);
+                ctx.fillText("Lightning Helmet", statPanelX + 34, previewY);
+                ctx.fillText(`HP: ${hasLightningHelmet ? player.lightningHelmet.hp : lightningHelmetPreview.hp}`, statPanelX + 34, previewY + 18);
+            } else if (name === "Fire Shield") {
+                ctx.drawImage(fireShieldPreview.icon, statPanelX, previewY - 10, 28, 18);
+                ctx.fillText("Fire Shield", statPanelX + 34, previewY);
+                ctx.fillText(`HP: ${hasFireShield ? player.fireShield.hp : fireShieldPreview.hp}`, statPanelX + 34, previewY + 18);
+            }
+        }
+
+        // top slot at +168, bottom slot at +208
+        drawEquipPreview(topEquip, 168, topIsHovered);
+        drawEquipPreview(bottomEquip, 208, bottomIsHovered);
         
         ctx.font = "18px Arial";
         const optionOffsets = [-40, -10, 20];
@@ -793,6 +847,8 @@ function reset(isLevelCleared) {
         player.unlockedMysteryBox = false;
         player.lightningHelmet.hp = player.lightningHelmet.maxHp;
         player.lightningHelmet.alive = false;
+        player.fireShield.hp = player.fireShield.maxHp;
+        player.fireShield.alive = false;
         upgradePool.forEach(upgrade => {
             upgrade.currentLevel = 0;
         })
@@ -940,8 +996,13 @@ document.addEventListener("keydown", (e) => {
                 upgrade.currentLevel < upgrade.maxLevel) &&
                 upgrade.availableLevel <= level
             );
-            if (available.includes(upgradePool.find(upgrade => upgrade.name === "Lightning Helmet")) && player.lightningHelmet.alive) {
+            const _lh = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
+            const _fs = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
+            if (available.includes(_lh) && player.lightningHelmet.alive) {
                 available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
+            }
+            if (available.includes(_fs) && player.fireShield.alive) {
+                available = available.filter(upgrade => upgrade.name !== "Fire Shield");
             }
             chosen = [];
             for (let i = 0; i < 3; i++) {
@@ -1048,6 +1109,14 @@ canvas.addEventListener("mousedown", (e) => {
             upgrade.currentLevel < upgrade.maxLevel) &&
             upgrade.availableLevel <= level
         );
+        const _lh = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
+        const _fs = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
+        if (available.includes(_lh) && player.lightningHelmet.alive) {
+            available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
+        }
+        if (available.includes(_fs) && player.fireShield.alive) {
+            available = available.filter(upgrade => upgrade.name !== "Fire Shield");
+        }
         chosen = [];
         for (let i = 0; i < 3; i++) {
             let index = Math.floor(Math.random() * available.length);
@@ -1099,6 +1168,14 @@ canvas.addEventListener("touchstart", (e) => {
                 upgrade.currentLevel < upgrade.maxLevel) &&
                 upgrade.availableLevel <= level
             );
+            const _lh = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
+            const _fs = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
+            if (available.includes(_lh) && player.lightningHelmet.alive) {
+                available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
+            }
+            if (available.includes(_fs) && player.fireShield.alive) {
+                available = available.filter(upgrade => upgrade.name !== "Fire Shield");
+            }
             chosen = [];
             for (let i = 0; i < 3; i++) {
                 let index = Math.floor(Math.random() * available.length);
