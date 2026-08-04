@@ -1,5 +1,6 @@
 import Bullet from "./bullet.js";
 import LightningHelmet from "./lightninghelmet.js";
+import FireShield from "./fireshield.js";
 export default class Player {
     constructor(x, y) {
         this.x = x;
@@ -53,6 +54,7 @@ export default class Player {
         this.unlockedMysteryBox = false;
 
         this.lightningHelmet = new LightningHelmet(-2, -2, this.sizeMultiplier);
+        this.fireShield = new FireShield(-2, -2, this.sizeMultiplier);
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -66,6 +68,9 @@ export default class Player {
             }
             if (this.lightningHelmet.alive) {
                 this.lightningHelmet.draw(ctx, mapWidth, mapHeight);
+            }
+            if (this.fireShield.alive) {
+                this.fireShield.draw(ctx, mapWidth, mapHeight);
             }
             // HP bar
             const barX = this.x * mapWidth;
@@ -160,6 +165,12 @@ export default class Player {
                 this.lightningHelmet.x = this.x + this.width / 3.6;
                 this.lightningHelmet.y = this.y - this.width / 20;
                 this.lightningHelmet.sizeMultiplier = this.sizeMultiplier;
+            }
+            if (this.fireShield.alive) {
+                this.fireShield.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight);
+                this.fireShield.x = this.facing > 0 ? this.x + this.width * 0.63 : this.x;
+                this.fireShield.y = this.y + this.width / 10;
+                this.fireShield.sizeMultiplier = this.sizeMultiplier;
             }
             // console.log(this.x + ", " + this.y);
         } else {
