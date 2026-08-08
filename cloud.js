@@ -51,7 +51,7 @@ export default class Cloud {
 
     }
 
-    update(deltaTime, mapWidth, mapHeight, canvas, baseWidth, baseHeight) {
+    update(deltaTime, mapWidth, mapHeight, canvas, baseWidth, baseHeight, level) {
         this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
         this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
         this.width = this.imageWidth / mapWidth;
@@ -92,6 +92,9 @@ export default class Cloud {
                 this.lightningActive = false;
 
                 this.strikeInterval = Math.random() * 5000 + 3000;
+                if (level == 8) {
+                    this.strikeInterval /= 8;
+                }
                 this.strikeTime = Math.random() * 240 + 260;
             }
         }
