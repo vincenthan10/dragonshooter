@@ -5,7 +5,7 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.12, 0.12, 0.12, 0.12, 0.135, 0.25, 0.064];
+        this.baseSpeeds = [0.12, 0.12, 0.12, 0.12, 0.135, 0.25, 0.064, 0.16];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
@@ -18,9 +18,10 @@ export default class Dragon {
             Math.round(Math.random() * 16 + 145),
             Math.round(Math.random() * 27 + 44),
             Math.round(Math.random() * 15 + 49),
-            Math.round(Math.random() * 18 + 88)];
+            Math.round(Math.random() * 18 + 78),
+            Math.round(Math.random() * 31 + 86)];
         this.reward = this.rewards[this.hpChooser];
-        this.maxHp = [25, 40, 60, 100, 50, 20, 80];
+        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 120];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
@@ -55,7 +56,8 @@ export default class Dragon {
             Math.random() * 1500 + 3000,
             Math.random() * 1250 + 2500,
             Math.random() * 1500 + 1000,
-            0];
+            0,
+            Math.random() * 750 + 1500];
         this.restTime = this.restTimes[this.hpChooser];
         this.chargeTimes = [
             Math.random() * 750 + 2750,
@@ -64,17 +66,18 @@ export default class Dragon {
             Math.random() * 750 + 2750,
             Math.random() * 1000 + 3000,
             Math.random() * 1500 + 1250,
-            Math.random() * 750 + 750];
+            Math.random() * 750 + 750,
+            Math.random() * 1750 + 2250];
         this.chargeTime = this.chargeTimes[this.hpChooser];
         this.moveTime = 0;
         this.moveMultiplier = 1;
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 1400, 2500];
+        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 1400, 2500, 1900];
         this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
-        this.fireDmg = [1, 1, 1, 1, 1, 1, 1];
+        this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1];
         this.fireRateMultiplier = 1;
 
         this.fadeTime = 1;
