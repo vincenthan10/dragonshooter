@@ -314,7 +314,7 @@ function update(deltaTime) {
     } 
     //console.log(explosions);
     if (level >= 2) {
-        cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
+        cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, level);
         cloud.collisionHandler(player, mapWidth);
         cloud.collisionHandler(dragon, mapWidth);
     }
@@ -853,7 +853,7 @@ function reset(isLevelCleared) {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
-        dragon.maxHp = [25, 40, 60, 100, 50, 20, 80];
+        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 120];
         dragon.hp = dragon.maxHp[0];
         dragon.rewards = [
             Math.round(Math.random() * 16 + 26), 
@@ -862,7 +862,8 @@ function reset(isLevelCleared) {
             Math.round(Math.random() * 16 + 145),
             Math.round(Math.random() * 27 + 44),
             Math.round(Math.random() * 15 + 49),
-            Math.round(Math.random() * 18 + 88)];
+            Math.round(Math.random() * 18 + 78),
+            Math.round(Math.random() * 31 + 86)];
         gameOver = false;
     }
 
@@ -872,7 +873,11 @@ function reset(isLevelCleared) {
     cloud.strikeTimer = 0;
     cloud.warningTimer = 0;
     cloud.lightningTimer = 0;
-    cloud.strikeInterval = Math.random() * 5000 + 3000;
+    if (level == 8) {
+        cloud.strikeInterval = Math.random() * 1000 + 600;
+    } else {
+        cloud.strikeInterval = Math.random() * 5000 + 3000;
+    }
     cloud.hitEntities.clear();
 
     mystery.active = false;
@@ -1013,7 +1018,6 @@ document.addEventListener("keydown", (e) => {
             upgradeHoverIndex = -1;
             gameState = "upgrade";
         } else if (gameState == "gameover") {
-            reset(false);
             gameState = "title";
         }
     }
@@ -1101,7 +1105,6 @@ canvas.addEventListener("mousedown", (e) => {
         gameState = "game";
         reset(false);
     } else if (gameState === "gameover" && gameOverButton.hover) {
-        reset(false);
         gameState = "title";
     } else if (gameState === "victory" && victoryButton.hover) {
         available = upgradePool.filter(upgrade =>
