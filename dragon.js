@@ -5,7 +5,7 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.12, 0.12, 0.12, 0.12, 0.135, 0.25, 0.064, 0.16];
+        this.baseSpeeds = [0.12, 0.12, 0.12, 0.12, 0.135, 0.25, 0.064, 0.16, 0.088];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
@@ -19,9 +19,10 @@ export default class Dragon {
             Math.round(Math.random() * 27 + 44),
             Math.round(Math.random() * 15 + 49),
             Math.round(Math.random() * 18 + 78),
-            Math.round(Math.random() * 31 + 86)];
+            Math.round(Math.random() * 31 + 86),
+            Math.round(Math.random() * 20 + 156)];
         this.reward = this.rewards[this.hpChooser];
-        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 120];
+        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 120, 96];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
@@ -57,7 +58,8 @@ export default class Dragon {
             Math.random() * 1250 + 2500,
             Math.random() * 1500 + 1000,
             0,
-            Math.random() * 750 + 1500];
+            Math.random() * 750 + 1500,
+            0];
         this.restTime = this.restTimes[this.hpChooser];
         this.chargeTimes = [
             Math.random() * 750 + 2750,
@@ -67,17 +69,18 @@ export default class Dragon {
             Math.random() * 1000 + 3000,
             Math.random() * 1500 + 1250,
             Math.random() * 750 + 750,
-            Math.random() * 1750 + 2250];
+            Math.random() * 1750 + 2250,
+            Math.random() * 500 + 500];
         this.chargeTime = this.chargeTimes[this.hpChooser];
         this.moveTime = 0;
         this.moveMultiplier = 1;
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 1400, 2500, 1900];
+        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 1400, 2500, 1900, 3000];
         this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
-        this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1];
+        this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1];
         this.fireRateMultiplier = 1;
 
         this.fadeTime = 1;
@@ -190,7 +193,11 @@ export default class Dragon {
 
         if (this.alive) {
             if (this.boss) {
-                this.bossMultiplier = 1.2;
+                if (level == 4) {
+                    this.bossMultiplier = 1.2;
+                } else if (level == 9) {
+                    this.bossMultiplier = 0.8;
+                }
                 if (!this.warningActive && !this.abilityActive) {
                     this.abilityCooldown += deltaTime;
             
@@ -231,7 +238,9 @@ export default class Dragon {
             }
             if (this.warningActive || this.abilityActive) {
                 this.shooting = false;
-                this.charging = false;
+                if (level == 4) {
+                    this.charging = false;
+                }
             } else {
                 this.shooting = true;
             }
@@ -261,12 +270,12 @@ export default class Dragon {
             if (this.shooting) {
                 this.shootingTime += deltaTime;
                 if (this.shootingTime >= this.shootingDelay) {
-                    this.shoot();
+                    this.shoot(level);
                     this.shootingTime = 0;
                 }
             }
             this.moveTime += deltaTime;
-            if (!this.charging && !this.warningActive && !this.abilityActive && this.moveTime >= this.restTime) {
+            if (!this.charging && ((!this.warningActive && !this.abilityActive) || level == 9) && this.moveTime >= this.restTime) {
                 let dx = target.x + target.width / 2 - this.x - this.width / 2;
                 let dy = target.y + target.height / 2 - this.y - this.height / 3;
                 let dist = Math.sqrt(dx * dx + dy * dy);
@@ -315,11 +324,17 @@ export default class Dragon {
         return false;
     }
 
-    shoot() {
+    shoot(level) {
         if (this.facing < 0) {
             this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg, this.sizeMultiplier * this.bossMultiplier));
+            if (level == 9) {
+                this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg, this.sizeMultiplier * this.bossMultiplier));
+            }
         } else {
             this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg, this.sizeMultiplier * this.bossMultiplier));
+            if (level == 9) {
+                this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg, this.sizeMultiplier * this.bossMultiplier));
+            }
         }
     }
 }
