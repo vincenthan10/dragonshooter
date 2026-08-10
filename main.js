@@ -853,7 +853,7 @@ function reset(isLevelCleared) {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
-        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 120];
+        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 120, 96];
         dragon.hp = dragon.maxHp[0];
         dragon.rewards = [
             Math.round(Math.random() * 16 + 26), 
@@ -863,7 +863,8 @@ function reset(isLevelCleared) {
             Math.round(Math.random() * 27 + 44),
             Math.round(Math.random() * 15 + 49),
             Math.round(Math.random() * 18 + 78),
-            Math.round(Math.random() * 31 + 86)];
+            Math.round(Math.random() * 31 + 86),
+            Math.round(Math.random() * 20 + 156)];
         gameOver = false;
     }
 
@@ -924,7 +925,7 @@ function reset(isLevelCleared) {
     dragon.abilityDuration = 0;
     dragon.spawnCooldown = 0;
     explosions.splice(0, explosions.length);
-    if (level == 4) {
+    if (level == 4 || level == 9) {
         dragon.boss = true;
     } else {
         dragon.boss = false;
