@@ -41,6 +41,8 @@ export default class Player {
         this.shootingTime = 0;
         this.fadeTime = 1;
         this.bulletSizeMultiplier = 1;
+        this.canCrit = false;
+        this.canCritApplied = false;
 
         this.ltnInvinc = false;
 
@@ -189,9 +191,9 @@ export default class Player {
     shoot() {
         let crit = Math.random() * 4;
         if (this.facing < 0) {
-            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + (crit < 1 ? this.dmgUpgrade : 0), this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false));
+            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + (crit < 1 && this.canCritApplied ? this.dmgUpgrade : 0), this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false));
         } else {
-            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg + (crit < 1 ? this.dmgUpgrade : 0), this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false));
+            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg + (crit < 1 && this.canCritApplied ? this.dmgUpgrade : 0), this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false));
         }
     }
 
@@ -199,9 +201,9 @@ export default class Player {
         let crit = Math.random() * 4;
         if (this.superShotReady) {
             if (this.facing < 0) {
-                this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 15 + (crit < 1 ? this.dmgUpgrade * 3 : 0), this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true));
+                this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true));
             } else {
-                this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg * 15 + (crit < 1 ? this.dmgUpgrade * 3 : 0), this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true));
+                this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true));
             }   
             this.superShotReady = false;
         }
