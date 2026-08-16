@@ -84,7 +84,11 @@ let upgradePool = [
         baseCost: 100,
         availableLevel: 3,
         target: "player",
-        apply: (player) => player.dmgUpgrade += 1,
+        apply(player) {
+            player.canCrit = true;
+            player.canCritApplied = true;
+            player.dmgUpgrade += 1;
+        },
         maxLevel: 3,
         currentLevel: 0,
         getCost() {
@@ -176,7 +180,7 @@ let upgradePool = [
         target: "dragon",
         currentLevel: 0,
         apply(dragon) {
-            dragon.maxHp[level] = Math.round(dragon.maxHp[level] * 0.8);
+            dragon.maxHp[level] = Math.round(dragon.maxHp[level] * 0.75);
         },
         getCost() {
             return this.baseCost;
@@ -844,6 +848,8 @@ function reset(isLevelCleared) {
         player.speedUpgraded = 1;
         player.bhealthUpgrade = 0;
         player.bulletSizeMultiplier = 1;
+        player.canCrit = false;
+        player.canCritApplied = false;
         player.unlockedMysteryBox = false;
         player.lightningHelmet.hp = player.lightningHelmet.maxHp;
         player.lightningHelmet.alive = false;
