@@ -103,9 +103,10 @@ export default class MysteryBox {
                 player.bulletDmg = collected ? 3 : 1;
                 break;
             case 5:
-                player.speedMultiplier = collected ? 1.3 : 1;
-                player.fireRateMultiplier = collected ? 0.8 : 1;
+                player.speedMultiplier = collected ? 1.35 : 1;
+                player.fireRateMultiplier = collected ? 0.75 : 1;
                 player.sizeMultiplier = collected ? 0.65 : 1;
+                player.canCritApplied = collected ? false : player.canCrit;
                 break;
             case 6:
                 player.fireRateMultiplier = collected ? 1.5 : 1;
