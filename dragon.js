@@ -5,7 +5,7 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.12, 0.12, 0.12, 0.12, 0.135, 0.25, 0.064, 0.16, 0.088];
+        this.baseSpeeds = [0.13, 0.13, 0.13, 0.13, 0.143, 0.25, 0.07, 0.166, 0.09];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
@@ -14,12 +14,12 @@ export default class Dragon {
         this.rewards = [
             Math.round(Math.random() * 16 + 26), 
             Math.round(Math.random() * 18 + 42), 
-            Math.round(Math.random() * 20 + 62), 
+            Math.round(Math.random() * 20 + 52), 
             Math.round(Math.random() * 16 + 145),
             Math.round(Math.random() * 27 + 44),
             Math.round(Math.random() * 15 + 49),
-            Math.round(Math.random() * 18 + 78),
-            Math.round(Math.random() * 31 + 86),
+            Math.round(Math.random() * 18 + 58),
+            Math.round(Math.random() * 31 + 56),
             Math.round(Math.random() * 20 + 156)];
         this.reward = this.rewards[this.hpChooser];
         this.maxHp = [25, 40, 60, 100, 50, 20, 64, 120, 96];
@@ -77,7 +77,7 @@ export default class Dragon {
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 1400, 2500, 1900, 3000];
+        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 1400, 2500, 1900, 2500];
         this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
         this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1];
@@ -97,7 +97,7 @@ export default class Dragon {
         this.cooldownTime = Math.random() * 12500 + 15000;
         this.abilityDuration = 0;
         this.durationTime = Math.random() * 10000 + 8000;
-        this.spawnTime = Math.random() * 300 + 900;
+        this.spawnTime = Math.random() * 250 + 600;
         this.spawnCooldown = this.spawnTime;
         this.spawnPosition = 0;
         this.meteorites = [];
@@ -223,7 +223,7 @@ export default class Dragon {
                         this.strikePosition = Math.random();
                         this.meteorites.push(new Meteorite(this.strikePosition, -0.1, 2));
                         this.spawnCooldown = 0;
-                        this.spawnTime = Math.random() * 300 + 900;
+                        this.spawnTime = Math.random() * 250 + 600;
                     }
                     this.abilityDuration += deltaTime;
 
