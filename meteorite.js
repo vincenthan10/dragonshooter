@@ -2,7 +2,7 @@ export default class Meteorite {
     constructor(x, y, damage) {
         this.x = x;
         this.y = y;
-        this.baseSpeed = 0.0037;
+        this.baseSpeed = 0.0064;
         this.speed = this.baseSpeed;
         this.damage = damage;
 
