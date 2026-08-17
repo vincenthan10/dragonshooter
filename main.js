@@ -227,6 +227,20 @@ let upgradePool = [
         getCost() {
             return this.baseCost;
         }
+    },
+    {
+        name: "Shoot Ice Bullets",
+        baseCost: 150,
+        availableLevel: 4,
+        target: "player",
+        currentLevel: 0,
+        apply(player) {
+            player.canIce = true;
+        },
+        maxLevel: 1,
+        getCost() {
+            return this.baseCost;
+        }
     }
 ]
 let available = [];
@@ -413,7 +427,11 @@ function update(deltaTime) {
             const knockbackAmount = 0.001 * Math.pow(bullet.sizeMultiplier, 2)  / 
             Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1) * bullet.damage;
             dragon.x = dragon.x + bullet.dir * knockbackAmount;
-            if (bullet.super) {
+            if (bullet.ice) {
+                const freezeTime = bullet.super ? 3000 : 1000;
+                dragon.freeze(freezeTime);
+                explosions.push(new Explosion(bullet.x - 0.04, bullet.y - 0.1, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, bullet.super ? 4 : 1));
+            } else if (bullet.super) {
                 explosions.push(new Explosion(bullet.x - 0.08, bullet.y - 0.2, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
             } else {
                 explosions.push(new Explosion(bullet.x - 0.02, bullet.y - 0.05, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
@@ -850,6 +868,7 @@ function reset(isLevelCleared) {
         player.bulletSizeMultiplier = 1;
         player.canCrit = false;
         player.canCritApplied = false;
+        player.canIce = false;
         player.unlockedMysteryBox = false;
         player.lightningHelmet.hp = player.lightningHelmet.maxHp;
         player.lightningHelmet.alive = false;
