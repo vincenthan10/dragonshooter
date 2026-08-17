@@ -1,5 +1,5 @@
 export default class Bullet {
-    constructor(x, y, dir, damage, sizeMultiplier, health, superType) {
+    constructor(x, y, dir, damage, sizeMultiplier, health, superType, iceType) {
         this.x = x;
         this.y = y;
         this.baseSpeed = 0.0072;
@@ -10,18 +10,25 @@ export default class Bullet {
         this.health = health;
         this.img = new Image();
         this.img.src = "images/bullet.png";
-        this.BASEIMGWIDTH = 36;
+        this.iceImg = new Image();
+        this.iceImg.src = "images/bulletice.png";
+        this.BASEIMGWIDTH = 24;
         this.BASEIMGHEIGHT = 24;
         this.imageWidth = this.BASEIMGWIDTH * this.sizeMultiplier;
         this.imageHeight = this.BASEIMGHEIGHT * this.sizeMultiplier;
         this.width = 0;
         this.height = 0;
         this.super = superType;
+        this.ice = iceType;
     }
 
     draw(ctx, mapWidth, mapHeight) {
         ctx.save();
-        ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+        if (this.ice) {
+            ctx.drawImage(this.iceImg, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+        } else {
+            ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+        }
         ctx.restore();
     }
 
