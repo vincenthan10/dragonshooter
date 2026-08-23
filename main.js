@@ -100,11 +100,11 @@ let upgradePool = [
         baseCost: 30,
         availableLevel: 1,
         target: "player",
-        apply: (player) => player.speedUpgraded *= 1.09,
+        apply: (player) => player.speedUpgraded *= 1.1,
         maxLevel: 6,
         currentLevel: 0,
         getCost() {
-            return this.baseCost + this.currentLevel * 25;
+            return this.baseCost + this.currentLevel * 30;
         }
     },
     {
@@ -112,7 +112,7 @@ let upgradePool = [
         baseCost: 30,
         availableLevel: 1,
         target: "player",
-        apply: (player) => player.fireRateUpgraded *= 0.91,
+        apply: (player) => player.fireRateUpgraded *= 0.9,
         maxLevel: 6,
         currentLevel: 0,
         getCost() {
@@ -127,7 +127,7 @@ let upgradePool = [
         apply: (player) => player.lives++,
         currentLevel: 0,
         getCost() {
-            return this.baseCost + this.currentLevel * 25;
+            return this.baseCost + this.currentLevel * 10;
         }
     },
     {
@@ -180,7 +180,7 @@ let upgradePool = [
         target: "dragon",
         currentLevel: 0,
         apply(dragon) {
-            dragon.maxHp[level] = Math.round(dragon.maxHp[level] * 0.75);
+            dragon.maxHp[level] = Math.round(dragon.maxHp[level] * 2 / 3);
         },
         getCost() {
             return this.baseCost;
@@ -207,7 +207,7 @@ let upgradePool = [
         target: "player",
         currentLevel: 0,
         apply(player) {
-            player.bulletSizeMultiplier *= 1.15;
+            player.bulletSizeMultiplier *= 1.18;
         },
         maxLevel: 4,
         getCost() {
@@ -288,9 +288,9 @@ function getUpgradePreviewText(upgrade) {
         case "Fire Shield":
             return { line: "fireShield", text: ` → ${player.fireShield.hp}` };
         case "Speed Up":
-            return { line: "speed", text: ` → ${formatStat(current.speed * 1.09)}` };
+            return { line: "speed", text: ` → ${formatStat(current.speed * 1.1)}` };
         case "Fire Rate Up":
-            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 0.91)}s` };
+            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 0.9)}s` };
         case "Extra Life":
             return { line: "lives", text: ` → ${current.lives + 1}` };
         case "Health Up":
@@ -298,7 +298,7 @@ function getUpgradePreviewText(upgrade) {
         case "Bullet Health Up":
             return { line: "bulletHealth", text: ` → ${current.bulletHealth + (upgrade.currentLevel + 1)}` };
         case "Bullet Size Up":
-            return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.15)}` };
+            return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.18)}` };
         default:
             return null;
     }
@@ -883,12 +883,12 @@ function reset(isLevelCleared) {
         dragon.rewards = [
             Math.round(Math.random() * 16 + 26), 
             Math.round(Math.random() * 18 + 42), 
-            Math.round(Math.random() * 20 + 62), 
+            Math.round(Math.random() * 20 + 52), 
             Math.round(Math.random() * 16 + 145),
             Math.round(Math.random() * 27 + 44),
             Math.round(Math.random() * 15 + 49),
-            Math.round(Math.random() * 18 + 78),
-            Math.round(Math.random() * 31 + 86),
+            Math.round(Math.random() * 18 + 58),
+            Math.round(Math.random() * 26 + 76),
             Math.round(Math.random() * 20 + 156)];
         gameOver = false;
     }
@@ -952,9 +952,13 @@ function reset(isLevelCleared) {
     explosions.splice(0, explosions.length);
     if (level == 4 || level == 9) {
         dragon.boss = true;
+        dragon.bossMultiplier = level == 4 ? 1.2 : 0.8;
     } else {
         dragon.boss = false;
+        dragon.bossMultiplier = 1;
     }
+    dragon.restTime = dragon.getRandomRange(dragon.restTimes[dragon.hpChooser]) / dragon.bossMultiplier;
+    dragon.chargeTime = dragon.getRandomRange(dragon.chargeTimes[dragon.hpChooser]) * dragon.bossMultiplier;
     dragon.meteorites = [];
 
     lastHit = 0;
