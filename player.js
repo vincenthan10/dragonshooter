@@ -191,7 +191,7 @@ export default class Player {
 
     shoot() {
         let crit = Math.random() * 4;
-        const ice = this.canIce ? Math.random() * 10 : 0;
+        const ice = this.canIce ? Math.random() * 9 : 0;
         if (this.facing < 0) {
             this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + (crit < 1 && this.canCritApplied ? this.dmgUpgrade : 0), 
             this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false, this.canIce && ice < 1));
@@ -203,7 +203,7 @@ export default class Player {
 
     shootSuperBullet() {
         let crit = Math.random() * 4;
-        const ice = this.canIce ? Math.random() * 10 : 0;
+        const ice = this.canIce ? Math.random() * 9 : 0;
         if (this.superShotReady) {
             if (this.facing < 0) {
                 this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), 
