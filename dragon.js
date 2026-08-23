@@ -5,7 +5,7 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.13, 0.13, 0.13, 0.13, 0.143, 0.25, 0.07, 0.166, 0.09];
+        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.2, 0.09];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
@@ -19,7 +19,7 @@ export default class Dragon {
             Math.round(Math.random() * 27 + 44),
             Math.round(Math.random() * 15 + 49),
             Math.round(Math.random() * 18 + 58),
-            Math.round(Math.random() * 31 + 56),
+            Math.round(Math.random() * 26 + 76),
             Math.round(Math.random() * 20 + 156)];
         this.reward = this.rewards[this.hpChooser];
         this.maxHp = [25, 40, 60, 100, 50, 20, 64, 120, 96];
@@ -51,26 +51,26 @@ export default class Dragon {
 
         this.charging = false;
         this.restTimes = [
-            [3000, 4500],
-            [3000, 4500],
-            [3000, 4500],
-            [3000, 4500],
-            [2500, 3750],
-            [1000, 2500],
+            [2500, 4000],
+            [2500, 4000],
+            [2500, 4000],
+            [3000, 4000],
+            [2000, 3750],
+            [1250, 2500],
             [0, 0],
             [1500, 2250],
             [0, 0]
         ];
         this.restTime = this.getRandomRange(this.restTimes[this.hpChooser]);
         this.chargeTimes = [
-            [2750, 3500],
-            [2750, 3500],
-            [2750, 3500],
-            [2750, 3500],
-            [3000, 4000],
-            [1250, 2750],
-            [750, 1500],
             [2250, 4000],
+            [2250, 4000],
+            [2250, 4000],
+            [2750, 4000],
+            [2000, 4500],
+            [1500, 2750],
+            [750, 1500],
+            [1500, 5000],
             [500, 1000]
         ];
         this.chargeTime = this.getRandomRange(this.chargeTimes[this.hpChooser]);
@@ -79,7 +79,7 @@ export default class Dragon {
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 1400, 2500, 1900, 2500];
+        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1250, 2500];
         this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
         this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1];
@@ -269,13 +269,8 @@ export default class Dragon {
             this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier * this.bossMultiplier;
             this.width = this.imageWidth / mapWidth;
             this.height = this.imageHeight / mapHeight;
-            const restRange = this.restTimes[this.hpChooser];
-            const chargeRange = this.chargeTimes[this.hpChooser];
-            const restPhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 0.9 : 0.7;
-            const chargePhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 1.1 : 1.3;
-            this.restTime = this.getRandomRange(restRange) * restPhaseMultiplier * this.moveMultiplier / this.bossMultiplier;
-            this.chargeTime = this.getRandomRange(chargeRange) * chargePhaseMultiplier * this.bossMultiplier;
-            this.shootingDelay = this.shootingDelays[this.hpChooser] * this.fireRateMultiplier / this.bossMultiplier;
+            const shootingPhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 0.9 : 0.7;
+            this.shootingDelay = this.shootingDelays[this.hpChooser] * shootingPhaseMultiplier * this.fireRateMultiplier / this.bossMultiplier;
             this.baseSpeed = this.baseSpeeds[this.hpChooser] * (this.phase == 1 ? 1 : this.phase == 2 ? 1.1 : 1.3);
             if (this.hpChooser == 5) {
                 this.ltnInvinc = true;
