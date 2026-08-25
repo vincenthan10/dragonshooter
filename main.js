@@ -348,8 +348,10 @@ function update(deltaTime) {
         }
     }
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
-    if (!dragon.alive && !dragon.fading) {
-        dragon.fading = true;
+    if (!dragon.alive) {
+        if (!dragon.fading) {
+            dragon.fading = true;
+        }
         defeatTime += deltaTime;
         if (defeatTime >= victoryTime) {
             gameState = "victory";
@@ -423,18 +425,30 @@ function update(deltaTime) {
     for (let i = player.bullets.length - 1; i >= 0; i--) {
         let bullet = player.bullets[i];
         if (bullet.isColliding(dragon) && dragon.alive) {
-            dragon.hp -= bullet.damage;
+            dragon.takeDamage(bullet.damage);
             const knockbackAmount = 0.001 * Math.pow(bullet.sizeMultiplier, 2)  / 
             Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1) * bullet.damage;
             dragon.x = dragon.x + bullet.dir * knockbackAmount;
             if (bullet.ice) {
-                const freezeTime = bullet.super ? 3000 : 1000;
-                dragon.freeze(freezeTime);
-                explosions.push(new Explosion(bullet.x - 0.04, bullet.y - 0.1, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, bullet.super ? 4 : 1));
+                if (bullet.super) {
+                    explosions.push(new Explosion(bullet.x - 0.08, bullet.y - 0.2,  "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
+                } else {
+                    explosions.push(new Explosion(bullet.x - 0.02, bullet.y - 0.05, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, bullet.super ? 4 : 1));
+                }
+                if (dragon.hp > 0) {
+                    const freezeTime = bullet.super ? 3000 : 1000;
+                    dragon.freeze(freezeTime);
+                }
             } else if (bullet.super) {
                 explosions.push(new Explosion(bullet.x - 0.08, bullet.y - 0.2, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
             } else {
                 explosions.push(new Explosion(bullet.x - 0.02, bullet.y - 0.05, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+            }
+            if (dragon.hp <= 0) {
+                dragon.hp = 0;
+                dragon.alive = false;
+                dragon.freezeTimer = 0;
+                dragon.isFrozen = false;
             }
             player.bullets.splice(i, 1);
         }
@@ -673,11 +687,6 @@ function draw() {
             { key: "lives", label: `Lives: ${stats.lives}`, y: statPanelY + 144 }
         ];
 
-        const lightningHelmetUpgrade = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
-        const fireShieldUpgrade = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
-        const hasLightningHelmet = player.lightningHelmet && player.lightningHelmet.alive;
-        const hasFireShield = player.fireShield && player.fireShield.alive;
-
         statRows.forEach(({ key, label, y }) => {
             ctx.fillStyle = "white";
             ctx.fillText(label, statPanelX, y);
@@ -687,7 +696,8 @@ function draw() {
             }
         });
 
-        // Determine which equipment to show in the top slot and optional bottom slot
+        const hasLightningHelmet = player.lightningHelmet && player.lightningHelmet.alive;
+        const hasFireShield = player.fireShield && player.fireShield.alive;
         let topEquip = null;
         let bottomEquip = null;
         let topIsHovered = false;
@@ -878,7 +888,7 @@ function reset(isLevelCleared) {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
-        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 120, 96];
+        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80];
         dragon.hp = dragon.maxHp[0];
         dragon.rewards = [
             Math.round(Math.random() * 16 + 26), 
