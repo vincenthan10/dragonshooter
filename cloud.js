@@ -120,7 +120,7 @@ export default class Cloud {
                 entity.y += 0.025 / Math.pow(entity.sizeMultiplier, 4);
             } else {
                 entity.y += 0.008 / Math.pow(entity.sizeMultiplier, 4) / (entity.boss ? Math.pow(entity.bossMultiplier, 3) : 1);
-                entity.hp -= this.lightningDmg;
+                entity.takeDamage(this.lightningDmg);
             }
             this.hitEntities.add(entity);
         }
