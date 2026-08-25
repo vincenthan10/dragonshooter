@@ -22,7 +22,7 @@ export default class Dragon {
             Math.round(Math.random() * 26 + 76),
             Math.round(Math.random() * 20 + 156)];
         this.reward = this.rewards[this.hpChooser];
-        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 120, 96];
+        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
@@ -185,8 +185,26 @@ export default class Dragon {
             }
         }
 
+        if (this.hp <= 0) {
+            this.kill();
+        }
+
+        if (!this.alive) {
+            if (this.fading) {
+                this.imageWidth *= 1.04;
+                this.imageHeight *= 1.04;
+                this.fadeTime -= deltaTime / 350;
+                if (this.fadeTime <= 0) {
+                    this.fadeTime = 0;
+                    this.fading = false;
+                }
+            }
+            return;
+        }
+
         if (this.freezeTimer > 0) {
             this.freezeTimer -= deltaTime;
+            this.moveTime += deltaTime;
             if (this.freezeTimer <= 0) {
                 this.freezeTimer = 0;
                 this.isFrozen = false;
@@ -201,10 +219,7 @@ export default class Dragon {
             return;
         }
 
-        if (this.hp <= 0) {
-            this.hp = 0;
-            this.alive = false;
-        } else if (this.hp >= this.maxHp[this.hpChooser] * 0.65) {
+        if (this.hp >= this.maxHp[this.hpChooser] * 0.65) {
             this.phase = 1;
         } else if (this.hp >= this.maxHp[this.hpChooser] * 0.3 && this.hp < this.maxHp[this.hpChooser] * 0.65) {
             this.phase = 2;
@@ -258,11 +273,13 @@ export default class Dragon {
                 this.bossMultiplier = 1;
             }
             if (this.warningActive || this.abilityActive) {
+                this.speedMultiplier = 0.5;
                 this.shooting = false;
                 if (level == 4) {
                     this.charging = false;
                 }
             } else {
+                this.speedMultiplier = 1;
                 this.shooting = true;
             }
             this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier * this.bossMultiplier;
@@ -285,7 +302,7 @@ export default class Dragon {
             this.moveTime += deltaTime;
             if (!this.charging && ((!this.warningActive && !this.abilityActive) || level == 9) && this.moveTime >= this.restTime) {
                 const chargeRange = this.chargeTimes[this.hpChooser];
-                const chargePhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 1.1 : 1.3;
+                const chargePhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 1.05 : 1.15;
                 this.chargeTime = this.getRandomRange(chargeRange) * chargePhaseMultiplier * this.bossMultiplier;
 
                 let dx = target.x + target.width / 2 - this.x - this.width / 2;
@@ -338,9 +355,25 @@ export default class Dragon {
         return Math.random() * (max - min) + min;
     }
 
+    takeDamage(damage) {
+        this.hp -= damage;
+        if (this.hp <= 0) {
+            this.kill();
+        }
+    }
+
+    kill() {
+        this.hp = 0;
+        this.alive = false;
+        this.freezeTimer = 0;
+        this.isFrozen = false;
+        this.effectiveSpeed = this.savedSpeed;
+        this.savedSpeed = 0;
+    }
+
     freeze(duration) {
         this.freezeTimer = Math.max(this.freezeTimer, duration);
-        if (!this.isFrozen) {
+        if (this.alive && !this.isFrozen) {
             this.isFrozen = true;
             this.savedSpeed = this.effectiveSpeed;
             this.effectiveSpeed = 0;
