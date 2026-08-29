@@ -945,6 +945,7 @@ function reset(isLevelCleared) {
     dragon.phase = 1;
     dragon.charging = false;
     dragon.moveTime = 0;
+    dragon.abilitySpeedMultiplier = 1;
     dragon.fireballs = [];
     dragon.shootingTime = 0;
     dragon.speedMultiplier = 1;
