@@ -5,11 +5,12 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.2, 0.09];
+        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.09];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
         this.speedMultiplier = 1;
+        this.abilitySpeedMultiplier = 1;
         this.facing = 1; // - = left, + = right
         this.rewards = [
             Math.round(Math.random() * 16 + 26), 
@@ -38,6 +39,10 @@ export default class Dragon {
         this.bossImg.src = "images/bossdragon.png";
         this.bossImgL = new Image();
         this.bossImgL.src = "images/bossdragonL.png";
+        this.frozenImg = new Image();
+        this.frozenImg.src = "images/frozendragon.png";
+        this.frozenImgL = new Image();
+        this.frozenImgL.src = "images/frozendragonL.png";
         this.BASEIMGWIDTH = 210;
         this.BASEIMGHEIGHT = 233;
         this.imageWidth = this.BASEIMGWIDTH;
@@ -79,7 +84,7 @@ export default class Dragon {
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1250, 2500];
+        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1400, 2500];
         this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
         this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1];
@@ -113,9 +118,9 @@ export default class Dragon {
         ctx.globalAlpha = this.fadeTime;
         if (this.alive || this.fading) {
             if (this.facing > 0) {
-                ctx.drawImage(this.boss ? this.bossImg : this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+                ctx.drawImage(this.isFrozen ? this.frozenImg : this.boss ? this.bossImg : this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             } else {
-                ctx.drawImage(this.boss ? this.bossImgL : this.imgL, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+                ctx.drawImage(this.isFrozen ? this.frozenImgL : this.boss ? this.bossImgL : this.imgL, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             }
 
             if (this.collected && this.alive) {
@@ -273,13 +278,13 @@ export default class Dragon {
                 this.bossMultiplier = 1;
             }
             if (this.warningActive || this.abilityActive) {
-                this.speedMultiplier = 0.5;
+                this.abilitySpeedMultiplier = 0.75;
                 this.shooting = false;
                 if (level == 4) {
                     this.charging = false;
                 }
             } else {
-                this.speedMultiplier = 1;
+                this.abilitySpeedMultiplier = 1;
                 this.shooting = true;
             }
             this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth) * this.sizeMultiplier * this.bossMultiplier;
@@ -310,7 +315,7 @@ export default class Dragon {
                 let dist = Math.sqrt(dx * dx + dy * dy);
                 this.dirX = dx / dist;
                 this.dirY = dy / dist;
-                this.effectiveSpeed = this.baseSpeed * this.speedMultiplier;
+                this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier;
                 if (this.dirX > 0) {
                     this.facing = 1;
                 } else {
@@ -320,7 +325,7 @@ export default class Dragon {
                 this.moveTime = 0;
             }
             if (this.charging) {
-                this.effectiveSpeed = this.baseSpeed * this.speedMultiplier;
+                this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier;
                 this.x += this.dirX * this.effectiveSpeed * deltaTime / 1000;
                 this.y += this.dirY * this.yMultiplier * this.effectiveSpeed * deltaTime / 1000;
                 if (this.moveTime >= this.chargeTime) {
