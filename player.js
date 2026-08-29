@@ -107,7 +107,7 @@ export default class Player {
     update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, baseWidth, baseHeight) {
         this.bullets.forEach(b => b.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
         for (let i = this.bullets.length - 1; i >= 0; i--) {
-            if (this.bullets[i].x <= -0.5 || this.bullets[i].x + this.bullets[i].imageWidth / mapWidth >= 1.5) {
+            if (this.bullets[i].x <= -1 || this.bullets[i].x + this.bullets[i].imageWidth / mapWidth >= 2) {
                 this.bullets.splice(i, 1);
             }
         }
