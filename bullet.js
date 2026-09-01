@@ -1,5 +1,5 @@
 export default class Bullet {
-    constructor(x, y, dir, damage, sizeMultiplier, health, superType, iceType) {
+    constructor(x, y, dir, damage, sizeMultiplier, health, superType, iceType, homing = false, target = null) {
         this.x = x;
         this.y = y;
         this.baseSpeed = 0.0072;
@@ -20,6 +20,10 @@ export default class Bullet {
         this.height = 0;
         this.super = superType;
         this.ice = iceType;
+        this.homing = homing;
+        this.target = target;
+        this.lastAdjustmentTime = 0;
+        this.adjustmentInterval = 750; // Update trajectory every 750ms
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -37,7 +41,41 @@ export default class Bullet {
         this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier;
         this.width = this.imageWidth / mapWidth;
         this.height = this.imageHeight / mapHeight;
+        
+        // Handle homing bullet trajectory adjustment
+        if (this.homing && this.target && this.target.alive) {
+            this.lastAdjustmentTime += deltaTime;
+            
+            if (this.lastAdjustmentTime >= this.adjustmentInterval) {
+                // Calculate direction towards target
+                const targetCenterX = this.target.x + this.target.width / 2;
+                const targetCenterY = this.target.y + this.target.height / 2;
+                const bulletCenterX = this.x + this.width / 2;
+                const bulletCenterY = this.y + this.height / 2;
+                
+                const dx = targetCenterX - bulletCenterX;
+                const dy = targetCenterY - bulletCenterY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 0) {
+                    // Normalize and apply to speed components
+                    const normDx = dx / distance;
+                    const normDy = dy / distance;
+                    
+                    this.speed = this.baseSpeed * normDx;
+                    this.speedY = this.baseSpeed * normDy;
+                } else {
+                    this.speedY = 0;
+                }
+                
+                this.lastAdjustmentTime = 0;
+            }
+        }
+        
         this.x += this.speed;
+        if (this.homing && this.speedY !== undefined) {
+            this.y += this.speedY;
+        }
     }
 
     isColliding(entity) {
