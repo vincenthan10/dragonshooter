@@ -229,13 +229,28 @@ let upgradePool = [
         }
     },
     {
-        name: "Shoot Ice Bullets",
+        name: "Ice Bullets",
         baseCost: 150,
         availableLevel: 4,
         target: "player",
         currentLevel: 0,
         apply(player) {
             player.canIce = true;
+        },
+        maxLevel: 1,
+        getCost() {
+            return this.baseCost;
+        }
+    },
+    {
+        name: "Homing Bullets",
+        baseCost: 150,
+        availableLevel: 4,
+        target: "player",
+        currentLevel: 0,
+        apply(player) {
+            player.homingBulletActive = true;
+            player.fireRateUpgraded *= 1.4;
         },
         maxLevel: 1,
         getCost() {
@@ -255,7 +270,7 @@ function formatStat(value) {
 
 function getCurrentPlayerStats() {
     const speed = player.baseSpeedX * player.speedUpgraded;
-    const reloadTime = (player.baseShootingDelay * player.fireRateUpgraded) / 1000;
+    const reloadTime = (player.baseShootingDelay * player.fireRateMultiplier * player.fireRateUpgraded) / 1000;
     const damage = player.bulletDmg + player.dmgUpgrade;
     const bulletHealth = player.bulletHealth + player.bhealthUpgrade;
     const previewBullet = new Bullet(-500, -500, 1, damage, player.sizeMultiplier * player.bulletSizeMultiplier, bulletHealth, false);
@@ -299,6 +314,8 @@ function getUpgradePreviewText(upgrade) {
             return { line: "bulletHealth", text: ` → ${current.bulletHealth + (upgrade.currentLevel + 1)}` };
         case "Bullet Size Up":
             return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.18)}` };
+        case "Homing Bullets":
+            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 1.4)}s` };
         default:
             return null;
     }
@@ -347,7 +364,7 @@ function update(deltaTime) {
             mystery.dragonEffect(dragon, true, 0);
         }
     }
-    player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT);
+    player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, dragon);
     if (!dragon.alive) {
         if (!dragon.fading) {
             dragon.fading = true;
@@ -428,7 +445,21 @@ function update(deltaTime) {
             dragon.takeDamage(bullet.damage);
             const knockbackAmount = 0.001 * Math.pow(bullet.sizeMultiplier, 2)  / 
             Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1) * bullet.damage;
-            dragon.x = dragon.x + bullet.dir * knockbackAmount;
+            
+            // Apply knockback opposite to bullet direction
+            if (bullet.homing && bullet.speedY !== undefined) {
+                // For homing bullets, use normalized velocity direction
+                const speed = Math.sqrt(bullet.speed * bullet.speed + bullet.speedY * bullet.speedY);
+                if (speed > 0) {
+                    const normX = bullet.speed / speed; 
+                    const normY = bullet.speedY / speed; 
+                    dragon.x = dragon.x + normX * knockbackAmount;
+                    dragon.y = dragon.y + normY * knockbackAmount;
+                }
+            } else {
+                // For regular bullets, use simple directional knockback
+                dragon.x = dragon.x + bullet.dir * knockbackAmount;
+            }
             if (bullet.ice) {
                 if (bullet.super) {
                     explosions.push(new Explosion(bullet.x - 0.08, bullet.y - 0.2,  "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
@@ -879,6 +910,7 @@ function reset(isLevelCleared) {
         player.canCrit = false;
         player.canCritApplied = false;
         player.canIce = false;
+        player.homingBulletActive = false;
         player.unlockedMysteryBox = false;
         player.lightningHelmet.hp = player.lightningHelmet.maxHp;
         player.lightningHelmet.alive = false;
