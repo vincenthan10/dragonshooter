@@ -1,4 +1,5 @@
 import Player from "./player.js";
+import Ice from "./ice.js";
 export default class Cloud {
     constructor(x, y) {
         this.x = x;
@@ -18,7 +19,7 @@ export default class Cloud {
 
         this.warningActive = false
         this.lightningActive = false;
-        this.damageInterval = 33;
+        this.damageInterval = 30;
         this.damageTime = 0;
         this.hitEntities = new Set();
         this.strikeInterval = Math.random() * 4500 + 3500;
@@ -26,9 +27,12 @@ export default class Cloud {
         this.warningTimer = 0;
         this.lightningTimer = 0;
         this.warningTime = 1000;
-        this.strikeTime = Math.random() * 240 + 260;
+        this.strikeTime = Math.random() * 230 + 230;
         this.strikePosition = 0;
         this.lightningDmg = 1;
+        this.iceSpawnTime = Math.random() * 500 + 1100;
+        this.iceSpawnTimer = 0;
+        this.ices = [];
 
     }
 
@@ -94,10 +98,32 @@ export default class Cloud {
                 this.strikeInterval = Math.random() * 5000 + 3000;
                 if (level == 8) {
                     this.strikeInterval /= 8;
+                } else if (level >= 10) {
+                    this.strikeInterval *= 3;
                 }
-                this.strikeTime = Math.random() * 240 + 260;
+                this.strikeTime = Math.random() * 230 + 230;
             }
         }
+
+        this.ices.forEach(ice => ice.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
+        for (let i = this.ices.length - 1; i >= 0; i--) {
+            if (this.ices[i].y >= 1.1) {
+                this.ices.splice(i, 1);
+            }
+        }
+
+        if (level >= 10) {
+            this.iceSpawnTimer += deltaTime;
+            if (this.iceSpawnTimer >= this.iceSpawnTime) {
+                this.ices.push(new Ice(Math.random(), -0.1, 1));
+                this.iceSpawnTimer = 0;
+                this.iceSpawnTime = Math.random() * 500 + 1100;
+            }
+        }
+    }
+
+    drawIce(ctx, mapWidth, mapHeight) {
+        this.ices.forEach(ice => ice.draw(ctx, mapWidth, mapHeight));
     }
 
 
