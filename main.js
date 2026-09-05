@@ -231,7 +231,7 @@ let upgradePool = [
     {
         name: "Ice Bullets",
         baseCost: 150,
-        availableLevel: 4,
+        availableLevel: 9,
         target: "player",
         currentLevel: 0,
         apply(player) {
@@ -245,12 +245,12 @@ let upgradePool = [
     {
         name: "Homing Bullets",
         baseCost: 150,
-        availableLevel: 4,
+        availableLevel: 9,
         target: "player",
         currentLevel: 0,
         apply(player) {
             player.homingBulletActive = true;
-            player.fireRateUpgraded *= 1.4;
+            player.fireRateUpgraded *= 1.6;
         },
         maxLevel: 1,
         getCost() {
@@ -315,7 +315,7 @@ function getUpgradePreviewText(upgrade) {
         case "Bullet Size Up":
             return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.18)}` };
         case "Homing Bullets":
-            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 1.4)}s` };
+            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 1.6)}s` };
         default:
             return null;
     }
@@ -393,7 +393,7 @@ function update(deltaTime) {
             return;
         }
     }
-    if (shooting && player.alive && player.shootingTime >= player.shootingDelay) {
+    if (shooting && player.alive && !player.isFrozen && player.shootingTime >= player.shootingDelay) {
         player.shoot();
         player.shootingTime = 0;
     }
@@ -443,8 +443,8 @@ function update(deltaTime) {
         let bullet = player.bullets[i];
         if (bullet.isColliding(dragon) && dragon.alive) {
             dragon.takeDamage(bullet.damage);
-            const knockbackAmount = 0.001 * Math.pow(bullet.sizeMultiplier, 2)  / 
-            Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1) * bullet.damage;
+            const knockbackAmount = Math.min(0.001 * Math.pow(bullet.sizeMultiplier, 4)  / 
+            Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1) * Math.pow(bullet.damage, 0.5), 1);
             
             // Apply knockback opposite to bullet direction
             if (bullet.homing && bullet.speedY !== undefined) {
@@ -487,7 +487,7 @@ function update(deltaTime) {
     if (dragon.boss) {
         for (let i = dragon.meteorites.length - 1; i >= 0; i--) {
             let meteorite = dragon.meteorites[i];
-            if (meteorite.isColliding(player) && player.alive) {
+            if (meteorite.isColliding(player) && player.alive && !player.ltnInvinc) {
                 player.hp -= meteorite.damage;
                 const knockbackAmount = 0.04 / Math.pow(player.sizeMultiplier, 4);
                 player.y = player.y + knockbackAmount;
@@ -512,6 +512,58 @@ function update(deltaTime) {
         }
         }
     }
+    for (let i = cloud.ices.length - 1; i >= 0; i--) {
+        let ice = cloud.ices[i];
+        if (ice.isColliding(player) && player.alive && !player.ltnInvinc) {
+            player.hp -= ice.damage;
+            const knockbackAmount = 0.01 / Math.pow(player.sizeMultiplier, 4);
+            player.y = player.y + knockbackAmount;
+            player.freeze(2000);
+            explosions.push(new Explosion(ice.x - 0.04, ice.y - 0.02, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+            cloud.ices.splice(i, 1);
+            continue;
+        }
+        if (ice.isColliding(dragon) && dragon.alive && !dragon.ltnInvinc) {
+            dragon.takeDamage(ice.damage);
+            const knockbackAmount = 0.0025 / Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1);
+            dragon.y = dragon.y + knockbackAmount;
+            dragon.freeze(500);
+            explosions.push(new Explosion(ice.x - 0.04, ice.y - 0.02, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+            cloud.ices.splice(i, 1);
+            continue;
+        }
+        for (let j = player.bullets.length - 1; j >= 0; j--) {
+            let bullet = player.bullets[j];
+            if (ice.isColliding(bullet)) {
+                if (bullet.super) {
+                    explosions.push(new Explosion(ice.x - 0.09, ice.y - 0.2, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+                } else {
+                    explosions.push(new Explosion(ice.x - 0.01, ice.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                }
+                bullet.health -= ice.damage;
+                cloud.ices.splice(i, 1);
+                if (bullet.health <= 0) {
+                    player.bullets.splice(j, 1);
+                }
+                break;
+            }
+        }
+        if (!cloud.ices.includes(ice)) {
+            continue;
+        }
+        for (let j = dragon.fireballs.length - 1; j >= 0; j--) {
+            let fireball = dragon.fireballs[j];
+            if (ice.isColliding(fireball)) {
+                explosions.push(new Explosion(ice.x - 0.01, ice.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                fireball.health -= ice.damage;
+                cloud.ices.splice(i, 1);
+                if (fireball.health <= 0) {
+                    dragon.fireballs.splice(j, 1);
+                }
+                break;
+            }
+        }
+    }
     explosions.forEach(e => e.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT));
 
 }
@@ -532,12 +584,17 @@ function drawCenteredText(text, x, y) {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "skyblue";
+    if (level <= 9) {
+        ctx.fillStyle = "skyblue";
+    } else {
+        ctx.fillStyle = "rgb(134, 181, 202)";
+    }
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     player.draw(ctx, mapWidth, mapHeight);
     dragon.draw(ctx, mapWidth, mapHeight, level);
     if (level >= 2) {
         cloud.draw(ctx, mapWidth, mapHeight);
+        cloud.drawIce(ctx, mapWidth, mapHeight);
         mystery.draw(ctx, mapWidth, mapHeight);
     }
     explosions.forEach(e => e.draw(ctx, mapWidth, mapHeight));
@@ -895,6 +952,8 @@ function reset(isLevelCleared) {
     player.fireRateMultiplier = 1;
     player.sizeMultiplier = 1;
     player.ltnInvinc = false;
+    player.freezeTimer = 0;
+    player.isFrozen = false;
     player.superShotReady = false;
     if (gameOver) {
         level = 1;
@@ -941,6 +1000,8 @@ function reset(isLevelCleared) {
     cloud.strikeTimer = 0;
     cloud.warningTimer = 0;
     cloud.lightningTimer = 0;
+    cloud.ices = [];
+    cloud.iceSpawnTimer = 0;
     if (level == 8) {
         cloud.strikeInterval = Math.random() * 1000 + 600;
     } else {
@@ -986,6 +1047,8 @@ function reset(isLevelCleared) {
     dragon.fireRateMultiplier = 1;
     dragon.fireDmg = 1;
     dragon.ltnInvinc = false;
+    dragon.freezeTimer = 0;
+    dragon.isFrozen = false;
     dragon.abilityActive = false;
     dragon.warningActive = false;
     dragon.abilityCooldown = 0;
