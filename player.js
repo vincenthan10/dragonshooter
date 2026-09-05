@@ -21,6 +21,10 @@ export default class Player {
         this.img.src = "images/player.png";
         this.imgR = new Image();
         this.imgR.src = "images/playerR.png";
+        this.frozenImg = new Image();
+        this.frozenImg.src = "images/frozenplayer.png";
+        this.frozenImgR = new Image();
+        this.frozenImgR.src = "images/frozenplayerR.png";
         this.BASEIMGWIDTH = 150;
         this.BASEIMGHEIGHT = 92;
         this.imageWidth = this.BASEIMGWIDTH;
@@ -47,6 +51,8 @@ export default class Player {
         this.homingBulletActive = false;
 
         this.ltnInvinc = false;
+        this.freezeTimer = 0;
+        this.isFrozen = false;
 
         this.collected = false;
         this.superShotReady = false;
@@ -68,9 +74,9 @@ export default class Player {
         ctx.globalAlpha = this.fadeTime;
         if (this.alive || this.fading) {
             if (this.facing < 0) {
-                ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+                ctx.drawImage(this.isFrozen ? this.frozenImg : this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             } else {
-                ctx.drawImage(this.imgR, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight)
+                ctx.drawImage(this.isFrozen ? this.frozenImgR : this.imgR, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight)
             }
             if (this.lightningHelmet.alive) {
                 this.lightningHelmet.draw(ctx, mapWidth, mapHeight);
@@ -120,6 +126,17 @@ export default class Player {
         if (this.hp <= 0) {
             this.hp = 0;
             this.alive = false;
+            this.freezeTimer = 0;
+            this.isFrozen = false;
+        }
+
+        if (this.freezeTimer > 0 && this.alive) {
+            this.freezeTimer -= deltaTime;
+            if (this.freezeTimer <= 0) {
+                this.freezeTimer = 0;
+                this.isFrozen = false;
+            }
+            return;
         }
 
         if (this.alive) {
@@ -192,6 +209,13 @@ export default class Player {
                     this.fading = false;
                 }
             }
+        }
+    }
+
+    freeze(duration) {
+        if (this.alive) {
+            this.freezeTimer = Math.max(this.freezeTimer, duration);
+            this.isFrozen = true;
         }
     }
 
