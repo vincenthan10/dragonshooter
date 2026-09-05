@@ -3,8 +3,10 @@ export default class Fireball {
         this.x = x;
         this.y = y;
         this.baseSpeed = 0.0065;
-        this.speed = this.baseSpeed * dir;
+        this.dir = dir;
+        this.speed = this.baseSpeed * this.dir;
         this.damage = damage;
+        this.health = 1;
         this.sizeMultiplier = sizeMultiplier;
 
         if (dir > 0) {
