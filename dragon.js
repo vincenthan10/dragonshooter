@@ -5,7 +5,7 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.09];
+        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
@@ -21,9 +21,11 @@ export default class Dragon {
             Math.round(Math.random() * 15 + 49),
             Math.round(Math.random() * 18 + 58),
             Math.round(Math.random() * 26 + 76),
-            Math.round(Math.random() * 20 + 156)];
+            Math.round(Math.random() * 20 + 156),
+            Math.round(Math.random() * 15 + 55)
+        ];
         this.reward = this.rewards[this.hpChooser];
-        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80];
+        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
@@ -64,7 +66,8 @@ export default class Dragon {
             [1250, 2500],
             [0, 0],
             [1500, 2250],
-            [0, 0]
+            [0, 0],
+            [2500, 4000]
         ];
         this.restTime = this.getRandomRange(this.restTimes[this.hpChooser]);
         this.chargeTimes = [
@@ -76,7 +79,8 @@ export default class Dragon {
             [1500, 2750],
             [750, 1500],
             [1500, 5000],
-            [500, 1000]
+            [500, 1000],
+            [2000, 4000]
         ];
         this.chargeTime = this.getRandomRange(this.chargeTimes[this.hpChooser]);
         this.moveTime = 0;
@@ -84,10 +88,10 @@ export default class Dragon {
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1400, 2500];
+        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000];
         this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
-        this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1];
+        this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
         this.fireRateMultiplier = 1;
         this.freezeTimer = 0;
         this.isFrozen = false;
