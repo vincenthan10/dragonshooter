@@ -98,7 +98,7 @@ export default class Cloud {
                 this.strikeInterval = Math.random() * 5000 + 3000;
                 if (level == 8) {
                     this.strikeInterval /= 8;
-                } else if (level >= 10) {
+                } else if (level >= 10 && level <= 12) {
                     this.strikeInterval *= 3;
                 }
                 this.strikeTime = Math.random() * 230 + 230;
@@ -107,7 +107,7 @@ export default class Cloud {
 
         this.ices.forEach(ice => ice.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
         for (let i = this.ices.length - 1; i >= 0; i--) {
-            if (this.ices[i].y >= 1.1) {
+            if (this.ices[i].y >= 2) {
                 this.ices.splice(i, 1);
             }
         }
@@ -118,6 +118,9 @@ export default class Cloud {
                 this.ices.push(new Ice(Math.random(), -0.1, 1));
                 this.iceSpawnTimer = 0;
                 this.iceSpawnTime = Math.random() * 500 + 1100;
+                if (level == 13) {
+                    this.iceSpawnTime /= 2;
+                }
             }
         }
     }
