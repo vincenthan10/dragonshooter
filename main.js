@@ -250,7 +250,7 @@ let upgradePool = [
         currentLevel: 0,
         apply(player) {
             player.homingBulletActive = true;
-            player.fireRateUpgraded *= 1.6;
+            player.fireRateUpgraded *= 1.5;
         },
         maxLevel: 1,
         getCost() {
@@ -315,7 +315,7 @@ function getUpgradePreviewText(upgrade) {
         case "Bullet Size Up":
             return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.18)}` };
         case "Homing Bullets":
-            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 1.6)}s` };
+            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 1.5)}s` };
         default:
             return null;
     }
@@ -397,7 +397,7 @@ function update(deltaTime) {
         player.shoot();
         player.shootingTime = 0;
     }
-    dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player, level);
+    dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player, level, player);
     if (dragon.alive && dragon.isColliding(player) && lastHit >= bodyHitTime) {
         player.hp--;
         lastHit = 0;
@@ -406,7 +406,8 @@ function update(deltaTime) {
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
         let fireball = dragon.fireballs[i];
         if (fireball.isColliding(player) && player.alive) {
-            if (player.fireShield.alive && player.facing * fireball.dir < 0) {
+            const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
+            if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
                 player.fireShield.hp -= fireball.damage;
                 if (player.fireShield.hp <= 0) {
                     player.fireShield.alive = false;
@@ -430,7 +431,11 @@ function update(deltaTime) {
                 }
 
                 bullet.health -= fireball.damage;
-                dragon.fireballs.splice(i, 1);
+                fireball.health -= bullet.damage;
+
+                if (fireball.health <= 0) {
+                    dragon.fireballs.splice(i, 1);
+                }
 
                 if (bullet.health <= 0) {
                     player.bullets.splice(j, 1);
@@ -462,7 +467,7 @@ function update(deltaTime) {
             }
             if (bullet.ice) {
                 if (bullet.super) {
-                    explosions.push(new Explosion(bullet.x - 0.08, bullet.y - 0.2,  "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
+                    explosions.push(new Explosion(bullet.x - 0.12, bullet.y - 0.23,  "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
                 } else {
                     explosions.push(new Explosion(bullet.x - 0.02, bullet.y - 0.05, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, bullet.super ? 4 : 1));
                 }
@@ -471,7 +476,7 @@ function update(deltaTime) {
                     dragon.freeze(freezeTime);
                 }
             } else if (bullet.super) {
-                explosions.push(new Explosion(bullet.x - 0.08, bullet.y - 0.2, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
+                explosions.push(new Explosion(bullet.x - 0.12, bullet.y - 0.23, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 4));
             } else {
                 explosions.push(new Explosion(bullet.x - 0.02, bullet.y - 0.05, basicExplosion.src, basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
             }
@@ -535,7 +540,9 @@ function update(deltaTime) {
         for (let j = player.bullets.length - 1; j >= 0; j--) {
             let bullet = player.bullets[j];
             if (ice.isColliding(bullet)) {
-                if (bullet.super) {
+                if (bullet.ice) {
+                    explosions.push(new Explosion(ice.x - 0.01, ice.y, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, bullet.super ? 4 : 1));
+                } else if (bullet.super) {
                     explosions.push(new Explosion(ice.x - 0.09, ice.y - 0.2, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
                 } else {
                     explosions.push(new Explosion(ice.x - 0.01, ice.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
@@ -979,7 +986,7 @@ function reset(isLevelCleared) {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
-        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80];
+        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74];
         dragon.hp = dragon.maxHp[0];
         dragon.rewards = [
             Math.round(Math.random() * 16 + 26), 
@@ -990,7 +997,12 @@ function reset(isLevelCleared) {
             Math.round(Math.random() * 15 + 49),
             Math.round(Math.random() * 18 + 58),
             Math.round(Math.random() * 26 + 76),
-            Math.round(Math.random() * 20 + 156)];
+            Math.round(Math.random() * 20 + 156),
+            Math.round(Math.random() * 15 + 55),
+            Math.round(Math.random() * 24 + 38),
+            Math.round(Math.random() * 10 + 66),
+            Math.round(Math.random() * 24 + 62)
+        ];
         gameOver = false;
     }
 
@@ -1031,6 +1043,9 @@ function reset(isLevelCleared) {
     dragon.hpChooser = Math.min(level - 1, dragon.maxHp.length - 1);
     if (isLevelCleared) {
         dragon.hp = dragon.maxHp[dragon.hpChooser];
+        if (dragon.boss) {
+            player.lives += 2;
+        }
     } else {
         dragon.hp = Math.min(dragon.hp + Math.round(dragon.maxHp[dragon.hpChooser] / 3), dragon.maxHp[dragon.hpChooser]);
     }
@@ -1045,7 +1060,6 @@ function reset(isLevelCleared) {
     dragon.sizeMultiplier = 1;
     dragon.moveMultiplier = 1;
     dragon.fireRateMultiplier = 1;
-    dragon.fireDmg = 1;
     dragon.ltnInvinc = false;
     dragon.freezeTimer = 0;
     dragon.isFrozen = false;
@@ -1056,6 +1070,14 @@ function reset(isLevelCleared) {
     dragon.abilityDuration = 0;
     dragon.spawnCooldown = 0;
     explosions.splice(0, explosions.length);
+    if (level == 12) {
+        dragon.facing = 1;
+    }
+    if (level == 11) {
+        dragon.homingFireballActive = true;
+    } else {
+        dragon.homingFireballActive = false;
+    }
     if (level == 4 || level == 9) {
         dragon.boss = true;
         dragon.bossMultiplier = level == 4 ? 1.2 : 0.8;
