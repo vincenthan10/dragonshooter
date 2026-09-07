@@ -57,7 +57,7 @@ export default class Player {
         this.collected = false;
         this.superShotReady = false;
 
-        this.maxLives = 5;
+        this.maxLives = 3;
         this.lives = this.maxLives;
         this.coins = 0;
         this.coinsThisRun = 0;
@@ -119,7 +119,9 @@ export default class Player {
         }
         this.bullets.forEach(b => b.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
         for (let i = this.bullets.length - 1; i >= 0; i--) {
-            if (this.bullets[i].x <= -1 || this.bullets[i].x + this.bullets[i].imageWidth / mapWidth >= 2) {
+            if (this.bullets[i].x <= -1 || this.bullets[i].x + this.bullets[i].imageWidth / mapWidth >= 2 ||
+                this.bullets[i].y <= -1 || this.bullets[i].y + this.bullets[i].imageHeight / mapHeight >= 2
+            ) {
                 this.bullets.splice(i, 1);
             }
         }
@@ -237,10 +239,10 @@ export default class Player {
         if (this.superShotReady) {
             if (this.facing < 0) {
                 this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), 
-                this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, this.dragon));
+                this.sizeMultiplier * this.bulletSizeMultiplier * 2.5, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, this.dragon));
             } else {
                 this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), 
-                this.sizeMultiplier * this.bulletSizeMultiplier * 3.2, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, this.dragon));
+                this.sizeMultiplier * this.bulletSizeMultiplier * 2.5, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, this.dragon));
             }   
             this.superShotReady = false;
         }
