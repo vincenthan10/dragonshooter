@@ -5,7 +5,7 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192];
+        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
@@ -22,10 +22,13 @@ export default class Dragon {
             Math.round(Math.random() * 18 + 58),
             Math.round(Math.random() * 26 + 76),
             Math.round(Math.random() * 20 + 156),
-            Math.round(Math.random() * 15 + 55)
+            Math.round(Math.random() * 15 + 55),
+            Math.round(Math.random() * 24 + 38),
+            Math.round(Math.random() * 10 + 66),
+            Math.round(Math.random() * 24 + 62)
         ];
         this.reward = this.rewards[this.hpChooser];
-        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55];
+        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
@@ -67,7 +70,10 @@ export default class Dragon {
             [0, 0],
             [1500, 2250],
             [0, 0],
-            [2500, 4000]
+            [2500, 4000],
+            [500, 1500],
+            [0, 0],
+            [2000, 3500]
         ];
         this.restTime = this.getRandomRange(this.restTimes[this.hpChooser]);
         this.chargeTimes = [
@@ -80,6 +86,9 @@ export default class Dragon {
             [750, 1500],
             [1500, 5000],
             [500, 1000],
+            [2000, 4000],
+            [1500, 3000],
+            [750, 1000],
             [2000, 4000]
         ];
         this.chargeTime = this.getRandomRange(this.chargeTimes[this.hpChooser]);
@@ -88,18 +97,19 @@ export default class Dragon {
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000];
+        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000];
         this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
-        this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+        this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+        this.fireHealth = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2];
         this.fireRateMultiplier = 1;
         this.freezeTimer = 0;
         this.isFrozen = false;
         this.savedSpeed = 0;
-
         this.fadeTime = 1;
 
         this.ltnInvinc = false;
+        this.homingFireballActive = false;
 
         this.collected = false;
 
@@ -180,10 +190,14 @@ export default class Dragon {
         ctx.restore();
     }
 
-    update(deltaTime, mapWidth, mapHeight, canvas, baseWidth, baseHeight, target, level) {
+    update(deltaTime, mapWidth, mapHeight, canvas, baseWidth, baseHeight, target, level, player = null) {
+        if (player) {
+            this.player = player;
+        }
         this.fireballs.forEach(f => f.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
         for (let i = this.fireballs.length - 1; i >= 0; i--) {
-            if (this.fireballs[i].x <= -0.1 || this.fireballs[i].x + this.fireballs[i].imageWidth / mapWidth >= 1.1) {
+            if (this.fireballs[i].x <= -1 || this.fireballs[i].x + this.fireballs[i].imageWidth / mapWidth >= 2 ||
+                this.fireballs[i].y <= -1 || this.fireballs[i].y + this.fireballs[i].imageHeight / mapHeight >= 2) {
                 this.fireballs.splice(i, 1);
             }
         }
@@ -317,10 +331,16 @@ export default class Dragon {
                 let dx = target.x + target.width / 2 - this.x - this.width / 2;
                 let dy = target.y + target.height / 2 - this.y - this.height / 3;
                 let dist = Math.sqrt(dx * dx + dy * dy);
-                this.dirX = dx / dist;
+                if (level == 12) {
+                    this.dirX = 0;
+                } else {
+                    this.dirX = dx / dist;
+                }
                 this.dirY = dy / dist;
                 this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier;
-                if (this.dirX > 0) {
+                if (level == 12) {
+                    this.facing = 1;
+                } else if (this.dirX > 0) {
                     this.facing = 1;
                 } else {
                     this.facing = -1;
@@ -399,14 +419,14 @@ export default class Dragon {
 
     shoot(level) {
         if (this.facing < 0) {
-            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg, this.sizeMultiplier * this.bossMultiplier));
+            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], this.homingFireballActive, this.player));
             if (level == 9) {
-                this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg, this.sizeMultiplier * this.bossMultiplier));
+                this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], this.homingFireballActive, this.player));
             }
         } else {
-            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg, this.sizeMultiplier * this.bossMultiplier));
+            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], this.homingFireballActive, this.player));
             if (level == 9) {
-                this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg, this.sizeMultiplier * this.bossMultiplier));
+                this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], this.homingFireballActive, this.player));
             }
         }
     }
