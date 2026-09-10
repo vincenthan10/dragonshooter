@@ -195,9 +195,9 @@ let upgradePool = [
         apply(player) {
             player.bhealthUpgrade += this.currentLevel + 1;
         },
-        maxLevel: 2,
+        maxLevel: 3,
         getCost() {
-            return this.baseCost + this.currentLevel * 25;
+            return this.baseCost + this.currentLevel * 75;
         }
     },
     {
@@ -405,42 +405,108 @@ function update(deltaTime) {
     lastHit += deltaTime;
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
         let fireball = dragon.fireballs[i];
-        if (fireball.isColliding(player) && player.alive) {
-            const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
-            if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
-                player.fireShield.hp -= fireball.damage;
-                if (player.fireShield.hp <= 0) {
-                    player.fireShield.alive = false;
-                } 
-            } else {
-                player.hp -= fireball.damage;
-            }
-            const knockbackAmount = 0.02 * Math.pow(fireball.sizeMultiplier, 4) / Math.pow(player.sizeMultiplier, 4);
-            player.x = player.x + fireball.dir * knockbackAmount;
-            explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
-            dragon.fireballs.splice(i, 1);
-            continue;
-        }
-        for (let j = player.bullets.length - 1; j >= 0; j--) {
-            let bullet = player.bullets[j];
-            if (fireball.isColliding(bullet)) {
-                if (bullet.super) {
-                    explosions.push(new Explosion(fireball.x, fireball.y - 0.1, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+        if (fireball.super) {
+            if (fireball.isSuperColliding(player) && player.alive) {
+                const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
+                if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
+                    player.fireShield.hp -= 3;
+                    if (player.fireShield.hp <= 0) {
+                        player.fireShield.alive = false;
+                    }
                 } else {
-                    explosions.push(new Explosion(fireball.x, fireball.y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    player.hp -= fireball.damage;
+                    if (fireball.ice) {
+                        player.freeze(10000);
+                    }
                 }
+                const knockbackAmount = 0.05 / Math.pow(player.sizeMultiplier, 4);
+                player.x += fireball.dir * knockbackAmount;
 
-                bullet.health -= fireball.damage;
-                fireball.health -= bullet.damage;
-
-                if (fireball.health <= 0) {
-                    dragon.fireballs.splice(i, 1);
+                if (fireball.ice) {
+                    explosions.push(new Explosion(player.x - 0.3, player.y - 0.3, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 10));
+                } else {
+                    explosions.push(new Explosion(player.x - 0.3, player.y - 0.3, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 10));
                 }
-
-                if (bullet.health <= 0) {
-                    player.bullets.splice(j, 1);
+                dragon.fireballs.splice(i, 1);
+            }
+            for (let j = player.bullets.length - 1; j >= 0; j--) {
+                let bullet = player.bullets[j];
+                if (fireball.isSuperColliding(bullet)) {
+                    bullet.health -= Math.max(fireball.damage, 1);
+                    fireball.health -= bullet.damage;
+                    if (fireball.health <= 0) {
+                        explosions.push(new Explosion(fireball.x + fireball.width / 2, fireball.y - fireball.height / 8, "images/bulExplosionice.png", projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 15));
+                        dragon.fireballs.splice(i, 1);
+                    } else if (bullet.super) {
+                        explosions.push(new Explosion(bullet.x, bullet.y - 0.1, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+                    } else {
+                        explosions.push(new Explosion(bullet.x, bullet.y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    }
+                    if (bullet.health <= 0) {
+                        player.bullets.splice(j, 1);
+                    }
+                    break;
                 }
-                break;
+            }
+        } else {
+            if (fireball.isColliding(player) && player.alive) {
+                const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
+                if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
+                    player.fireShield.hp -= Math.max(fireball.damage, 1);
+                    if (player.fireShield.hp <= 0) {
+                        player.fireShield.alive = false;
+                    } 
+                } else {
+                    player.hp -= fireball.damage;
+                    if (fireball.ice) {
+                        player.freeze(1000);
+                    }
+                }
+                const knockbackAmount = 0.02 * Math.pow(fireball.sizeMultiplier, 4) / Math.pow(player.sizeMultiplier, 4);
+                
+                // Apply knockback with homing direction for homing fireballs
+                if (fireball.homing && fireball.speedY !== undefined) {
+                    // For homing fireballs, use normalized velocity direction
+                    const speed = Math.sqrt(fireball.speed * fireball.speed + fireball.speedY * fireball.speedY);
+                    if (speed > 0) {
+                        const normX = fireball.speed / speed;
+                        const normY = fireball.speedY / speed;
+                        player.x = player.x + normX * knockbackAmount;
+                        player.y = player.y + normY * knockbackAmount;
+                    }
+                } else {
+                    // For regular fireballs, use simple directional knockback
+                    player.x = player.x + fireball.dir * knockbackAmount;
+                }
+                if (fireball.ice) {
+                    explosions.push(new Explosion(fireball.x, fireball.y - 0.05, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                } else {
+                    explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
+                }
+                dragon.fireballs.splice(i, 1);
+                continue;
+            }
+            for (let j = player.bullets.length - 1; j >= 0; j--) {
+                let bullet = player.bullets[j];
+                if (fireball.isColliding(bullet)) {
+                    if (bullet.super) {
+                        explosions.push(new Explosion(fireball.x, fireball.y - 0.1, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+                    } else {
+                        explosions.push(new Explosion(fireball.x, fireball.y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    }
+
+                    bullet.health -= Math.max(fireball.damage, 1);
+                    fireball.health -= bullet.damage;
+
+                    if (fireball.health <= 0) {
+                        dragon.fireballs.splice(i, 1);
+                    }
+
+                    if (bullet.health <= 0) {
+                        player.bullets.splice(j, 1);
+                    }
+                    break;
+                }
             }
         }
     }
@@ -524,7 +590,7 @@ function update(deltaTime) {
             const knockbackAmount = 0.01 / Math.pow(player.sizeMultiplier, 4);
             player.y = player.y + knockbackAmount;
             player.freeze(2000);
-            explosions.push(new Explosion(ice.x - 0.04, ice.y - 0.02, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+            explosions.push(new Explosion(ice.x - 0.02, ice.y - 0.02, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
             cloud.ices.splice(i, 1);
             continue;
         }
@@ -533,7 +599,7 @@ function update(deltaTime) {
             const knockbackAmount = 0.0025 / Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1);
             dragon.y = dragon.y + knockbackAmount;
             dragon.freeze(500);
-            explosions.push(new Explosion(ice.x - 0.04, ice.y - 0.02, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+            explosions.push(new Explosion(ice.x - 0.02, ice.y - 0.02, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
             cloud.ices.splice(i, 1);
             continue;
         }
@@ -541,7 +607,7 @@ function update(deltaTime) {
             let bullet = player.bullets[j];
             if (ice.isColliding(bullet)) {
                 if (bullet.ice) {
-                    explosions.push(new Explosion(ice.x - 0.01, ice.y, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, bullet.super ? 4 : 1));
+                    explosions.push(new Explosion(ice.x - 0.01, ice.y, "images/bulExplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, bullet.super ? 4 : 1));
                 } else if (bullet.super) {
                     explosions.push(new Explosion(ice.x - 0.09, ice.y - 0.2, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
                 } else {
@@ -560,15 +626,37 @@ function update(deltaTime) {
         }
         for (let j = dragon.fireballs.length - 1; j >= 0; j--) {
             let fireball = dragon.fireballs[j];
-            if (ice.isColliding(fireball)) {
-                explosions.push(new Explosion(ice.x - 0.01, ice.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
-                fireball.health -= ice.damage;
-                cloud.ices.splice(i, 1);
-                if (fireball.health <= 0) {
-                    dragon.fireballs.splice(j, 1);
+            if (fireball.super) {
+                if (fireball.isSuperColliding(ice)) {
+                    fireball.health -= ice.damage;
+                    if (fireball.ice) {
+                        if (fireball.health <= 0) {
+                            explosions.push(new Explosion(fireball.x + fireball.width / 2, fireball.y - fireball.height / 8, "images/fireExplosionice.png", projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 15));
+                            dragon.fireballs.splice(j, 1);
+                        } else {
+                            explosions.push(new Explosion(ice.x - 0.01, ice.y, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                        }
+                    } else {
+                        explosions.push(new Explosion(ice.x - 0.01, ice.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    }
+                    cloud.ices.splice(i, 1);
                 }
-                break;
+            } else {
+                if (ice.isColliding(fireball)) {
+                    fireball.health -= ice.damage;
+                    if (fireball.ice) {
+                        explosions.push(new Explosion(ice.x - 0.01, ice.y, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    } else {
+                        explosions.push(new Explosion(ice.x - 0.01, ice.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    }
+                    cloud.ices.splice(i, 1);
+                    if (fireball.health <= 0) {
+                        dragon.fireballs.splice(j, 1);
+                    }
+                    break;
+                }
             }
+            
         }
     }
     explosions.forEach(e => e.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT));
@@ -1016,6 +1104,8 @@ function reset(isLevelCleared) {
     cloud.iceSpawnTimer = 0;
     if (level == 8) {
         cloud.strikeInterval = Math.random() * 1000 + 600;
+    } else if (level >= 10 && level <= 13) {
+        cloud.strikeInterval = Math.random() * 15000 + 9000;
     } else {
         cloud.strikeInterval = Math.random() * 5000 + 3000;
     }
@@ -1070,15 +1160,20 @@ function reset(isLevelCleared) {
     dragon.abilityDuration = 0;
     dragon.spawnCooldown = 0;
     explosions.splice(0, explosions.length);
+    if (level == 14) {
+        dragon.iceActive = true;
+    } else {
+        dragon.iceActive = false;
+    }
     if (level == 12) {
         dragon.facing = 1;
     }
-    if (level == 11) {
+    if (level == 11 || level == 14) {
         dragon.homingFireballActive = true;
     } else {
         dragon.homingFireballActive = false;
     }
-    if (level == 4 || level == 9) {
+    if (level == 4 || level == 9 || level == 14) {
         dragon.boss = true;
         dragon.bossMultiplier = level == 4 ? 1.2 : 0.8;
     } else {
