@@ -98,7 +98,7 @@ export default class Cloud {
                 this.strikeInterval = Math.random() * 5000 + 3000;
                 if (level == 8) {
                     this.strikeInterval /= 8;
-                } else if (level >= 10 && level <= 12) {
+                } else if ((level >= 10 && level <= 12) || level == 14) {
                     this.strikeInterval *= 3;
                 }
                 this.strikeTime = Math.random() * 230 + 230;
