@@ -1,22 +1,23 @@
 export default class Fireball {
-    constructor(x, y, dir, damage, sizeMultiplier, health, homing = false, target = null) {
+    constructor(x, y, dir, damage, sizeMultiplier, health, superType, iceType, homing = false, target = null) {
         this.x = x;
         this.y = y;
         this.baseSpeed = 0.0065;
         this.dir = dir;
-        this.speed = this.baseSpeed * this.dir;
         this.damage = damage;
         this.health = health;
         this.sizeMultiplier = sizeMultiplier;
         this.homing = homing;
         this.target = target;
-
+        this.super = superType;
+        this.speed = this.baseSpeed * this.dir * (this.super ? 0.15 : 1);
+        this.ice = iceType;
         if (dir > 0) {
             this.img = new Image();
-            this.img.src = "images/fireball.png";
+            this.img.src = this.ice ? "images/fireballice.png" : "images/fireball.png";
         } else {
             this.img = new Image();
-            this.img.src = "images/fireballL.png";
+            this.img.src = this.ice ? "images/fireballiceL.png" : "images/fireballL.png";
         }
         this.BASEIMGWIDTH = 55;
         this.BASEIMGHEIGHT = 20;
@@ -87,6 +88,13 @@ export default class Fireball {
 
     isColliding(entity) {
         if (this.x + this.width * 0.8 >= entity.x && this.x <= entity.x + entity.width * 0.9 && this.y + this.height * 0.85 >= entity.y && this.y <= entity.y + entity.height * 0.9) {
+            return true;
+        }
+        return false;
+    }
+
+    isSuperColliding(entity) {
+        if (this.x + this.width * 0.98 >= entity.x && this.x + this.width * 0.5 <= entity.x + entity.width && this.y + this.height >= entity.y && this.y <= entity.y + entity.height) {
             return true;
         }
         return false;
