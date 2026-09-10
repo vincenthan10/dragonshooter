@@ -5,7 +5,7 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18];
+        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.075];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
@@ -25,10 +25,11 @@ export default class Dragon {
             Math.round(Math.random() * 15 + 55),
             Math.round(Math.random() * 24 + 38),
             Math.round(Math.random() * 10 + 66),
-            Math.round(Math.random() * 24 + 62)
+            Math.round(Math.random() * 24 + 62),
+            Math.round(Math.random() * 14 + 186)
         ];
         this.reward = this.rewards[this.hpChooser];
-        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74];
+        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 82];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
@@ -73,7 +74,8 @@ export default class Dragon {
             [2500, 4000],
             [500, 1500],
             [0, 0],
-            [2000, 3500]
+            [2000, 3500],
+            [0, 0]
         ];
         this.restTime = this.getRandomRange(this.restTimes[this.hpChooser]);
         this.chargeTimes = [
@@ -89,7 +91,8 @@ export default class Dragon {
             [2000, 4000],
             [1500, 3000],
             [750, 1000],
-            [2000, 4000]
+            [2000, 4000],
+            [500, 1000]
         ];
         this.chargeTime = this.getRandomRange(this.chargeTimes[this.hpChooser]);
         this.moveTime = 0;
@@ -97,11 +100,11 @@ export default class Dragon {
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000];
+        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500];
         this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
-        this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-        this.fireHealth = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2];
+        this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0];
+        this.fireHealth = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2];
         this.fireRateMultiplier = 1;
         this.freezeTimer = 0;
         this.isFrozen = false;
@@ -110,6 +113,7 @@ export default class Dragon {
 
         this.ltnInvinc = false;
         this.homingFireballActive = false;
+        this.iceActive = false;
 
         this.collected = false;
 
@@ -121,6 +125,8 @@ export default class Dragon {
         this.cooldownTime = Math.random() * 12500 + 15000;
         this.abilityDuration = 0;
         this.durationTime = Math.random() * 10000 + 8000;
+        this.abilityFireballShot = false;
+        this.abilityMovingToPlayer = false;
         this.spawnTime = Math.random() * 250 + 600;
         this.spawnCooldown = this.spawnTime;
         this.spawnPosition = 0;
@@ -254,49 +260,149 @@ export default class Dragon {
             if (this.boss) {
                 if (level == 4) {
                     this.bossMultiplier = 1.2;
-                } else if (level == 9) {
+                } else {
                     this.bossMultiplier = 0.8;
                 }
-                if (!this.warningActive && !this.abilityActive) {
-                    this.abilityCooldown += deltaTime;
-            
-                    if (this.abilityCooldown >= this.cooldownTime) {
-                        this.warningActive = true;
-                        this.abilityCooldown = 0;
-                        this.cooldownTime = Math.random() * 12500 + 15000;
+                if (level != 14) {
+                    if (!this.warningActive && !this.abilityActive) {
+                        this.abilityCooldown += deltaTime;
+                        
+                        if (this.abilityCooldown >= this.cooldownTime) {
+                            this.warningActive = true;
+                            this.abilityCooldown = 0;
+                            this.cooldownTime = Math.random() * 12500 + 15000;
+                        }
                     }
-                }
-                if (this.warningActive) {
-                    this.abilityWarning += deltaTime;
+                    if (this.warningActive) {
+                        this.abilityWarning += deltaTime;
 
-                    if (this.abilityWarning >= this.warningTime) {
-                        this.warningActive = false;
-                        this.abilityActive = true;
-                        this.abilityWarning = 0;
+                        if (this.abilityWarning >= this.warningTime) {
+                            this.warningActive = false;
+                            this.abilityActive = true;
+                            this.abilityWarning = 0;
+                        }
                     }
-                }
-                if (this.abilityActive) {
-                    this.spawnCooldown += deltaTime;
+                    if (this.abilityActive) {
+                        this.spawnCooldown += deltaTime;
 
-                    if (this.spawnCooldown >= this.spawnTime) {
-                        this.strikePosition = Math.random();
-                        this.meteorites.push(new Meteorite(this.strikePosition, -0.1, 2));
-                        this.spawnCooldown = 0;
-                        this.spawnTime = Math.random() * 250 + 600;
+                        if (this.spawnCooldown >= this.spawnTime) {
+                            this.strikePosition = Math.random();
+                            this.meteorites.push(new Meteorite(this.strikePosition, -0.1, 2));
+                            this.spawnCooldown = 0;
+                            this.spawnTime = Math.random() * 250 + 600;
+                        }
+                        this.abilityDuration += deltaTime;
+
+                        if (this.abilityDuration >= this.durationTime) {
+                            this.abilityActive = false;
+                            this.abilityDuration = 0;
+                            this.durationTime = Math.random() * 10000 + 8000;
+                        }
                     }
-                    this.abilityDuration += deltaTime;
+                } else {
+                    if (!this.abilityActive) {
+                        this.abilityCooldown += deltaTime;
 
-                    if (this.abilityDuration >= this.durationTime) {
-                        this.abilityActive = false;
-                        this.abilityDuration = 0;
-                        this.durationTime = Math.random() * 10000 + 8000;
+                        if (this.abilityCooldown >= this.cooldownTime) {
+                            this.abilityActive = true;
+                            this.abilityCooldown = 0;
+                            this.cooldownTime = Math.random() * 12500 + 15000;
+                        }
+                    }
+                    
+                    if (this.abilityActive) {
+                        this.shooting = false;
+                        
+                        if (!this.abilityMovingToPlayer) {
+                            // Phase 1: Move to left side and shoot
+                            this.charging = true;
+                            let dx = 0 - this.x - this.width / 2;
+                            let dy = 0.5 - this.y - this.height / 3;
+                            let dist = Math.sqrt(dx * dx + dy * dy);
+                            this.dirX = dx / dist;
+                            this.dirY = dy / dist;
+                            if (this.dirX > 0) {
+                                this.facing = 1;
+                            } else {
+                                this.facing = -1;
+                            }
+                            this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * 2;
+                            
+                            // Check if reached target position
+                            if (dist < 0.05) {
+                                this.charging = false;
+                                this.facing = 1;
+                                
+                                // Only shoot once per ability activation
+                                if (!this.abilityFireballShot) {
+                                    this.abilityFireballShot = true;
+                                    this.shootSuperFireball(level);
+                                }
+                                
+                                // Check if fireball is gone or has traveled far enough
+                                let fireballGone = this.fireballs.length === 0 || this.fireballs.some(f => f.health <= 0 || f.x >= 0.85);
+                                
+                                if (fireballGone) {
+                                    this.abilityMovingToPlayer = true;
+                                    // Initialize phase 2 charging state
+                                    this.charging = false;
+                                    this.moveTime = 0;
+                                    this.restTime = 0;  // Start immediately with first charge
+                                }
+                            }
+                        } else {
+                            // Phase 2: Move toward player after fireball is gone - manual charging cycle
+                            this.moveTime += deltaTime;
+                            
+                            if (!this.charging && this.moveTime >= this.restTime) {
+                                // Rest time is up, start next charge
+                                let dx = target.x + target.width / 2 - this.x - this.width / 2;
+                                let dy = target.y + target.height / 2 - this.y - this.height / 3;
+                                let dist = Math.sqrt(dx * dx + dy * dy);
+                                this.dirX = dx / dist;
+                                this.dirY = dy / dist;
+                                if (this.dirX > 0) {
+                                    this.facing = 1;
+                                } else {
+                                    this.facing = -1;
+                                }
+                                
+                                const chargeRange = this.chargeTimes[this.hpChooser];
+                                const chargePhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 1.05 : 1.15;
+                                this.chargeTime = this.getRandomRange(chargeRange) * chargePhaseMultiplier * this.bossMultiplier;
+                                this.effectiveSpeed = this.baseSpeed * this.speedMultiplier;
+                                
+                                this.charging = true;
+                                this.moveTime = 0;
+                            } else if (this.charging && this.moveTime >= this.chargeTime) {
+                                // Charge time is up, start rest period
+                                const restRange = this.restTimes[this.hpChooser];
+                                const restPhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 0.9 : 0.7;
+                                this.restTime = this.getRandomRange(restRange) * restPhaseMultiplier * this.moveMultiplier / this.bossMultiplier;
+                                this.charging = false;
+                                this.moveTime = 0;
+                            }
+                            
+                            this.abilityDuration += deltaTime;
+                            if (this.abilityDuration >= this.durationTime) {
+                                this.abilityActive = false;
+                                this.abilityDuration = 0;
+                                this.abilityFireballShot = false;
+                                this.abilityMovingToPlayer = false;
+                                this.durationTime = Math.random() * 10000 + 8000;
+                            }
+                        }
                     }
                 }
             } else {
                 this.bossMultiplier = 1;
             }
             if (this.warningActive || this.abilityActive) {
-                this.abilitySpeedMultiplier = 0.75;
+                if (level == 9) {   
+                    this.abilitySpeedMultiplier = 0.75;
+                } else if (level == 14) {
+                    this.abilitySpeedMultiplier = this.abilityMovingToPlayer ? 1.2 : 2;
+                }
                 this.shooting = false;
                 if (level == 4) {
                     this.charging = false;
@@ -419,15 +525,27 @@ export default class Dragon {
 
     shoot(level) {
         if (this.facing < 0) {
-            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], this.homingFireballActive, this.player));
+            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, this.iceActive, this.homingFireballActive, this.player));
             if (level == 9) {
-                this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], this.homingFireballActive, this.player));
+                this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, this.iceActive, this.homingFireballActive, this.player));
             }
         } else {
-            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], this.homingFireballActive, this.player));
+            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, this.iceActive, this.homingFireballActive, this.player));
             if (level == 9) {
-                this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], this.homingFireballActive, this.player));
+                this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, this.iceActive, this.homingFireballActive, this.player));
             }
         }
+    }
+
+    shootSuperFireball(level) {
+        let fireball = null;
+        if (this.facing < 0) {
+            fireball = new Fireball(this.x + 0.95, this.y - 0.3, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier * 35, 20, true, this.iceActive, false, this.player);
+            this.fireballs.push(fireball);
+        } else {
+            fireball = new Fireball(this.x + this.width - 0.95, this.y - 0.3, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier * 35, 20, true, this.iceActive, false, this.player);
+            this.fireballs.push(fireball);
+        }
+        return fireball;
     }
 }
