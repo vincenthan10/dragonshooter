@@ -5,7 +5,7 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.075];
+        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.06];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
@@ -401,7 +401,7 @@ export default class Dragon {
                 if (level == 9) {   
                     this.abilitySpeedMultiplier = 0.75;
                 } else if (level == 14) {
-                    this.abilitySpeedMultiplier = this.abilityMovingToPlayer ? 1.2 : 2;
+                    this.abilitySpeedMultiplier = this.abilityMovingToPlayer ? 1.5 : 2;
                 }
                 this.shooting = false;
                 if (level == 4) {
@@ -540,10 +540,10 @@ export default class Dragon {
     shootSuperFireball(level) {
         let fireball = null;
         if (this.facing < 0) {
-            fireball = new Fireball(this.x + 0.95, this.y - 0.3, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier * 35, 20, true, this.iceActive, false, this.player);
+            fireball = new Fireball(this.x + 0.99, this.y - 0.3, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier * 35, 30, true, this.iceActive, false, this.player);
             this.fireballs.push(fireball);
         } else {
-            fireball = new Fireball(this.x + this.width - 0.95, this.y - 0.3, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier * 35, 20, true, this.iceActive, false, this.player);
+            fireball = new Fireball(this.x + this.width - 0.99, this.y - 0.3, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier * 35, 30, true, this.iceActive, false, this.player);
             this.fireballs.push(fireball);
         }
         return fireball;
