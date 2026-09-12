@@ -403,6 +403,17 @@ function update(deltaTime) {
         lastHit = 0;
     }
     lastHit += deltaTime;
+    
+    if (player.forceFieldActive && player.isForceFieldColliding(dragon, mapWidth, mapHeight) && dragon.alive) {
+        if (player.forceFieldDamageTimer >= player.forceFieldDamageDelay) {
+            dragon.takeDamage(player.forceFieldDamage);
+            player.forceFieldDamageTimer = 0;
+        }
+        player.forceFieldDamageTimer += deltaTime;
+    } else {
+        player.forceFieldDamageTimer = 0;
+    }
+    
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
         let fireball = dragon.fireballs[i];
         if (fireball.super) {
@@ -412,6 +423,9 @@ function update(deltaTime) {
                     player.fireShield.hp -= 3;
                     if (player.fireShield.hp <= 0) {
                         player.fireShield.alive = false;
+                    }
+                    if (fireball.ice) {
+                        player.freeze(5000);
                     }
                 } else {
                     player.hp -= fireball.damage;
@@ -432,12 +446,13 @@ function update(deltaTime) {
             for (let j = player.bullets.length - 1; j >= 0; j--) {
                 let bullet = player.bullets[j];
                 if (fireball.isSuperColliding(bullet)) {
-                    bullet.health -= Math.max(fireball.damage, 1);
+                    bullet.health -= Math.max(fireball.damage, 2);
                     fireball.health -= bullet.damage;
                     if (fireball.health <= 0) {
-                        explosions.push(new Explosion(fireball.x + fireball.width / 2, fireball.y - fireball.height / 8, "images/bulExplosionice.png", projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 15));
+                        explosions.push(new Explosion(fireball.x + fireball.width / 2, fireball.y - fireball.height / 8, "images/bulExplosionice.png", projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 10));
                         dragon.fireballs.splice(i, 1);
-                    } else if (bullet.super) {
+                    } 
+                    if (bullet.super) {
                         explosions.push(new Explosion(bullet.x, bullet.y - 0.1, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
                     } else {
                         explosions.push(new Explosion(bullet.x, bullet.y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
@@ -631,7 +646,7 @@ function update(deltaTime) {
                     fireball.health -= ice.damage;
                     if (fireball.ice) {
                         if (fireball.health <= 0) {
-                            explosions.push(new Explosion(fireball.x + fireball.width / 2, fireball.y - fireball.height / 8, "images/fireExplosionice.png", projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 15));
+                            explosions.push(new Explosion(fireball.x + fireball.width / 2, fireball.y - fireball.height / 8, "images/fireExplosionice.png", projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 10));
                             dragon.fireballs.splice(j, 1);
                         } else {
                             explosions.push(new Explosion(ice.x - 0.01, ice.y, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
@@ -1050,6 +1065,9 @@ function reset(isLevelCleared) {
     player.freezeTimer = 0;
     player.isFrozen = false;
     player.superShotReady = false;
+    player.canCritApplied = player.canCrit;
+    player.forceFieldActive = false;
+    player.forceFieldDamageTimer = 0;
     if (gameOver) {
         level = 1;
         player.lives = player.maxLives;
@@ -1074,7 +1092,7 @@ function reset(isLevelCleared) {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
-        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74];
+        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 82];
         dragon.hp = dragon.maxHp[0];
         dragon.rewards = [
             Math.round(Math.random() * 16 + 26), 
@@ -1089,7 +1107,8 @@ function reset(isLevelCleared) {
             Math.round(Math.random() * 15 + 55),
             Math.round(Math.random() * 24 + 38),
             Math.round(Math.random() * 10 + 66),
-            Math.round(Math.random() * 24 + 62)
+            Math.round(Math.random() * 24 + 62),
+            Math.round(Math.random() * 14 + 186)
         ];
         gameOver = false;
     }
@@ -1104,7 +1123,7 @@ function reset(isLevelCleared) {
     cloud.iceSpawnTimer = 0;
     if (level == 8) {
         cloud.strikeInterval = Math.random() * 1000 + 600;
-    } else if (level >= 10 && level <= 13) {
+    } else if (level >= 10 && level <= 12) {
         cloud.strikeInterval = Math.random() * 15000 + 9000;
     } else {
         cloud.strikeInterval = Math.random() * 5000 + 3000;
@@ -1159,6 +1178,8 @@ function reset(isLevelCleared) {
     dragon.abilityWarning = 0;
     dragon.abilityDuration = 0;
     dragon.spawnCooldown = 0;
+    dragon.abilityMovingToPlayer = false;
+    dragon.abilityFireballShot = false;
     explosions.splice(0, explosions.length);
     if (level == 14) {
         dragon.iceActive = true;
