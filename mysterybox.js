@@ -84,7 +84,7 @@ export default class MysteryBox {
     }
 
     playerEffect(player, collected, effectNumber) {
-        let rolled = (effectNumber == 0) ? Math.floor(Math.random() * 9) + 1 : effectNumber;
+        let rolled = (effectNumber == 0) ? Math.floor(Math.random() * 10) + 1 : effectNumber;
         switch (rolled) {
             case 1:
                 player.speedMultiplier = collected ? 1.6 : 1;
@@ -132,6 +132,10 @@ export default class MysteryBox {
                     let heal = Math.floor(Math.random() * 3) + 1;
                     player.hp = Math.min(player.hp + heal, player.maxHp);
                 }
+                break;
+            case 10:
+                player.forceFieldActive = collected ? true : false;
+                player.speedMultiplier = collected ? 0.8 : 1;
                 break;
         }
         this.effectNumber = collected ? rolled : 0;
