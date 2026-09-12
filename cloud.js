@@ -33,6 +33,7 @@ export default class Cloud {
         this.iceSpawnTime = Math.random() * 500 + 1100;
         this.iceSpawnTimer = 0;
         this.ices = [];
+        this.iceDamage = 1;
 
     }
 
@@ -115,11 +116,14 @@ export default class Cloud {
         if (level >= 10) {
             this.iceSpawnTimer += deltaTime;
             if (this.iceSpawnTimer >= this.iceSpawnTime) {
-                this.ices.push(new Ice(Math.random(), -0.1, 1));
+                this.ices.push(new Ice(Math.random(), -0.1, this.iceDamage));
                 this.iceSpawnTimer = 0;
                 this.iceSpawnTime = Math.random() * 500 + 1100;
                 if (level == 13) {
                     this.iceSpawnTime /= 2;
+                }
+                if (level == 14) {
+                    this.iceDamage = 2;
                 }
             }
         }
