@@ -54,6 +54,12 @@ export default class Player {
         this.freezeTimer = 0;
         this.isFrozen = false;
 
+        this.forceFieldActive = false;
+        this.forceFieldRadius = 0.135;
+        this.forceFieldDamage = 1;
+        this.forceFieldDamageDelay = 400;
+        this.forceFieldDamageTimer = 0;
+
         this.collected = false;
         this.superShotReady = false;
 
@@ -109,6 +115,14 @@ export default class Player {
             ctx.strokeStyle = "#9c7003";
             ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
         }
+        if (this.forceFieldActive) {
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = "#007b6d";
+            ctx.beginPath();
+            ctx.arc(this.x * mapWidth + this.imageWidth / 2, this.y * mapHeight + this.imageHeight / 2, this.forceFieldRadius * mapWidth, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
         this.bullets.forEach(b => b.draw(ctx, mapWidth, mapHeight));
         ctx.restore();
     }
@@ -130,6 +144,7 @@ export default class Player {
             this.alive = false;
             this.freezeTimer = 0;
             this.isFrozen = false;
+            this.forceFieldActive = false;
         }
 
         if (this.freezeTimer > 0 && this.alive) {
@@ -247,5 +262,30 @@ export default class Player {
             this.superShotReady = false;
         }
        
+    }
+
+    isForceFieldColliding(entity, mapWidth, mapHeight) {
+        if (this.forceFieldActive && entity.alive) {
+            const playerCenterX = this.x * mapWidth + this.imageWidth / 2;
+            const playerCenterY = this.y * mapHeight + this.imageHeight / 2;
+            const radius = this.forceFieldRadius * mapWidth;
+
+            const closestX = Math.max(
+                entity.x * mapWidth,
+                Math.min(playerCenterX, entity.x * mapWidth + entity.imageWidth)
+            );
+
+            const closestY = Math.max(
+                entity.y * mapHeight,
+                Math.min(playerCenterY, entity.y * mapHeight + entity.imageHeight)
+            );
+
+            const dx = playerCenterX - closestX;
+            const dy = playerCenterY - closestY;
+
+            return dx * dx + dy * dy <= radius * radius;
+        }
+
+        return false;
     }
 }
