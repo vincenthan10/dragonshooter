@@ -1115,21 +1115,21 @@ function reset(isLevelCleared) {
         dragon.boss = false;
         dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123];
         dragon.hp = dragon.maxHp[0];
-        dragon.rewards = [
+        this.rewards = [
             Math.round(Math.random() * 16 + 26), 
             Math.round(Math.random() * 18 + 42), 
             Math.round(Math.random() * 20 + 52), 
-            Math.round(Math.random() * 16 + 145),
+            Math.round(Math.random() * 16 + 105),
             Math.round(Math.random() * 27 + 44),
             Math.round(Math.random() * 15 + 49),
             Math.round(Math.random() * 18 + 58),
             Math.round(Math.random() * 26 + 76),
-            Math.round(Math.random() * 20 + 156),
+            Math.round(Math.random() * 20 + 116),
             Math.round(Math.random() * 15 + 55),
             Math.round(Math.random() * 24 + 38),
             Math.round(Math.random() * 10 + 66),
             Math.round(Math.random() * 24 + 62),
-            Math.round(Math.random() * 14 + 186)
+            Math.round(Math.random() * 14 + 136)
         ];
         gameOver = false;
     }
@@ -1156,7 +1156,7 @@ function reset(isLevelCleared) {
     mystery.affectTime = 0;
     mystery.activeTime = 0;
     mystery.inactiveTime = 0;
-    mystery.spawnTime = Math.random() * 12500 + 2500;
+    mystery.spawnTime = Math.random() * 15000 + 2500;
     mystery.x = Math.random() * 0.9 + 0.05;
     mystery.y = Math.random() * 0.7 + 0.25;
     mystery.effectNumber = 0;
