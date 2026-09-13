@@ -19,8 +19,8 @@ export default class MysteryBox {
         this.activeTime = 0;
         this.inactiveTime = 0;
         this.affectTime = 0;
-        this.spawnTime = Math.random() * 12500 + 2500;
-        this.despawnTime = Math.random() * 1500 + 2500;
+        this.spawnTime = Math.random() * 15000 + 2500;
+        this.despawnTime = Math.random() * 2000 + 3000;
         this.effectTime = Math.random() * 3000 + 4500;
         this.x = Math.random() * 0.9 + 0.05;
         this.y = Math.random() * 0.7 + 0.25;
@@ -45,7 +45,7 @@ export default class MysteryBox {
                 this.active = false;
                 this.activeTime = 0;
                 this.inactiveTime = 0;
-                this.despawnTime = Math.random() * 1500 + 2500;
+                this.despawnTime = Math.random() * 2000 + 3000;
                 this.x = Math.random() * 0.9 + 0.05;
                 this.y = Math.random() * 0.7 + 0.25;
             }
@@ -55,7 +55,7 @@ export default class MysteryBox {
                 this.active = true;
                 this.activeTime = 0;
                 this.inactiveTime = 0;
-                this.spawnTime = Math.random() * 8000 + 8000;
+                this.spawnTime = Math.random() * 6000 + 12000;
             }
         }
         if (this.player.collected || this.dragon.collected) {
