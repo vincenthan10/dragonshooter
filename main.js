@@ -250,7 +250,21 @@ let upgradePool = [
         currentLevel: 0,
         apply(player) {
             player.homingBulletActive = true;
-            player.fireRateUpgraded *= 1.5;
+            player.fireRateUpgraded *= 1.4;
+        },
+        maxLevel: 1,
+        getCost() {
+            return this.baseCost;
+        }
+    },
+    {
+        name: "Auto-Collect Mystery Box",
+        baseCost: 105,
+        availableLevel: 9,
+        target: "player",
+        currentLevel: 0,
+        apply(player) {
+            player.autoCollectMysteryBox = true;
         },
         maxLevel: 1,
         getCost() {
@@ -315,7 +329,7 @@ function getUpgradePreviewText(upgrade) {
         case "Bullet Size Up":
             return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.18)}` };
         case "Homing Bullets":
-            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 1.5)}s` };
+            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 1.4)}s` };
         default:
             return null;
     }
@@ -355,14 +369,21 @@ function update(deltaTime) {
     }
     if (player.unlockedMysteryBox) {
         mystery.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
-        if (mystery.isColliding(player)) {
+        if (mystery.active && player.autoCollectMysteryBox) {
+            mystery.active = false;
             player.collected = true;
             mystery.playerEffect(player, true, 0);
+        } else {
+            if (mystery.isColliding(player)) {
+                player.collected = true;
+                mystery.playerEffect(player, true, 0);
+            }
+            if (mystery.isColliding(dragon)) {
+                dragon.collected = true;
+                mystery.dragonEffect(dragon, true, 0);
+            }
         }
-        if (mystery.isColliding(dragon)) {
-            dragon.collected = true;
-            mystery.dragonEffect(dragon, true, 0);
-        }
+        
     }
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, dragon);
     if (!dragon.alive) {
@@ -453,9 +474,9 @@ function update(deltaTime) {
                         dragon.fireballs.splice(i, 1);
                     } 
                     if (bullet.super) {
-                        explosions.push(new Explosion(bullet.x, bullet.y - 0.1, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+                        explosions.push(new Explosion(bullet.x, bullet.y - 0.1, bullet.ice ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
                     } else {
-                        explosions.push(new Explosion(bullet.x, bullet.y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                        explosions.push(new Explosion(bullet.x, bullet.y - 0.05, bullet.ice ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
                     }
                     if (bullet.health <= 0) {
                         player.bullets.splice(j, 1);
@@ -505,9 +526,9 @@ function update(deltaTime) {
                 let bullet = player.bullets[j];
                 if (fireball.isColliding(bullet)) {
                     if (bullet.super) {
-                        explosions.push(new Explosion(fireball.x, fireball.y - 0.1, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+                        explosions.push(new Explosion(fireball.x, fireball.y - 0.1, (fireball.ice && bullet.ice) ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
                     } else {
-                        explosions.push(new Explosion(fireball.x, fireball.y - 0.05, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                        explosions.push(new Explosion(fireball.x, fireball.y - 0.05, (fireball.ice && bullet.ice) ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
                     }
 
                     bullet.health -= Math.max(fireball.damage, 1);
@@ -975,11 +996,11 @@ function draw() {
 
             ctx.fillStyle = "white";
             if (slot) {
-                ctx.fillText("[" + (i + 1) + "] " + slot.name, canvas.width / 2 - 135, y);
+                ctx.fillText("[" + (i + 1) + "] " + slot.name, canvas.width / 2 - 150, y);
                 
-                ctx.drawImage(coinImage, canvas.width / 2 + 48, y - 25);
+                ctx.drawImage(coinImage, canvas.width / 2 + 78, y - 25);
                 ctx.fillStyle = selected && !affordable ? "red" : "white";
-                ctx.fillText(cost, canvas.width / 2 + 90, y);
+                ctx.fillText(cost, canvas.width / 2 + 120, y);
             } else {
                 ctx.fillStyle = "gray";
                 drawCenteredText("[" + (i + 1) + "] Purchased", canvas.width / 2, y);
@@ -1092,7 +1113,7 @@ function reset(isLevelCleared) {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
-        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 82];
+        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123];
         dragon.hp = dragon.maxHp[0];
         dragon.rewards = [
             Math.round(Math.random() * 16 + 26), 
@@ -1239,7 +1260,7 @@ document.addEventListener("keydown", (e) => {
         if (e.code === "Space") {
             shooting = true;
         }
-        if (player.alive && e.code === "KeyR" && player.superShotReady) {
+        if (player.alive && e.code === "KeyR" && player.superShotReady && !player.isFrozen) {
             player.shootSuperBullet();
         }
     }
@@ -1277,11 +1298,15 @@ document.addEventListener("keydown", (e) => {
             );
             const _lh = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
             const _fs = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
+            const _mb = upgradePool.find(upgrade => upgrade.name === "Unlock Mystery Box");
             if (available.includes(_lh) && player.lightningHelmet.alive) {
                 available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
             }
             if (available.includes(_fs) && player.fireShield.alive) {
                 available = available.filter(upgrade => upgrade.name !== "Fire Shield");
+            }
+            if (available.includes(_mb)) {
+                available = available.filter(upgrade => upgrade.name !== "Auto-Collect Mystery Box");
             }
             chosen = [];
             for (let i = 0; i < 3; i++) {
