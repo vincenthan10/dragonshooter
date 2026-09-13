@@ -16,20 +16,20 @@ export default class Dragon {
             Math.round(Math.random() * 16 + 26), 
             Math.round(Math.random() * 18 + 42), 
             Math.round(Math.random() * 20 + 52), 
-            Math.round(Math.random() * 16 + 145),
+            Math.round(Math.random() * 16 + 105),
             Math.round(Math.random() * 27 + 44),
             Math.round(Math.random() * 15 + 49),
             Math.round(Math.random() * 18 + 58),
             Math.round(Math.random() * 26 + 76),
-            Math.round(Math.random() * 20 + 156),
+            Math.round(Math.random() * 20 + 116),
             Math.round(Math.random() * 15 + 55),
             Math.round(Math.random() * 24 + 38),
             Math.round(Math.random() * 10 + 66),
             Math.round(Math.random() * 24 + 62),
-            Math.round(Math.random() * 14 + 186)
+            Math.round(Math.random() * 14 + 136)
         ];
         this.reward = this.rewards[this.hpChooser];
-        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 82];
+        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123];
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
@@ -401,7 +401,7 @@ export default class Dragon {
                 if (level == 9) {   
                     this.abilitySpeedMultiplier = 0.75;
                 } else if (level == 14) {
-                    this.abilitySpeedMultiplier = this.abilityMovingToPlayer ? 1.5 : 2;
+                    this.abilitySpeedMultiplier = this.abilityMovingToPlayer ? 1.75 : 2.5;
                 }
                 this.shooting = false;
                 if (level == 4) {
