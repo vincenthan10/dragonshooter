@@ -68,6 +68,7 @@ export default class Player {
         this.coins = 0;
         this.coinsThisRun = 0;
         this.unlockedMysteryBox = false;
+        this.autoCollectMysteryBox = false;
 
         this.lightningHelmet = new LightningHelmet(-2, -2, this.sizeMultiplier);
         this.fireShield = new FireShield(-2, -2, this.sizeMultiplier);
@@ -250,7 +251,7 @@ export default class Player {
 
     shootSuperBullet() {
         let crit = Math.random() * 4;
-        const ice = this.canIce ? Math.random() * 7 : 0;
+        const ice = this.canIce ? Math.random() * 9 : 0;
         if (this.superShotReady) {
             if (this.facing < 0) {
                 this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), 
