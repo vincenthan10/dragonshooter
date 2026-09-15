@@ -634,7 +634,7 @@ function update(deltaTime) {
             dragon.takeDamage(ice.damage);
             const knockbackAmount = 0.0025 / Math.pow(dragon.sizeMultiplier, 4) / (dragon.boss ? Math.pow(dragon.bossMultiplier, 3) : 1);
             dragon.y = dragon.y + knockbackAmount;
-            dragon.freeze(500);
+            dragon.freeze(dragon.boss ? 750 : 500);
             explosions.push(new Explosion(ice.x - 0.02, ice.y - 0.02, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
             cloud.ices.splice(i, 1);
             continue;
@@ -1115,7 +1115,7 @@ function reset(isLevelCleared) {
         dragon.boss = false;
         dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123];
         dragon.hp = dragon.maxHp[0];
-        this.rewards = [
+        dragon.rewards = [
             Math.round(Math.random() * 16 + 26), 
             Math.round(Math.random() * 18 + 42), 
             Math.round(Math.random() * 20 + 52), 
@@ -1230,7 +1230,6 @@ function reset(isLevelCleared) {
     deadTime = 0;
     defeatTime = 0;
     gameState = "game";
-    upgradeInput = 0;
 }
 
 let lastTimestamp = 0;
