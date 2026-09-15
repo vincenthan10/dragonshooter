@@ -5,7 +5,7 @@ export default class Dragon {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.06];
+        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07];
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
         this.yMultiplier = 1.2;
@@ -401,7 +401,7 @@ export default class Dragon {
                 if (level == 9) {   
                     this.abilitySpeedMultiplier = 0.75;
                 } else if (level == 14) {
-                    this.abilitySpeedMultiplier = this.abilityMovingToPlayer ? 1.75 : 2.5;
+                    this.abilitySpeedMultiplier = this.abilityMovingToPlayer ? 1.4 : 1.6;
                 }
                 this.shooting = false;
                 if (level == 4) {
