@@ -116,7 +116,7 @@ export default class Cloud {
         if (level >= 10) {
             this.iceSpawnTimer += deltaTime;
             if (this.iceSpawnTimer >= this.iceSpawnTime) {
-                this.ices.push(new Ice(Math.random(), -0.1, this.iceDamage));
+                this.ices.push(new Ice(Math.random() * 0.92 + 0.04, -0.1, this.iceDamage));
                 this.iceSpawnTimer = 0;
                 this.iceSpawnTime = Math.random() * 500 + 1100;
                 if (level == 13) {
