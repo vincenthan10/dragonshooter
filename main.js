@@ -266,7 +266,6 @@ let upgradePool = [
         apply(player) {
             player.autoCollectMysteryBox = true;
         },
-        maxLevel: 1,
         getCost() {
             return this.baseCost;
         }
@@ -372,6 +371,11 @@ function update(deltaTime) {
         if (mystery.active && player.autoCollectMysteryBox) {
             mystery.active = false;
             player.collected = true;
+            player.autoCollectedCount++;
+            if (player.autoCollectedCount >= player.autoCollectMax) {
+                player.autoCollectMysteryBox = false;
+                player.autoCollectedCount = 0;
+            }
             mystery.playerEffect(player, true, 0);
         } else {
             if (mystery.isColliding(player)) {
@@ -1109,6 +1113,8 @@ function reset(isLevelCleared) {
         player.lightningHelmet.alive = false;
         player.fireShield.hp = player.fireShield.maxHp;
         player.fireShield.alive = false;
+        player.autoCollectMysteryBox = false;
+        player.autoCollectedCount = 0;
         upgradePool.forEach(upgrade => {
             upgrade.currentLevel = 0;
         })
@@ -1304,7 +1310,7 @@ document.addEventListener("keydown", (e) => {
             if (available.includes(_fs) && player.fireShield.alive) {
                 available = available.filter(upgrade => upgrade.name !== "Fire Shield");
             }
-            if (available.includes(_mb)) {
+            if (available.includes(_mb) || player.autoCollectMysteryBox) {
                 available = available.filter(upgrade => upgrade.name !== "Auto-Collect Mystery Box");
             }
             chosen = [];
