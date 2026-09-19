@@ -69,6 +69,8 @@ export default class Player {
         this.coinsThisRun = 0;
         this.unlockedMysteryBox = false;
         this.autoCollectMysteryBox = false;
+        this.autoCollectedCount = 0;
+        this.autoCollectMax = 25;
 
         this.lightningHelmet = new LightningHelmet(-2, -2, this.sizeMultiplier);
         this.fireShield = new FireShield(-2, -2, this.sizeMultiplier);
