@@ -89,7 +89,7 @@ let upgradePool = [
             player.canCritApplied = true;
             player.dmgUpgrade += 1;
         },
-        maxLevel: 3,
+        maxLevel: 4,
         currentLevel: 0,
         getCost() {
             return this.baseCost + this.currentLevel * 75;
@@ -101,7 +101,7 @@ let upgradePool = [
         availableLevel: 1,
         target: "player",
         apply: (player) => player.speedUpgraded *= 1.1,
-        maxLevel: 6,
+        maxLevel: 7,
         currentLevel: 0,
         getCost() {
             return this.baseCost + this.currentLevel * 30;
@@ -113,7 +113,7 @@ let upgradePool = [
         availableLevel: 1,
         target: "player",
         apply: (player) => player.fireRateUpgraded *= 0.9,
-        maxLevel: 6,
+        maxLevel: 7,
         currentLevel: 0,
         getCost() {
             return this.baseCost + this.currentLevel * 30;
@@ -193,11 +193,11 @@ let upgradePool = [
         target: "player",
         currentLevel: 0,
         apply(player) {
-            player.bhealthUpgrade += this.currentLevel + 1;
+            player.bhealthUpgrade += 1;
         },
-        maxLevel: 3,
+        maxLevel: 4,
         getCost() {
-            return this.baseCost + this.currentLevel * 75;
+            return this.baseCost + this.currentLevel * 50;
         }
     },
     {
@@ -209,7 +209,7 @@ let upgradePool = [
         apply(player) {
             player.bulletSizeMultiplier *= 1.18;
         },
-        maxLevel: 4,
+        maxLevel: 5,
         getCost() {
             return this.baseCost + this.currentLevel * 50;
         }
@@ -324,7 +324,7 @@ function getUpgradePreviewText(upgrade) {
         case "Health Up":
             return { line: "hp", text: ` → ${player.maxHp + (upgrade.currentLevel + 1)}` };
         case "Bullet Health Up":
-            return { line: "bulletHealth", text: ` → ${current.bulletHealth + (upgrade.currentLevel + 1)}` };
+            return { line: "bulletHealth", text: ` → ${current.bulletHealth + 1}` };
         case "Bullet Size Up":
             return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.18)}` };
         case "Homing Bullets":
