@@ -81,7 +81,7 @@ let upgradeContinueButton = { x: 0, y: 0, w: 0, h: 0, hover: false };
 let upgradePool = [
     {   
         name: "Critical Hit Up",
-        baseCost: 100,
+        baseCost: 80,
         availableLevel: 3,
         target: "player",
         apply(player) {
@@ -92,7 +92,7 @@ let upgradePool = [
         maxLevel: 4,
         currentLevel: 0,
         getCost() {
-            return this.baseCost + this.currentLevel * 75;
+            return this.baseCost + this.currentLevel * 60;
         }
     },
     {
@@ -230,7 +230,7 @@ let upgradePool = [
     },
     {
         name: "Ice Bullets",
-        baseCost: 150,
+        baseCost: 100,
         availableLevel: 9,
         target: "player",
         currentLevel: 0,
@@ -268,6 +268,26 @@ let upgradePool = [
         },
         getCost() {
             return this.baseCost;
+        }
+    },
+    {
+        name: "Luck Up",
+        baseCost: 60,
+        availableLevel: 9,
+        target: "player",
+        currentLevel: 0,
+        maxLevel: 3,
+        apply(player) {
+            if (this.currentLevel + 1 == this.maxLevel) {
+                player.critChance -= 2;
+                player.iceChance -= 4;
+            } else {
+                player.critChance -= 1;
+                player.iceChance -= 2;
+            }
+        },
+        getCost() {
+            return this.baseCost + this.currentLevel * 40;
         }
     }
 ]
@@ -1091,7 +1111,7 @@ function reset(isLevelCleared) {
     player.isFrozen = false;
     player.superShotReady = false;
     player.canCritApplied = player.canCrit;
-    player.forceFieldActive = false;
+    player.forceFieldActive = true;
     player.forceFieldDamageTimer = 0;
     if (gameOver) {
         level = 1;
@@ -1106,7 +1126,9 @@ function reset(isLevelCleared) {
         player.bulletSizeMultiplier = 1;
         player.canCrit = false;
         player.canCritApplied = false;
+        player.critChance = 7;
         player.canIce = false;
+        player.iceChance = 15;
         player.homingBulletActive = false;
         player.unlockedMysteryBox = false;
         player.lightningHelmet.hp = player.lightningHelmet.maxHp;
@@ -1124,18 +1146,18 @@ function reset(isLevelCleared) {
         dragon.rewards = [
             Math.round(Math.random() * 16 + 26), 
             Math.round(Math.random() * 18 + 42), 
-            Math.round(Math.random() * 20 + 52), 
-            Math.round(Math.random() * 16 + 105),
+            Math.round(Math.random() * 20 + 57), 
+            Math.round(Math.random() * 16 + 145),
             Math.round(Math.random() * 27 + 44),
-            Math.round(Math.random() * 15 + 49),
+            Math.round(Math.random() * 15 + 54),
             Math.round(Math.random() * 18 + 58),
             Math.round(Math.random() * 26 + 76),
-            Math.round(Math.random() * 20 + 116),
+            Math.round(Math.random() * 20 + 146),
             Math.round(Math.random() * 15 + 55),
-            Math.round(Math.random() * 24 + 38),
+            Math.round(Math.random() * 24 + 48),
             Math.round(Math.random() * 10 + 66),
-            Math.round(Math.random() * 24 + 62),
-            Math.round(Math.random() * 14 + 136)
+            Math.round(Math.random() * 24 + 67),
+            Math.round(Math.random() * 14 + 186)
         ];
         gameOver = false;
     }
@@ -1304,6 +1326,7 @@ document.addEventListener("keydown", (e) => {
             const _lh = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
             const _fs = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
             const _mb = upgradePool.find(upgrade => upgrade.name === "Unlock Mystery Box");
+            const _lk = upgradePool.find(upgrade => upgrade.name === "Luck Up");
             if (available.includes(_lh) && player.lightningHelmet.alive) {
                 available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
             }
@@ -1312,6 +1335,9 @@ document.addEventListener("keydown", (e) => {
             }
             if (available.includes(_mb) || player.autoCollectMysteryBox) {
                 available = available.filter(upgrade => upgrade.name !== "Auto-Collect Mystery Box");
+            }
+            if (available.includes(_lk) && (!player.canCrit && !player.canIce)) {
+                available = available.filter(upgrade => upgrade.name !== "Luck Up");
             }
             chosen = [];
             for (let i = 0; i < 3; i++) {
