@@ -15,17 +15,17 @@ export default class Dragon {
         this.rewards = [
             Math.round(Math.random() * 16 + 26), 
             Math.round(Math.random() * 18 + 42), 
-            Math.round(Math.random() * 20 + 52), 
+            Math.round(Math.random() * 20 + 57), 
             Math.round(Math.random() * 16 + 105),
             Math.round(Math.random() * 27 + 44),
-            Math.round(Math.random() * 15 + 49),
+            Math.round(Math.random() * 15 + 54),
             Math.round(Math.random() * 18 + 58),
             Math.round(Math.random() * 26 + 76),
-            Math.round(Math.random() * 20 + 116),
+            Math.round(Math.random() * 20 + 106),
             Math.round(Math.random() * 15 + 55),
-            Math.round(Math.random() * 24 + 38),
+            Math.round(Math.random() * 24 + 48),
             Math.round(Math.random() * 10 + 66),
-            Math.round(Math.random() * 24 + 62),
+            Math.round(Math.random() * 24 + 67),
             Math.round(Math.random() * 14 + 136)
         ];
         this.reward = this.rewards[this.hpChooser];
