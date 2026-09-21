@@ -38,7 +38,7 @@ export default class Player {
         this.dmgUpgrade = 0;
         this.bulletHealth = 1;
         this.bhealthUpgrade = 0;
-        this.baseShootingDelay = 90;
+        this.baseShootingDelay = 900;
         this.fireRateMultiplier = 1;
         this.fireRateUpgraded = 1;
         this.shootingDelay = this.baseShootingDelay;
@@ -51,15 +51,17 @@ export default class Player {
         this.canIce = false;
         this.iceChance = 15;
         this.homingBulletActive = false;
+        this.canEvade = false;
+        this.evadeChance = 10;
 
         this.ltnInvinc = false;
         this.freezeTimer = 0;
         this.isFrozen = false;
 
         this.forceFieldActive = false;
-        this.forceFieldRadius = 0.25;
+        this.forceFieldRadius = 0.135;
         this.forceFieldDamage = 1;
-        this.forceFieldDamageDelay = 40;
+        this.forceFieldDamageDelay = 400;
         this.forceFieldDamageTimer = 0;
 
         this.collected = false;
@@ -242,8 +244,8 @@ export default class Player {
     }
 
     shoot() {
-        let crit = Math.random() * 4;
-        const ice = this.canIce ? Math.random() * 7 : 0;
+        let crit = Math.random() * this.critChance;
+        const ice = this.canIce ? Math.random() * this.iceChance : 0;
         if (this.facing < 0) {
             this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + (crit < 1 && this.canCritApplied ? this.dmgUpgrade : 0), 
             this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false, this.canIce && ice < 1, this.homingBulletActive, this.dragon));
