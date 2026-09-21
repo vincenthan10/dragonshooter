@@ -278,16 +278,40 @@ let upgradePool = [
         currentLevel: 0,
         maxLevel: 3,
         apply(player) {
-            if (this.currentLevel + 1 == this.maxLevel) {
-                player.critChance -= 2;
-                player.iceChance -= 4;
-            } else {
-                player.critChance -= 1;
-                player.iceChance -= 2;
+            switch(this.currentLevel) {
+                case 0: 
+                    player.critChance -= 1.3;
+                    player.iceChance -= 3;
+                    player.evadeChance -= 2;
+                    break;
+                case 1:
+                    player.critChance -= 1.2;
+                    player.iceChance -= 2.5;
+                    player.evadeChance -= 1.5;
+                    break;
+                case 2:
+                    player.critChance -= 1;
+                    player.iceChance -= 2.5;
+                    player.evadeChance -= 1.5;
+                    break;
             }
         },
         getCost() {
             return this.baseCost + this.currentLevel * 40;
+        }
+    },
+    {
+        name: "Evade Projectiles",
+        baseCost: 100,
+        availableLevel: 4,
+        target: "player",
+        currentLevel: 0,
+        apply(player) {
+            player.canEvade = true;
+        },
+        maxLevel: 1,
+        getCost() {
+            return this.baseCost;
         }
     }
 ]
@@ -462,31 +486,37 @@ function update(deltaTime) {
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
         let fireball = dragon.fireballs[i];
         if (fireball.super) {
-            if (fireball.isSuperColliding(player) && player.alive) {
-                const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
-                if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
-                    player.fireShield.hp -= 3;
-                    if (player.fireShield.hp <= 0) {
-                        player.fireShield.alive = false;
-                    }
-                    if (fireball.ice) {
-                        player.freeze(5000);
-                    }
+            if (fireball.isSuperColliding(player) && fireball.canDamage && player.alive) {
+                let roll = player.canEvade ? Math.random() * player.evadeChance : 2;
+                if (roll < 1) {
+                    fireball.canDamage = false;
+                    fireball.target = null;
                 } else {
-                    player.hp -= fireball.damage;
-                    if (fireball.ice) {
-                        player.freeze(10000);
+                    const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
+                    if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
+                        player.fireShield.hp -= 3;
+                        if (player.fireShield.hp <= 0) {
+                            player.fireShield.alive = false;
+                        }
+                        if (fireball.ice) {
+                            player.freeze(5000);
+                        }
+                    } else {
+                        player.hp -= fireball.damage;
+                        if (fireball.ice) {
+                            player.freeze(10000);
+                        }
                     }
-                }
-                const knockbackAmount = 0.05 / Math.pow(player.sizeMultiplier, 4);
-                player.x += fireball.dir * knockbackAmount;
+                    const knockbackAmount = 0.05 / Math.pow(player.sizeMultiplier, 4);
+                    player.x += fireball.dir * knockbackAmount;
 
-                if (fireball.ice) {
-                    explosions.push(new Explosion(player.x - 0.3, player.y - 0.3, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 10));
-                } else {
-                    explosions.push(new Explosion(player.x - 0.3, player.y - 0.3, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 10));
+                    if (fireball.ice) {
+                        explosions.push(new Explosion(player.x - 0.3, player.y - 0.3, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 10));
+                    } else {
+                        explosions.push(new Explosion(player.x - 0.3, player.y - 0.3, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 10));
+                    }
+                    dragon.fireballs.splice(i, 1);
                 }
-                dragon.fireballs.splice(i, 1);
             }
             for (let j = player.bullets.length - 1; j >= 0; j--) {
                 let bullet = player.bullets[j];
@@ -509,42 +539,48 @@ function update(deltaTime) {
                 }
             }
         } else {
-            if (fireball.isColliding(player) && player.alive) {
-                const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
-                if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
-                    player.fireShield.hp -= Math.max(fireball.damage, 1);
-                    if (player.fireShield.hp <= 0) {
-                        player.fireShield.alive = false;
-                    } 
+            if (fireball.isColliding(player) && fireball.canDamage && player.alive) {
+                let roll = player.canEvade ? Math.random() * player.evadeChance : 2;
+                if (roll < 1) {
+                    fireball.canDamage = false;
+                    fireball.target = null;
                 } else {
-                    player.hp -= fireball.damage;
+                    const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
+                    if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
+                        player.fireShield.hp -= Math.max(fireball.damage, 1);
+                        if (player.fireShield.hp <= 0) {
+                            player.fireShield.alive = false;
+                        } 
+                    } else {
+                        player.hp -= fireball.damage;
+                        if (fireball.ice) {
+                            player.freeze(1000);
+                        }
+                    }
+                    const knockbackAmount = 0.02 * Math.pow(fireball.sizeMultiplier, 4) / Math.pow(player.sizeMultiplier, 4);
+                    
+                    // Apply knockback with homing direction for homing fireballs
+                    if (fireball.homing && fireball.speedY !== undefined) {
+                        // For homing fireballs, use normalized velocity direction
+                        const speed = Math.sqrt(fireball.speed * fireball.speed + fireball.speedY * fireball.speedY);
+                        if (speed > 0) {
+                            const normX = fireball.speed / speed;
+                            const normY = fireball.speedY / speed;
+                            player.x = player.x + normX * knockbackAmount;
+                            player.y = player.y + normY * knockbackAmount;
+                        }
+                    } else {
+                        // For regular fireballs, use simple directional knockback
+                        player.x = player.x + fireball.dir * knockbackAmount;
+                    }
                     if (fireball.ice) {
-                        player.freeze(1000);
+                        explosions.push(new Explosion(fireball.x, fireball.y - 0.05, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    } else {
+                        explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
                     }
+                    dragon.fireballs.splice(i, 1);
+                    continue;
                 }
-                const knockbackAmount = 0.02 * Math.pow(fireball.sizeMultiplier, 4) / Math.pow(player.sizeMultiplier, 4);
-                
-                // Apply knockback with homing direction for homing fireballs
-                if (fireball.homing && fireball.speedY !== undefined) {
-                    // For homing fireballs, use normalized velocity direction
-                    const speed = Math.sqrt(fireball.speed * fireball.speed + fireball.speedY * fireball.speedY);
-                    if (speed > 0) {
-                        const normX = fireball.speed / speed;
-                        const normY = fireball.speedY / speed;
-                        player.x = player.x + normX * knockbackAmount;
-                        player.y = player.y + normY * knockbackAmount;
-                    }
-                } else {
-                    // For regular fireballs, use simple directional knockback
-                    player.x = player.x + fireball.dir * knockbackAmount;
-                }
-                if (fireball.ice) {
-                    explosions.push(new Explosion(fireball.x, fireball.y - 0.05, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
-                } else {
-                    explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
-                }
-                dragon.fireballs.splice(i, 1);
-                continue;
             }
             for (let j = player.bullets.length - 1; j >= 0; j--) {
                 let bullet = player.bullets[j];
@@ -618,12 +654,17 @@ function update(deltaTime) {
     if (dragon.boss) {
         for (let i = dragon.meteorites.length - 1; i >= 0; i--) {
             let meteorite = dragon.meteorites[i];
-            if (meteorite.isColliding(player) && player.alive && !player.ltnInvinc) {
-                player.hp -= meteorite.damage;
-                const knockbackAmount = 0.04 / Math.pow(player.sizeMultiplier, 4);
-                player.y = player.y + knockbackAmount;
-                explosions.push(new Explosion(meteorite.x - 0.04, meteorite.y - 0.02, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
-                dragon.meteorites.splice(i, 1);
+            if (meteorite.isColliding(player) && meteorite.canDamage && player.alive && !player.ltnInvinc) {
+                let roll = player.canEvade ? Math.random() * player.evadeChance : 2;
+                if (roll < 1) {
+                    meteorite.canDamage = false;
+                } else {
+                    player.hp -= meteorite.damage;
+                    const knockbackAmount = 0.04 / Math.pow(player.sizeMultiplier, 4);
+                    player.y = player.y + knockbackAmount;
+                    explosions.push(new Explosion(meteorite.x - 0.04, meteorite.y - 0.02, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
+                    dragon.meteorites.splice(i, 1);
+                }
             }
             for (let j = player.bullets.length - 1; j >= 0; j--) {
             let bullet = player.bullets[j];
@@ -645,14 +686,21 @@ function update(deltaTime) {
     }
     for (let i = cloud.ices.length - 1; i >= 0; i--) {
         let ice = cloud.ices[i];
-        if (ice.isColliding(player) && player.alive && !player.ltnInvinc) {
-            player.hp -= ice.damage;
-            const knockbackAmount = 0.01 / Math.pow(player.sizeMultiplier, 4);
-            player.y = player.y + knockbackAmount;
-            player.freeze(2000);
-            explosions.push(new Explosion(ice.x - 0.02, ice.y - 0.02, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
-            cloud.ices.splice(i, 1);
-            continue;
+        if (ice.isColliding(player) && ice.canDamage && player.alive && !player.ltnInvinc) {
+            let roll = player.canEvade ? Math.random() * player.evadeChance : 2;
+            if (roll < 1) {
+                ice.canDamage = false;
+                ice.homing = false;
+            } else {
+                player.hp -= ice.damage;
+                const knockbackAmount = 0.01 / Math.pow(player.sizeMultiplier, 4);
+                player.y = player.y + knockbackAmount;
+                player.freeze(2000);
+                explosions.push(new Explosion(ice.x - 0.02, ice.y - 0.02, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                cloud.ices.splice(i, 1);
+                continue;
+            }
+            
         }
         if (ice.isColliding(dragon) && dragon.alive && !dragon.ltnInvinc) {
             dragon.takeDamage(ice.damage);
@@ -1111,7 +1159,7 @@ function reset(isLevelCleared) {
     player.isFrozen = false;
     player.superShotReady = false;
     player.canCritApplied = player.canCrit;
-    player.forceFieldActive = true;
+    player.forceFieldActive = false;
     player.forceFieldDamageTimer = 0;
     if (gameOver) {
         level = 1;
@@ -1129,6 +1177,8 @@ function reset(isLevelCleared) {
         player.critChance = 7;
         player.canIce = false;
         player.iceChance = 15;
+        player.canEvade = false;
+        player.evadeChance = 10;
         player.homingBulletActive = false;
         player.unlockedMysteryBox = false;
         player.lightningHelmet.hp = player.lightningHelmet.maxHp;
@@ -1147,17 +1197,17 @@ function reset(isLevelCleared) {
             Math.round(Math.random() * 16 + 26), 
             Math.round(Math.random() * 18 + 42), 
             Math.round(Math.random() * 20 + 57), 
-            Math.round(Math.random() * 16 + 145),
+            Math.round(Math.random() * 16 + 105),
             Math.round(Math.random() * 27 + 44),
             Math.round(Math.random() * 15 + 54),
             Math.round(Math.random() * 18 + 58),
             Math.round(Math.random() * 26 + 76),
-            Math.round(Math.random() * 20 + 146),
+            Math.round(Math.random() * 20 + 106),
             Math.round(Math.random() * 15 + 55),
             Math.round(Math.random() * 24 + 48),
             Math.round(Math.random() * 10 + 66),
             Math.round(Math.random() * 24 + 67),
-            Math.round(Math.random() * 14 + 186)
+            Math.round(Math.random() * 14 + 136)
         ];
         gameOver = false;
     }
@@ -1336,7 +1386,7 @@ document.addEventListener("keydown", (e) => {
             if (available.includes(_mb) || player.autoCollectMysteryBox) {
                 available = available.filter(upgrade => upgrade.name !== "Auto-Collect Mystery Box");
             }
-            if (available.includes(_lk) && (!player.canCrit && !player.canIce)) {
+            if (available.includes(_lk) && (!player.canCrit && !player.canIce && !player.canEvade)) {
                 available = available.filter(upgrade => upgrade.name !== "Luck Up");
             }
             chosen = [];
