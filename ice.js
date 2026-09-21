@@ -1,30 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<!--TODO:
-- next levels: two dragons
-- once copilot resets, add the rest of the player stats in upgrade screen
-- next upgrades:
-    1. ice bullet level 2: slows down for 1.5 seconds
-    2. homing bullet level 2: fire rate up to 1.2x, (also make homing bullet home to nearest dragon)
-    3. lightning helmet level 2: lightning reflector -  reflects lightning to nearest dragon
-    4. fire shield level 2: fire reflector - reflects fireball back to dragon
-    5. spear: press T to stab in front of you - knocks dragon back, the closer dragon is, the more damage the spear does
-    6. poison gas: next 3 levels, set a random area to be poison gas of a random size that deals constant damage to dragons that enter it (alien is immune due to being inside spaceship)
-- learn to fix in the future: make dragon hitbox its body and not an image rectangle
-DO NOT ERASE THIS: REMEMBER TO MAKE YOUR OWN DRAGON, ALIEN, CLOUDS, LIGHTNING, EQUIPMENT DRAWINGS IF YOU EVER GET TO THE FINAL PRODUCT-->
+export default class Ice {
+    constructor(x, y, damage) {
+        this.x = x;
+        this.y = y;
+        this.baseSpeed = 0.005;
+        this.speed = this.baseSpeed;
+        this.damage = damage;
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dragon Shooter</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
+        this.img = new Image();
+        this.img.src = "images/ice.png";
+        this.BASEIMGWIDTH = 25;
+        this.BASEIMGHEIGHT = 37;
+        this.imageWidth = this.BASEIMGWIDTH;
+        this.imageHeight = this.BASEIMGHEIGHT;
+        this.width = 0;
+        this.height = 0;
+        this.canDamage = true;
+    }
 
-<body>
-    <div id="canvasContainer">
-        <canvas id="gameCanvas" width="1080" height="600"></canvas>
-    </div>
-    <script type="module" src="main.js"></script>
-</body>
+    draw(ctx, mapWidth, mapHeight) {
+        ctx.save();
+        ctx.drawImage(this.img, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+        ctx.restore();
+    }
 
-</html>
+    update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight) {
+        this.imageWidth = this.BASEIMGWIDTH * (mapWidth / baseWidth);
+        this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight);
+        this.width = this.imageWidth / mapWidth;
+        this.height = this.imageHeight / mapHeight;
+        this.y += this.speed;
+    }
+
+    isColliding(entity) {
+        return this.x + this.width * 0.85 >= entity.x &&
+            this.x <= entity.x + entity.width * 0.9 &&
+            this.y + this.height * 0.85 >= entity.y &&
+            this.y <= entity.y + entity.height * 0.9;
+    }
+}
