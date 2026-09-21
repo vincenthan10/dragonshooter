@@ -27,6 +27,7 @@ export default class Fireball {
         this.height = 0;
         this.lastAdjustmentTime = 0;
         this.adjustmentInterval = 250; // Update trajectory every 250ms
+        this.canDamage = true;
     }
 
     draw(ctx, mapWidth, mapHeight) {
