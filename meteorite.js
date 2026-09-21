@@ -14,6 +14,7 @@ export default class Meteorite {
         this.imageHeight = this.BASEIMGHEIGHT;
         this.width = 0;
         this.height = 0;
+        this.canDamage = true;
     }
 
     draw(ctx, mapWidth, mapHeight) {
