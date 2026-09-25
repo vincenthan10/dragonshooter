@@ -236,10 +236,13 @@ let upgradePool = [
         currentLevel: 0,
         apply(player) {
             player.canIce = true;
+            if (this.currentLevel == 1) {
+                player.freezeTime = 1500;
+            }
         },
-        maxLevel: 1,
+        maxLevel: 2,
         getCost() {
-            return this.baseCost;
+            return this.baseCost + this.currentLevel * 75;
         }
     },
     {
@@ -250,11 +253,11 @@ let upgradePool = [
         currentLevel: 0,
         apply(player) {
             player.homingBulletActive = true;
-            player.fireRateUpgraded *= 1.4;
+            player.fireRateUpgraded *= (this.currentLevel == 0 ? 1.3 : 0.85);
         },
-        maxLevel: 1,
+        maxLevel: 2,
         getCost() {
-            return this.baseCost;
+            return this.baseCost + this.currentLevel * 100;
         }
     },
     {
@@ -327,8 +330,8 @@ function formatStat(value) {
 
 function getCurrentPlayerStats() {
     const speed = player.baseSpeedX * player.speedUpgraded;
-    const reloadTime = (player.baseShootingDelay * player.fireRateMultiplier * player.fireRateUpgraded) / 1000;
-    const damage = player.bulletDmg + player.dmgUpgrade;
+    const reloadTime = (player.baseShootingDelay * player.fireRateUpgraded) / 1000;
+    const damage = 1 + player.dmgUpgrade;
     const bulletHealth = player.bulletHealth + player.bhealthUpgrade;
     const previewBullet = new Bullet(-500, -500, 1, damage, player.sizeMultiplier * player.bulletSizeMultiplier, bulletHealth, false);
     previewBullet.update(0, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
@@ -372,7 +375,7 @@ function getUpgradePreviewText(upgrade) {
         case "Bullet Size Up":
             return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.18)}` };
         case "Homing Bullets":
-            return { line: "reload", text: ` → ${formatStat(current.reloadTime * 1.4)}s` };
+            return { line: "reload", text: ` → ${formatStat(current.reloadTime * (upgrade.currentLevel == 0 ? 1.3 : 0.85))}s` };
         default:
             return null;
     }
@@ -547,7 +550,7 @@ function update(deltaTime) {
                 } else {
                     const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
                     if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
-                        player.fireShield.hp -= Math.max(fireball.damage, 1);
+                        player.fireShield.hp -= Math.max(fireball.damage, 0.5);
                         if (player.fireShield.hp <= 0) {
                             player.fireShield.alive = false;
                         } 
@@ -634,7 +637,7 @@ function update(deltaTime) {
                     explosions.push(new Explosion(bullet.x - 0.02, bullet.y - 0.05, "images/explosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, bullet.super ? 4 : 1));
                 }
                 if (dragon.hp > 0) {
-                    const freezeTime = bullet.super ? 3000 : 1000;
+                    const freezeTime = bullet.super ? player.freezeTime * 3 : player.freezeTime;
                     dragon.freeze(freezeTime);
                 }
             } else if (bullet.super) {
@@ -1209,6 +1212,7 @@ function reset(isLevelCleared) {
             Math.round(Math.random() * 24 + 67),
             Math.round(Math.random() * 14 + 136)
         ];
+        cloud.iceDamage = 1;
         gameOver = false;
     }
 
