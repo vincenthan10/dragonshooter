@@ -17,14 +17,137 @@ const keysPressed = new Set();
 
 const ctx = canvas.getContext("2d");
 
-const playerSpawnX = 0.74;
-const playerSpawnY = 0.4;
-const dragonSpawnX = 0.1;
-const dragonSpawnY = 0.3;
-const dragon = new Dragon(dragonSpawnX, dragonSpawnY);
+let playerSpawnX = 0.74;
+let playerSpawnY = 0.4;
+let dragonSpawnX = 0.1;
+let dragonSpawnY = 0.3;
+let dragon2SpawnX = 0.75;
+let dragon2SpawnY = 0.65;
+const dragon1Stats = {
+    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.15],
+    facing: 1,
+    rewards: [
+            Math.round(Math.random() * 16 + 26), 
+            Math.round(Math.random() * 18 + 42), 
+            Math.round(Math.random() * 20 + 57), 
+            Math.round(Math.random() * 16 + 105),
+            Math.round(Math.random() * 27 + 44),
+            Math.round(Math.random() * 15 + 54),
+            Math.round(Math.random() * 18 + 58),
+            Math.round(Math.random() * 26 + 76),
+            Math.round(Math.random() * 20 + 106),
+            Math.round(Math.random() * 15 + 55),
+            Math.round(Math.random() * 24 + 48),
+            Math.round(Math.random() * 10 + 66),
+            Math.round(Math.random() * 24 + 67),
+            Math.round(Math.random() * 14 + 136),
+            Math.round(Math.random() * 9 + 36)
+        ],
+        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        restTimes: [
+            [2500, 4000],
+            [2500, 4000],
+            [2500, 4000],
+            [3000, 4000],
+            [2000, 3750],
+            [1250, 2500],
+            [0, 0],
+            [1500, 2250],
+            [0, 0],
+            [2500, 4000],
+            [500, 1500],
+            [0, 0],
+            [2000, 3500],
+            [0, 0],
+            [2500, 3750]
+        ],
+        chargeTimes: [
+            [2250, 4000],
+            [2250, 4000],
+            [2250, 4000],
+            [2750, 4000],
+            [2000, 4500],
+            [1500, 2750],
+            [750, 1500],
+            [1500, 5000],
+            [500, 1000],
+            [2000, 4000],
+            [1500, 3000],
+            [750, 1000],
+            [2000, 4000],
+            [500, 1000],
+            [3500, 5000]
+        ],
+        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500],
+        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1]
+}
+const dragon2Stats = {
+    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2],
+    facing: -1,
+    rewards: [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            Math.round(Math.random() * 8 + 24)
+        ],
+        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8],
+        restTimes: [
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [2250, 2750]
+        ],
+        chargeTimes: [
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [1500, 2000]
+        ],
+        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000],
+        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+}
+const dragon = new Dragon(dragonSpawnX, dragonSpawnY, dragon1Stats);
+const dragon2 = new Dragon(dragon2SpawnX, dragon2SpawnY, dragon2Stats);
 const player = new Player(playerSpawnX, playerSpawnY);
 const cloud = new Cloud(-0.1 * canvas.width, 0);
-const mystery = new MysteryBox(player, dragon);
+const mystery = new MysteryBox(player, [dragon, dragon2]);
 const explosions = [];
 const fireExplosion = {
     src: "images/fireexplosion.png",
@@ -179,8 +302,10 @@ let upgradePool = [
         availableLevel: 1,
         target: "dragon",
         currentLevel: 0,
-        apply(dragon) {
-            dragon.maxHp[level] = Math.round(dragon.maxHp[level] * 2 / 3);
+        apply(dragons) {
+            dragons.forEach(dragon => {
+                dragon.maxHp[level] = Math.round(dragon.maxHp[level] * 2 / 3);
+            });
         },
         getCost() {
             return this.baseCost;
@@ -324,6 +449,14 @@ let upgradeHoverIndex = -1;
 
 let level = 1;
 
+function getActiveDragons() {
+    return level >= 15 ? [dragon, dragon2] : [dragon];
+}
+
+function getDragonRewardTotal() {
+    return getActiveDragons().reduce((total, currentDragon) => total + currentDragon.reward, 0);
+}
+
 function formatStat(value) {
     return Number(value).toFixed(3);
 }
@@ -333,7 +466,7 @@ function getCurrentPlayerStats() {
     const reloadTime = (player.baseShootingDelay * player.fireRateUpgraded) / 1000;
     const damage = 1 + player.dmgUpgrade;
     const bulletHealth = player.bulletHealth + player.bhealthUpgrade;
-    const previewBullet = new Bullet(-500, -500, 1, damage, player.sizeMultiplier * player.bulletSizeMultiplier, bulletHealth, false);
+    const previewBullet = new Bullet(-500, -500, 1, damage, player.bulletSizeMultiplier, bulletHealth, false);
     previewBullet.update(0, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
     const bulletSize = previewBullet.width;
 
@@ -395,7 +528,7 @@ function applyUpgradeChoice(index) {
 
     if (player.coins >= cost) {
         player.coins -= cost;
-        const target = upgrade.target === "dragon" ? dragon : player;
+        const target = upgrade.target === "dragon" ? [dragon, dragon2] : player;
         upgrade.apply(target);
         upgrade.currentLevel++;
         chosen[index] = null;
@@ -411,7 +544,7 @@ function update(deltaTime) {
     if (level >= 2) {
         cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, level);
         cloud.collisionHandler(player, mapWidth);
-        cloud.collisionHandler(dragon, mapWidth);
+        getActiveDragons().forEach(currentDragon => cloud.collisionHandler(currentDragon, mapWidth));
     }
     if (player.unlockedMysteryBox) {
         mystery.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
@@ -429,22 +562,27 @@ function update(deltaTime) {
                 player.collected = true;
                 mystery.playerEffect(player, true, 0);
             }
-            if (mystery.isColliding(dragon)) {
-                dragon.collected = true;
-                mystery.dragonEffect(dragon, true, 0);
-            }
+            getActiveDragons().forEach(currentDragon => {
+                if (mystery.isColliding(currentDragon)) {
+                    currentDragon.collected = true;
+                    mystery.dragonEffect(currentDragon, true, 0);
+                }
+            });
         }
         
     }
-    player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, dragon);
-    if (!dragon.alive) {
-        if (!dragon.fading) {
-            dragon.fading = true;
+    const activeDragons = getActiveDragons();
+    player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, activeDragons);
+    activeDragons.forEach(currentDragon => {
+        if (!currentDragon.alive && !currentDragon.fading) {
+            currentDragon.fading = true;
         }
+    });
+    if (activeDragons.every(currentDragon => !currentDragon.alive)) {
         defeatTime += deltaTime;
         if (defeatTime >= victoryTime) {
             gameState = "victory";
-            player.coins += dragon.reward;
+            player.coins += getDragonRewardTotal();
             player.coinsThisRun = 0;
             return;
         }
@@ -469,21 +607,11 @@ function update(deltaTime) {
         player.shoot();
         player.shootingTime = 0;
     }
+    for (const dragon of activeDragons) {
     dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player, level, player);
     if (dragon.alive && dragon.isColliding(player) && lastHit >= bodyHitTime) {
         player.hp--;
         lastHit = 0;
-    }
-    lastHit += deltaTime;
-    
-    if (player.forceFieldActive && player.isForceFieldColliding(dragon, mapWidth, mapHeight) && dragon.alive) {
-        if (player.forceFieldDamageTimer >= player.forceFieldDamageDelay) {
-            dragon.takeDamage(player.forceFieldDamage);
-            player.forceFieldDamageTimer = 0;
-        }
-        player.forceFieldDamageTimer += deltaTime;
-    } else {
-        player.forceFieldDamageTimer = 0;
     }
     
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
@@ -689,11 +817,10 @@ function update(deltaTime) {
     }
     for (let i = cloud.ices.length - 1; i >= 0; i--) {
         let ice = cloud.ices[i];
-        if (ice.isColliding(player) && ice.canDamage && player.alive && !player.ltnInvinc) {
+        if (dragon === activeDragons[0] && ice.isColliding(player) && ice.canDamage && player.alive && !player.ltnInvinc) {
             let roll = player.canEvade ? Math.random() * player.evadeChance : 2;
             if (roll < 1) {
                 ice.canDamage = false;
-                ice.homing = false;
             } else {
                 player.hp -= ice.damage;
                 const knockbackAmount = 0.01 / Math.pow(player.sizeMultiplier, 4);
@@ -770,6 +897,20 @@ function update(deltaTime) {
             
         }
     }
+    }
+    lastHit += deltaTime;
+    const forceFieldTargets = player.forceFieldActive
+        ? activeDragons.filter(currentDragon => currentDragon.alive && player.isForceFieldColliding(currentDragon, mapWidth, mapHeight))
+        : [];
+    if (forceFieldTargets.length > 0) {
+        if (player.forceFieldDamageTimer >= player.forceFieldDamageDelay) {
+            forceFieldTargets.forEach(currentDragon => currentDragon.takeDamage(player.forceFieldDamage));
+            player.forceFieldDamageTimer = 0;
+        }
+        player.forceFieldDamageTimer += deltaTime;
+    } else {
+        player.forceFieldDamageTimer = 0;
+    }
     explosions.forEach(e => e.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT));
 
 }
@@ -790,7 +931,7 @@ function drawCenteredText(text, x, y) {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (level <= 9) {
+    if (level <= 9 || level >= 15) {
         ctx.fillStyle = "skyblue";
     } else {
         ctx.fillStyle = "rgb(134, 181, 202)";
@@ -798,6 +939,9 @@ function draw() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     player.draw(ctx, mapWidth, mapHeight);
     dragon.draw(ctx, mapWidth, mapHeight, level);
+    if (level >= 15) {
+        dragon2.draw(ctx, mapWidth, mapHeight, level);
+    }
     if (level >= 2) {
         cloud.draw(ctx, mapWidth, mapHeight);
         cloud.drawIce(ctx, mapWidth, mapHeight);
@@ -924,7 +1068,9 @@ function draw() {
 
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
-        if (dragon.boss) {
+        if (getActiveDragons().length > 1) {
+            drawCenteredText("Dragons Defeated", canvas.width / 2, canvas.height / 2 - 60);
+        } else if (dragon.boss) {
             drawCenteredText("Boss Defeated", canvas.width / 2, canvas.height / 2 - 60);
         } else {
             drawCenteredText("Dragon Defeated", canvas.width / 2, canvas.height / 2 - 60);
@@ -932,7 +1078,7 @@ function draw() {
 
         ctx.drawImage(coinImage, canvas.width / 2 - 33, canvas.height / 2 - 42);
         ctx.font = "14px Arial";
-        ctx.fillText("+" + dragon.reward, canvas.width / 2 + 9, canvas.height / 2 - 20);
+        ctx.fillText("+" + getDragonRewardTotal(), canvas.width / 2 + 9, canvas.height / 2 - 20);
 
         ctx.font = "16px Arial";
         drawCenteredText("Press the button or the Enter key to continue", canvas.width / 2, canvas.height / 2 + 60);
@@ -1141,10 +1287,17 @@ function draw() {
 }
 
 function reset(isLevelCleared) {
+    console.log("level: " + level);
+    const restartingAfterGameOver = gameOver;
+    const dragonWasAlive = dragon.alive;
+    const dragon2WasAlive = dragon2.alive;
     player.imageWidth = player.BASEIMGWIDTH;
     player.imageHeight = player.BASEIMGHEIGHT;
-    player.x = playerSpawnX;
-    player.y = playerSpawnY;
+    if (level == 15) {
+        playerSpawnX = 0.46;
+        playerSpawnY = 0.46;
+        dragonSpawnX = 0.04;
+    }
     player.alive = true;
     player.hp = player.maxHp;
     player.facing = -1;
@@ -1166,6 +1319,10 @@ function reset(isLevelCleared) {
     player.forceFieldDamageTimer = 0;
     if (gameOver) {
         level = 1;
+        playerSpawnX = 0.74;
+        playerSpawnY = 0.4;
+        dragonSpawnX = 0.1;
+        dragonSpawnY = 0.3;
         player.lives = player.maxLives;
         player.coins = 0;
         player.maxHp = 1;
@@ -1194,28 +1351,15 @@ function reset(isLevelCleared) {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
-        dragon.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123];
+        dragon.maxHp = dragon1Stats.maxHp;;
         dragon.hp = dragon.maxHp[0];
-        dragon.rewards = [
-            Math.round(Math.random() * 16 + 26), 
-            Math.round(Math.random() * 18 + 42), 
-            Math.round(Math.random() * 20 + 57), 
-            Math.round(Math.random() * 16 + 105),
-            Math.round(Math.random() * 27 + 44),
-            Math.round(Math.random() * 15 + 54),
-            Math.round(Math.random() * 18 + 58),
-            Math.round(Math.random() * 26 + 76),
-            Math.round(Math.random() * 20 + 106),
-            Math.round(Math.random() * 15 + 55),
-            Math.round(Math.random() * 24 + 48),
-            Math.round(Math.random() * 10 + 66),
-            Math.round(Math.random() * 24 + 67),
-            Math.round(Math.random() * 14 + 136)
-        ];
+        dragon.rewards = dragon1Stats.rewards;
         cloud.iceDamage = 1;
         gameOver = false;
     }
 
+    player.x = playerSpawnX;
+    player.y = playerSpawnY;
     cloud.warningActive = false;
     cloud.lightningActive = false;
     cloud.damageTime = 0;
@@ -1244,21 +1388,22 @@ function reset(isLevelCleared) {
     mystery.effectNumber = 0;
     player.collected = false;
     dragon.collected = false;
+    dragon2.collected = false;
 
     dragon.x = dragonSpawnX;
     dragon.y = dragonSpawnY;
     dragon.imageWidth = dragon.BASEIMGWIDTH;
     dragon.imageHeight = dragon.BASEIMGHEIGHT;
-    dragon.alive = true;
+    dragon.alive = restartingAfterGameOver || isLevelCleared || dragonWasAlive;
     dragon.facing = 1;
     dragon.fadeTime = 1;
     dragon.hpChooser = Math.min(level - 1, dragon.maxHp.length - 1);
-    if (isLevelCleared) {
+    if (isLevelCleared || restartingAfterGameOver) {
         dragon.hp = dragon.maxHp[dragon.hpChooser];
         if (dragon.boss) {
             player.lives += 2;
         }
-    } else {
+    } else if (dragon.alive) {
         dragon.hp = Math.min(dragon.hp + Math.round(dragon.maxHp[dragon.hpChooser] / 3), dragon.maxHp[dragon.hpChooser]);
     }
     dragon.reward = dragon.rewards[dragon.hpChooser];
@@ -1307,6 +1452,51 @@ function reset(isLevelCleared) {
     dragon.restTime = dragon.getRandomRange(dragon.restTimes[dragon.hpChooser]) / dragon.bossMultiplier;
     dragon.chargeTime = dragon.getRandomRange(dragon.chargeTimes[dragon.hpChooser]) * dragon.bossMultiplier;
     dragon.meteorites = [];
+
+    dragon2.x = dragon2SpawnX;
+    dragon2.y = dragon2SpawnY;
+    dragon2.imageWidth = dragon2.BASEIMGWIDTH;
+    dragon2.imageHeight = dragon2.BASEIMGHEIGHT;
+    dragon2.hpChooser = Math.min(level - 1, dragon2.maxHp.length - 1);
+    dragon2.alive = level >= 15 && (restartingAfterGameOver || isLevelCleared || dragon2WasAlive);
+    dragon2.fading = false;
+    dragon2.fadeTime = 1;
+    if (dragon2.alive) {
+        dragon2.hp = isLevelCleared || restartingAfterGameOver
+            ? dragon2.maxHp[dragon2.hpChooser]
+            : Math.min(dragon2.hp + Math.round(dragon2.maxHp[dragon2.hpChooser] / 3), dragon2.maxHp[dragon2.hpChooser]);
+    }
+    dragon2.reward = dragon2.rewards[dragon2.hpChooser];
+    dragon2.phase = 1;
+    dragon2.charging = false;
+    dragon2.moveTime = 0;
+    dragon2.abilitySpeedMultiplier = 1;
+    dragon2.fireballs = [];
+    dragon2.meteorites = [];
+    dragon2.shootingTime = 0;
+    dragon2.speedMultiplier = 1;
+    dragon2.sizeMultiplier = dragon2.sizeMultipliers[dragon2.hpChooser];
+    dragon2.moveMultiplier = 1;
+    dragon2.fireRateMultiplier = 1;
+    dragon2.ltnInvinc = false;
+    dragon2.freezeTimer = 0;
+    dragon2.isFrozen = false;
+    dragon2.abilityActive = false;
+    dragon2.warningActive = false;
+    dragon2.abilityCooldown = 0;
+    dragon2.abilityWarning = 0;
+    dragon2.abilityDuration = 0;
+    dragon2.spawnCooldown = dragon2.spawnTime;
+    dragon2.abilityMovingToPlayer = false;
+    dragon2.abilityFireballShot = false;
+    dragon2.collected = false;
+    dragon2.iceActive = false;
+    dragon2.homingFireballActive = false;
+    dragon2.boss = false;
+    dragon2.bossMultiplier = 1;
+    dragon2.facing = dragon2Stats.facing;
+    dragon2.restTime = dragon2.getRandomRange(dragon2.restTimes[dragon2.hpChooser]);
+    dragon2.chargeTime = dragon2.getRandomRange(dragon2.chargeTimes[dragon2.hpChooser]);
 
     lastHit = 0;
     deadTime = 0;
@@ -1369,7 +1559,7 @@ document.addEventListener("keydown", (e) => {
             reset(false);
         } else if (gameState == "upgrade") {
             gameState = "game";
-            level++;
+            level = Math.min(level + 1, dragon1Stats.maxHp.length);
             reset(true);
         } else if (gameState == "victory") {
             available = upgradePool.filter(upgrade =>
@@ -1525,7 +1715,7 @@ canvas.addEventListener("mousedown", (e) => {
         }
         if (upgradeContinueButton.hover) {
             gameState = "game";
-            level++;
+            level = Math.min(level + 1, dragon1Stats.maxHp.length);
             reset(true);
         }
     }
