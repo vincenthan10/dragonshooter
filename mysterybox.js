@@ -3,7 +3,7 @@ import Dragon from "./dragon.js";
 export default class MysteryBox {
     constructor(player, dragon) {
         this.player = player;
-        this.dragon = dragon;
+        this.dragons = Array.isArray(dragon) ? dragon : [dragon];
 
         this.img = new Image();
         this.img.src = "images/mysterybox.png";
@@ -58,17 +58,19 @@ export default class MysteryBox {
                 this.spawnTime = Math.random() * 6000 + 12000;
             }
         }
-        if (this.player.collected || this.dragon.collected) {
+        if (this.player.collected || this.dragons.some(dragon => dragon.collected)) {
             this.affectTime += deltaTime;
             if (this.affectTime >= this.effectTime) {
                 if (this.player.collected) {
                     this.player.collected = false;
                     this.playerEffect(this.player, false, this.effectNumber);
                 } 
-                if (this.dragon.collected) {
-                    this.dragon.collected = false;
-                    this.dragonEffect(this.dragon, false, this.effectNumber);
-                }
+                this.dragons.forEach(dragon => {
+                    if (dragon.collected) {
+                        dragon.collected = false;
+                        this.dragonEffect(dragon, false, this.effectNumber);
+                    }
+                });
                 this.affectTime = 0;
                 this.effectTime = Math.random() * 3000 + 4500;
             }
