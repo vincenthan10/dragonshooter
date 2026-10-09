@@ -24,7 +24,7 @@ let dragonSpawnY = 0.3;
 let dragon2SpawnX = 0.75;
 let dragon2SpawnY = 0.65;
 const dragon1Stats = {
-    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.15],
+    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18],
     facing: 1,
     rewards: [
             Math.round(Math.random() * 16 + 26), 
@@ -41,10 +41,11 @@ const dragon1Stats = {
             Math.round(Math.random() * 10 + 66),
             Math.round(Math.random() * 24 + 67),
             Math.round(Math.random() * 14 + 136),
-            Math.round(Math.random() * 9 + 36)
+            Math.round(Math.random() * 9 + 29),
+            Math.round(Math.random() * 8 + 40)
         ],
-        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         restTimes: [
             [2500, 4000],
             [2500, 4000],
@@ -60,7 +61,8 @@ const dragon1Stats = {
             [0, 0],
             [2000, 3500],
             [0, 0],
-            [2500, 3750]
+            [2500, 3750],
+            [1000, 2000]
         ],
         chargeTimes: [
             [2250, 4000],
@@ -77,14 +79,15 @@ const dragon1Stats = {
             [750, 1000],
             [2000, 4000],
             [500, 1000],
-            [3500, 5000]
+            [3500, 5000],
+            [1500, 2500]
         ],
-        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500],
-        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1]
+        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800],
+        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1],
+        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1]
 }
 const dragon2Stats = {
-    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2],
+    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222],
     facing: -1,
     rewards: [
             0,
@@ -101,10 +104,11 @@ const dragon2Stats = {
             0,
             0,
             0,
-            Math.round(Math.random() * 8 + 24)
+            Math.round(Math.random() * 8 + 24),
+            Math.round(Math.random() * 12 + 36)
         ],
-        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8],
+        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1],
         restTimes: [
             [0, 0],
             [0, 0],
@@ -120,7 +124,8 @@ const dragon2Stats = {
             [0, 0],
             [0, 0],
             [0, 0],
-            [2250, 2750]
+            [2250, 2750],
+            [500, 5000]
         ],
         chargeTimes: [
             [0, 0],
@@ -137,11 +142,12 @@ const dragon2Stats = {
             [0, 0],
             [0, 0],
             [0, 0],
-            [1500, 2000]
+            [1500, 2000],
+            [500, 5000]
         ],
-        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000],
-        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250],
+        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
 }
 const dragon = new Dragon(dragonSpawnX, dragonSpawnY, dragon1Stats);
 const dragon2 = new Dragon(dragon2SpawnX, dragon2SpawnY, dragon2Stats);
@@ -447,7 +453,7 @@ let available = [];
 let chosen = [];
 let upgradeHoverIndex = -1;
 
-let level = 1;
+let level = 15;
 
 function getActiveDragons() {
     return level >= 15 ? [dragon, dragon2] : [dragon];
