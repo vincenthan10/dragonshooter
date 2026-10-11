@@ -1,35 +1,23 @@
 import Fireball from "./fireball.js";
 import Meteorite from "./meteorite.js";
 export default class Dragon {
-    constructor(x, y) {
+    constructor(x, y, stats) {
         this.x = x;
         this.y = y;
         this.hpChooser = 0;
-        this.baseSpeeds = [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07];
+        this.baseSpeeds = stats.baseSpeeds;
         this.baseSpeed = this.baseSpeeds[this.hpChooser];
         this.effectiveSpeed = 0;
+        this.xMultipliers = stats.xMultipliers;
+        this.xMultiplier = this.xMultipliers[this.hpChooser];
+        this.burstShooting = stats.burstShooting === true;
         this.yMultiplier = 1.2;
         this.speedMultiplier = 1;
         this.abilitySpeedMultiplier = 1;
-        this.facing = 1; // - = left, + = right
-        this.rewards = [
-            Math.round(Math.random() * 16 + 26), 
-            Math.round(Math.random() * 18 + 42), 
-            Math.round(Math.random() * 20 + 57), 
-            Math.round(Math.random() * 16 + 105),
-            Math.round(Math.random() * 27 + 44),
-            Math.round(Math.random() * 15 + 54),
-            Math.round(Math.random() * 18 + 58),
-            Math.round(Math.random() * 26 + 76),
-            Math.round(Math.random() * 20 + 106),
-            Math.round(Math.random() * 15 + 55),
-            Math.round(Math.random() * 24 + 48),
-            Math.round(Math.random() * 10 + 66),
-            Math.round(Math.random() * 24 + 67),
-            Math.round(Math.random() * 14 + 136)
-        ];
+        this.facing = stats.facing // - = left, + = right
+        this.rewards = stats.rewards;
         this.reward = this.rewards[this.hpChooser];
-        this.maxHp = [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123];
+        this.maxHp = stats.maxHp;
         this.hp = this.maxHp[this.hpChooser];
         this.phase = 1;
         this.alive = true;
@@ -53,7 +41,8 @@ export default class Dragon {
         this.BASEIMGHEIGHT = 233;
         this.imageWidth = this.BASEIMGWIDTH;
         this.imageHeight = this.BASEIMGHEIGHT;
-        this.sizeMultiplier = 1;
+        this.sizeMultipliers = stats.sizeMultipliers;
+        this.sizeMultiplier = this.sizeMultipliers[this.hpChooser];
         this.width = 0;
         this.height = 0;
 
@@ -61,50 +50,22 @@ export default class Dragon {
         this.dirY = 0;
 
         this.charging = false;
-        this.restTimes = [
-            [2500, 4000],
-            [2500, 4000],
-            [2500, 4000],
-            [3000, 4000],
-            [2000, 3750],
-            [1250, 2500],
-            [0, 0],
-            [1500, 2250],
-            [0, 0],
-            [2500, 4000],
-            [500, 1500],
-            [0, 0],
-            [2000, 3500],
-            [0, 0]
-        ];
+        this.restTimes = stats.restTimes;
         this.restTime = this.getRandomRange(this.restTimes[this.hpChooser]);
-        this.chargeTimes = [
-            [2250, 4000],
-            [2250, 4000],
-            [2250, 4000],
-            [2750, 4000],
-            [2000, 4500],
-            [1500, 2750],
-            [750, 1500],
-            [1500, 5000],
-            [500, 1000],
-            [2000, 4000],
-            [1500, 3000],
-            [750, 1000],
-            [2000, 4000],
-            [500, 1000]
-        ];
+        this.chargeTimes = stats.chargeTimes;
         this.chargeTime = this.getRandomRange(this.chargeTimes[this.hpChooser]);
         this.moveTime = 0;
         this.moveMultiplier = 1;
 
         this.fireballs = []
         this.shooting = true;
-        this.shootingDelays = [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500];
+        this.shootingDelays = stats.shootingDelays;
         this.shootingDelay = this.shootingDelays[this.hpChooser];
         this.shootingTime = 0;
-        this.fireDmg = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0];
-        this.fireHealth = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2];
+        this.burstShotsRemaining = 0;
+        this.burstShotTimer = 0;
+        this.fireDmg = stats.fireDmg;
+        this.fireHealth = stats.fireHealth;
         this.fireRateMultiplier = 1;
         this.freezeTimer = 0;
         this.isFrozen = false;
@@ -145,7 +106,14 @@ export default class Dragon {
 
             if (this.collected && this.alive) {
                 ctx.strokeStyle = "#9c7003";
-                ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
+                const insetX = this.imageWidth * 0.025;
+                const insetY = this.imageHeight * 0.025;
+                ctx.strokeRect(
+                    this.x * mapWidth + insetX,
+                    this.y * mapHeight + insetY,
+                    this.imageWidth * 0.95,
+                    this.imageHeight * 0.95
+                );
             }
             if (this.warningActive) {
                 ctx.strokeStyle = "rgb(151, 134, 5)";
@@ -286,7 +254,7 @@ export default class Dragon {
                         this.spawnCooldown += deltaTime;
 
                         if (this.spawnCooldown >= this.spawnTime) {
-                            this.strikePosition = Math.random();
+                            this.strikePosition = Math.random() * 0.88 + 0.05;
                             this.meteorites.push(new Meteorite(this.strikePosition, -0.1, 2));
                             this.spawnCooldown = 0;
                             this.spawnTime = Math.random() * 250 + 600;
@@ -418,14 +386,26 @@ export default class Dragon {
             const shootingPhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 0.9 : 0.7;
             this.shootingDelay = this.shootingDelays[this.hpChooser] * shootingPhaseMultiplier * this.fireRateMultiplier / this.bossMultiplier;
             this.baseSpeed = this.baseSpeeds[this.hpChooser] * (this.phase == 1 ? 1 : this.phase == 2 ? 1.1 : 1.3);
+            this.xMultiplier = this.xMultipliers[this.hpChooser];
             if (this.hpChooser == 5) {
                 this.ltnInvinc = true;
             }
-            if (!this.isFrozen && this.shooting) {
-                this.shootingTime += deltaTime;
-                if (this.shootingTime >= this.shootingDelay) {
-                    this.shoot(level);
-                    this.shootingTime = 0;
+            const waitingForFirstDragon = level == 17 && !this.burstShooting &&
+                this.primaryDragon && this.primaryDragon.alive;
+            if (!this.isFrozen && this.shooting && !waitingForFirstDragon) {
+                if (level == 17 && this.burstShooting && this.burstShotsRemaining > 0) {
+                    this.burstShotTimer += deltaTime;
+                    while (this.burstShotTimer >= 600 && this.burstShotsRemaining > 0) {
+                        this.shootFireball(level);
+                        this.burstShotsRemaining--;
+                        this.burstShotTimer -= 600;
+                    }
+                } else {
+                    this.shootingTime += deltaTime;
+                    if (this.shootingTime >= this.shootingDelay) {
+                        this.shoot(level);
+                        this.shootingTime = 0;
+                    }
                 }
             }
             this.moveTime += deltaTime;
@@ -437,11 +417,7 @@ export default class Dragon {
                 let dx = target.x + target.width / 2 - this.x - this.width / 2;
                 let dy = target.y + target.height / 2 - this.y - this.height / 3;
                 let dist = Math.sqrt(dx * dx + dy * dy);
-                if (level == 12) {
-                    this.dirX = 0;
-                } else {
-                    this.dirX = dx / dist;
-                }
+                this.dirX = dx / dist;
                 this.dirY = dy / dist;
                 this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier;
                 if (level == 12) {
@@ -456,7 +432,7 @@ export default class Dragon {
             }
             if (this.charging) {
                 this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier;
-                this.x += this.dirX * this.effectiveSpeed * deltaTime / 1000;
+                this.x += this.dirX * this.xMultiplier * this.effectiveSpeed * deltaTime / 1000;
                 this.y += this.dirY * this.yMultiplier * this.effectiveSpeed * deltaTime / 1000;
                 if (this.moveTime >= this.chargeTime) {
                     const restRange = this.restTimes[this.hpChooser];
@@ -524,16 +500,28 @@ export default class Dragon {
     }
 
     shoot(level) {
+        if (level == 17 && this.burstShooting) {
+            const numFireballs = Math.floor(Math.random() * 4) + 2;
+            this.burstShotsRemaining = numFireballs - 1;
+            this.burstShotTimer = 0;
+            this.shootFireball(level);
+            return;
+        }
+
+        this.shootFireball(level);
+        if (level == 9) {
+            this.shootFireball(level);
+        }
+    }
+
+    shootFireball(level) {
+        const hasLevel17Effects = level == 17;
+        const ice = hasLevel17Effects ? Math.random() < 1 / 3 : this.iceActive;
+        const homing = hasLevel17Effects ? Math.random() < 1 / 19 : this.homingFireballActive;
         if (this.facing < 0) {
-            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, this.iceActive, this.homingFireballActive, this.player));
-            if (level == 9) {
-                this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, this.iceActive, this.homingFireballActive, this.player));
-            }
+            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, ice, homing, this.player));
         } else {
-            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, this.iceActive, this.homingFireballActive, this.player));
-            if (level == 9) {
-                this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, this.iceActive, this.homingFireballActive, this.player));
-            }
+            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, ice, homing, this.player));
         }
     }
 
