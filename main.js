@@ -24,7 +24,9 @@ let dragonSpawnY = 0.3;
 let dragon2SpawnX = 0.75;
 let dragon2SpawnY = 0.65;
 const dragon1Stats = {
-    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18],
+    burstShooting: true,
+    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18, 0.165],
+    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0.01],
     facing: 1,
     rewards: [
             Math.round(Math.random() * 16 + 26), 
@@ -42,10 +44,11 @@ const dragon1Stats = {
             Math.round(Math.random() * 24 + 67),
             Math.round(Math.random() * 14 + 136),
             Math.round(Math.random() * 9 + 29),
-            Math.round(Math.random() * 8 + 40)
+            Math.round(Math.random() * 8 + 30),
+            Math.round(Math.random() * 6 + 32)
         ],
-        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40, 26],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3],
         restTimes: [
             [2500, 4000],
             [2500, 4000],
@@ -62,7 +65,8 @@ const dragon1Stats = {
             [2000, 3500],
             [0, 0],
             [2500, 3750],
-            [1000, 2000]
+            [1000, 2000],
+            [0, 0]
         ],
         chargeTimes: [
             [2250, 4000],
@@ -80,14 +84,16 @@ const dragon1Stats = {
             [2000, 4000],
             [500, 1000],
             [3500, 5000],
-            [1500, 2500]
+            [1500, 2500],
+            [500, 1000]
         ],
-        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800],
-        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1],
-        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1]
+        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800, 3500],
+        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1],
+        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1]
 }
 const dragon2Stats = {
-    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222],
+    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222, 0.1],
+    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     facing: -1,
     rewards: [
             0,
@@ -105,10 +111,11 @@ const dragon2Stats = {
             0,
             0,
             Math.round(Math.random() * 8 + 24),
-            Math.round(Math.random() * 12 + 36)
+            Math.round(Math.random() * 12 + 28),
+            Math.round(Math.random() * 8 + 44)
         ],
-        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1],
+        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 38],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8],
         restTimes: [
             [0, 0],
             [0, 0],
@@ -125,7 +132,8 @@ const dragon2Stats = {
             [0, 0],
             [0, 0],
             [2250, 2750],
-            [500, 5000]
+            [500, 5000],
+            [0, 0]
         ],
         chargeTimes: [
             [0, 0],
@@ -143,14 +151,16 @@ const dragon2Stats = {
             [0, 0],
             [0, 0],
             [1500, 2000],
-            [500, 5000]
+            [500, 5000],
+            [500, 1000]
         ],
-        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250],
-        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1]
+        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250, 2750],
+        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1]
 }
 const dragon = new Dragon(dragonSpawnX, dragonSpawnY, dragon1Stats);
 const dragon2 = new Dragon(dragon2SpawnX, dragon2SpawnY, dragon2Stats);
+dragon2.primaryDragon = dragon;
 const player = new Player(playerSpawnX, playerSpawnY);
 const cloud = new Cloud(-0.1 * canvas.width, 0);
 const mystery = new MysteryBox(player, [dragon, dragon2]);
@@ -453,7 +463,7 @@ let available = [];
 let chosen = [];
 let upgradeHoverIndex = -1;
 
-let level = 15;
+let level = 1;
 
 function getActiveDragons() {
     return level >= 15 ? [dragon, dragon2] : [dragon];
@@ -1299,10 +1309,16 @@ function reset(isLevelCleared) {
     const dragon2WasAlive = dragon2.alive;
     player.imageWidth = player.BASEIMGWIDTH;
     player.imageHeight = player.BASEIMGHEIGHT;
-    if (level == 15) {
+    if (level >= 15) {
         playerSpawnX = 0.46;
         playerSpawnY = 0.46;
         dragonSpawnX = 0.04;
+    }
+    if (level == 17) {
+        playerSpawnX = 0.8;
+        dragonSpawnX = 0;
+        dragon2SpawnX = 0.1;
+        dragon2SpawnY = 0.5;
     }
     player.alive = true;
     player.hp = player.maxHp;
@@ -1329,6 +1345,8 @@ function reset(isLevelCleared) {
         playerSpawnY = 0.4;
         dragonSpawnX = 0.1;
         dragonSpawnY = 0.3;
+        dragon2SpawnX = 0.75;
+        dragon2SpawnX = 0.65;
         player.lives = player.maxLives;
         player.coins = 0;
         player.maxHp = 1;
@@ -1419,8 +1437,11 @@ function reset(isLevelCleared) {
     dragon.abilitySpeedMultiplier = 1;
     dragon.fireballs = [];
     dragon.shootingTime = 0;
+    dragon.burstShotsRemaining = 0;
+    dragon.burstShotTimer = 0;
     dragon.speedMultiplier = 1;
-    dragon.sizeMultiplier = 1;
+    dragon.sizeMultiplier = dragon.sizeMultipliers[dragon.hpChooser];
+    dragon.xMultiplier = dragon.xMultipliers[dragon.hpChooser];
     dragon.moveMultiplier = 1;
     dragon.fireRateMultiplier = 1;
     dragon.ltnInvinc = false;
@@ -1480,8 +1501,11 @@ function reset(isLevelCleared) {
     dragon2.fireballs = [];
     dragon2.meteorites = [];
     dragon2.shootingTime = 0;
+    dragon2.burstShotsRemaining = 0;
+    dragon2.burstShotTimer = 0;
     dragon2.speedMultiplier = 1;
     dragon2.sizeMultiplier = dragon2.sizeMultipliers[dragon2.hpChooser];
+    dragon2.xMultiplier = dragon2.xMultipliers[dragon2.hpChooser];
     dragon2.moveMultiplier = 1;
     dragon2.fireRateMultiplier = 1;
     dragon2.ltnInvinc = false;
