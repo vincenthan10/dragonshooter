@@ -145,16 +145,17 @@ export default class MysteryBox {
 
     dragonEffect(dragon, collected, effectNumber) {
         let rolled = (effectNumber == 0) ? Math.floor(Math.random() * 5) + 1 : effectNumber;
+        const defaultSizeMultiplier = dragon.sizeMultipliers[dragon.hpChooser];
         switch (rolled) {
             case 1:
                 dragon.speedMultiplier = collected ? 1.6 : 1;
                 break;
             case 2:
                 dragon.speedMultiplier = collected ? 0.8 : 1;
-                dragon.sizeMultiplier = collected ? 1.2 : 1;
+                dragon.sizeMultiplier = defaultSizeMultiplier * (collected ? 1.2 : 1);
                 break;
             case 3:
-                dragon.sizeMultiplier = collected ? 0.6 : 1;
+                dragon.sizeMultiplier = defaultSizeMultiplier * (collected ? 0.6 : 1);
                 dragon.speedMultiplier = collected ? 1.4 : 1;
                 dragon.moveMultiplier = collected ? 0.6 : 1;
                 break;
