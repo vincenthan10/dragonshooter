@@ -11,6 +11,11 @@ export default class Dragon {
         this.xMultipliers = stats.xMultipliers;
         this.xMultiplier = this.xMultipliers[this.hpChooser];
         this.burstShooting = stats.burstShooting === true;
+        this.zoneAbility = stats.zoneAbility === true;
+        this.zoneAbilityActive = false;
+        this.zoneRadius = 0;
+        this.zoneX = 0;
+        this.zoneY = 0;
         this.yMultiplier = 1.2;
         this.speedMultiplier = 1;
         this.abilitySpeedMultiplier = 1;
@@ -120,7 +125,7 @@ export default class Dragon {
                 ctx.lineWidth = 4;
                 ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
             }
-            if (this.abilityActive) {
+            if (this.abilityActive || this.zoneAbilityActive) {
                 ctx.strokeStyle = "rgb(151, 134, 5)";
                 ctx.lineWidth = 2;
                 ctx.strokeRect(this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight);
@@ -161,6 +166,22 @@ export default class Dragon {
         ctx.globalAlpha = 1;
         this.fireballs.forEach(f => f.draw(ctx, mapWidth, mapHeight));
         this.meteorites.forEach(m => m.draw(ctx, mapWidth, mapHeight));
+        ctx.restore();
+    }
+
+    drawAbilityZone(ctx, mapWidth, mapHeight) {
+        if (!this.zoneAbility || !this.zoneAbilityActive) {
+            return;
+        }
+
+        ctx.save();
+        ctx.fillStyle = "rgba(151, 134, 5, 0.5)";
+        ctx.strokeStyle = "rgb(151, 134, 5)";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(this.zoneX * mapWidth, this.zoneY * mapHeight, this.zoneRadius * mapWidth, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
         ctx.restore();
     }
 
@@ -225,6 +246,39 @@ export default class Dragon {
         }
 
         if (this.alive) {
+            const hasZoneAbility = this.zoneAbility && level == 18;
+            if (hasZoneAbility) {
+                if (!this.zoneAbilityActive) {
+                    this.abilityCooldown += deltaTime;
+                    if (this.abilityCooldown >= this.cooldownTime) {
+                        this.zoneAbilityActive = true;
+                        this.abilityCooldown = 0;
+                        this.abilityDuration = 0;
+                        this.cooldownTime = Math.random() * 12500 + 15000;
+                        this.durationTime = Math.random() * 10000 + 8000;
+                        this.zoneRadius = Math.random() * 0.1 + 0.1;
+                        this.charging = false;
+                        this.moveTime = 0;
+
+                        const radiusPixels = this.zoneRadius * mapWidth;
+                        const minX = radiusPixels;
+                        const maxX = mapWidth - radiusPixels;
+                        const minY = radiusPixels;
+                        const maxY = mapHeight - radiusPixels;
+                        this.zoneX = maxX >= minX ? (minX + Math.random() * (maxX - minX)) / mapWidth : 0.5;
+                        this.zoneY = maxY >= minY ? (minY + Math.random() * (maxY - minY)) / mapHeight : 0.5;
+                    }
+                } else {
+                    this.abilityDuration += deltaTime;
+                    if (this.abilityDuration >= this.durationTime) {
+                        this.zoneAbilityActive = false;
+                        this.abilityDuration = 0;
+                        this.moveTime = 0;
+                        this.restTime = this.getRandomRange(this.restTimes[this.hpChooser]);
+                    }
+                }
+            }
+
             if (this.boss) {
                 if (level == 4) {
                     this.bossMultiplier = 1.2;
@@ -387,12 +441,24 @@ export default class Dragon {
             this.shootingDelay = this.shootingDelays[this.hpChooser] * shootingPhaseMultiplier * this.fireRateMultiplier / this.bossMultiplier;
             this.baseSpeed = this.baseSpeeds[this.hpChooser] * (this.phase == 1 ? 1 : this.phase == 2 ? 1.1 : 1.3);
             this.xMultiplier = this.xMultipliers[this.hpChooser];
+            if (this.zoneAbilityActive) {
+                const dx = target.x + target.width / 2 - this.x - this.width / 2;
+                const dy = target.y + target.height / 2 - this.y - this.height / 3;
+                const distance = Math.hypot(dx, dy);
+                if (distance > 0) {
+                    this.dirX = dx / distance;
+                    this.dirY = dy / distance;
+                    this.facing = this.dirX > 0 ? 1 : -1;
+                }
+                this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier * 0.5;
+                this.moveWithBoundaryBounce(deltaTime, level);
+            }
             if (this.hpChooser == 5) {
                 this.ltnInvinc = true;
             }
             const waitingForFirstDragon = level == 17 && !this.burstShooting &&
                 this.primaryDragon && this.primaryDragon.alive;
-            if (!this.isFrozen && this.shooting && !waitingForFirstDragon) {
+            if (level != 18 && !this.isFrozen && this.shooting && !waitingForFirstDragon) {
                 if (level == 17 && this.burstShooting && this.burstShotsRemaining > 0) {
                     this.burstShotTimer += deltaTime;
                     while (this.burstShotTimer >= 600 && this.burstShotsRemaining > 0) {
@@ -409,16 +475,22 @@ export default class Dragon {
                 }
             }
             this.moveTime += deltaTime;
-            if (!this.charging && ((!this.warningActive && !this.abilityActive) || level == 9) && this.moveTime >= this.restTime) {
+            if (!this.zoneAbilityActive && !this.charging && ((!this.warningActive && !this.abilityActive) || level == 9) && this.moveTime >= this.restTime) {
                 const chargeRange = this.chargeTimes[this.hpChooser];
                 const chargePhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 1.05 : 1.15;
                 this.chargeTime = this.getRandomRange(chargeRange) * chargePhaseMultiplier * this.bossMultiplier;
 
-                let dx = target.x + target.width / 2 - this.x - this.width / 2;
-                let dy = target.y + target.height / 2 - this.y - this.height / 3;
-                let dist = Math.sqrt(dx * dx + dy * dy);
-                this.dirX = dx / dist;
-                this.dirY = dy / dist;
+                if (level == 18) {
+                    const angle = Math.random() * Math.PI * 2;
+                    this.dirX = Math.cos(angle);
+                    this.dirY = Math.sin(angle);
+                } else {
+                    let dx = target.x + target.width / 2 - this.x - this.width / 2;
+                    let dy = target.y + target.height / 2 - this.y - this.height / 3;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    this.dirX = dx / dist;
+                    this.dirY = dy / dist;
+                }
                 this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier;
                 if (level == 12) {
                     this.facing = 1;
@@ -430,10 +502,9 @@ export default class Dragon {
                 this.charging = true;
                 this.moveTime = 0;
             }
-            if (this.charging) {
+            if (!this.zoneAbilityActive && this.charging) {
                 this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier;
-                this.x += this.dirX * this.xMultiplier * this.effectiveSpeed * deltaTime / 1000;
-                this.y += this.dirY * this.yMultiplier * this.effectiveSpeed * deltaTime / 1000;
+                this.moveWithBoundaryBounce(deltaTime, level);
                 if (this.moveTime >= this.chargeTime) {
                     const restRange = this.restTimes[this.hpChooser];
                     const restPhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 0.9 : 0.7;
@@ -466,6 +537,56 @@ export default class Dragon {
         return Math.random() * (max - min) + min;
     }
 
+    moveWithBoundaryBounce(deltaTime, level) {
+        if (level == 18) {
+            const minX = -0.1;
+            const maxX = 1.1 - this.width;
+            const minY = -0.1;
+            const maxY = 1.1 - this.height;
+
+            if (this.x <= minX && this.dirX * this.xMultiplier < 0) {
+                this.dirX = Math.abs(this.dirX);
+                this.facing = this.dirX * this.xMultiplier > 0 ? 1 : -1;
+            } else if (this.x >= maxX && this.dirX * this.xMultiplier > 0) {
+                this.dirX = -Math.abs(this.dirX);
+                this.facing = this.dirX * this.xMultiplier > 0 ? 1 : -1;
+            }
+            if (this.y <= minY && this.dirY * this.yMultiplier < 0) {
+                this.dirY = Math.abs(this.dirY);
+            } else if (this.y >= maxY && this.dirY * this.yMultiplier > 0) {
+                this.dirY = -Math.abs(this.dirY);
+            }
+        }
+
+        const movementX = this.dirX * this.xMultiplier * this.effectiveSpeed * deltaTime / 1000;
+        const movementY = this.dirY * this.yMultiplier * this.effectiveSpeed * deltaTime / 1000;
+        this.x += movementX;
+        this.y += movementY;
+
+        if (level == 18) {
+            const minX = -0.1;
+            const maxX = 1.1 - this.width;
+            const minY = -0.1;
+            const maxY = 1.1 - this.height;
+            if (this.x < minX) {
+                this.x = minX;
+                this.dirX = Math.abs(this.dirX);
+                this.facing = this.dirX * this.xMultiplier > 0 ? 1 : -1;
+            } else if (this.x > maxX) {
+                this.x = maxX;
+                this.dirX = -Math.abs(this.dirX);
+                this.facing = this.dirX * this.xMultiplier > 0 ? 1 : -1;
+            }
+            if (this.y < minY) {
+                this.y = minY;
+                this.dirY = Math.abs(this.dirY);
+            } else if (this.y > maxY) {
+                this.y = maxY;
+                this.dirY = -Math.abs(this.dirY);
+            }
+        }
+    }
+
     takeDamage(damage) {
         this.hp -= damage;
         if (this.hp <= 0) {
@@ -476,6 +597,7 @@ export default class Dragon {
     kill() {
         this.hp = 0;
         this.alive = false;
+        this.zoneAbilityActive = false;
         this.freezeTimer = 0;
         this.isFrozen = false;
         this.effectiveSpeed = this.savedSpeed;
@@ -497,6 +619,19 @@ export default class Dragon {
             return true;
         }
         return false;
+    }
+
+    isPlayerInAbilityZone(player, mapWidth, mapHeight) {
+        if (!this.zoneAbilityActive || !player.alive) {
+            return false;
+        }
+
+        const playerCenterX = (player.x + player.width / 2) * mapWidth;
+        const playerCenterY = (player.y + player.height / 2) * mapHeight;
+        const circleX = this.zoneX * mapWidth;
+        const circleY = this.zoneY * mapHeight;
+        const radius = this.zoneRadius * mapWidth;
+        return Math.hypot(playerCenterX - circleX, playerCenterY - circleY) <= radius;
     }
 
     shoot(level) {
