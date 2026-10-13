@@ -25,8 +25,8 @@ let dragon2SpawnX = 0.75;
 let dragon2SpawnY = 0.65;
 const dragon1Stats = {
     burstShooting: true,
-    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18, 0.165],
-    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0.01],
+    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18, 0.165, 0.3],
+    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0.01, 1],
     facing: 1,
     rewards: [
             Math.round(Math.random() * 16 + 26), 
@@ -45,10 +45,11 @@ const dragon1Stats = {
             Math.round(Math.random() * 14 + 136),
             Math.round(Math.random() * 9 + 29),
             Math.round(Math.random() * 8 + 30),
-            Math.round(Math.random() * 6 + 32)
+            Math.round(Math.random() * 6 + 32),
+            Math.round(Math.random() * 10 + 35)
         ],
-        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40, 26],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3],
+        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40, 26, 35],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1],
         restTimes: [
             [2500, 4000],
             [2500, 4000],
@@ -66,7 +67,8 @@ const dragon1Stats = {
             [0, 0],
             [2500, 3750],
             [1000, 2000],
-            [0, 0]
+            [0, 0],
+            [500, 2500]
         ],
         chargeTimes: [
             [2250, 4000],
@@ -85,15 +87,17 @@ const dragon1Stats = {
             [500, 1000],
             [3500, 5000],
             [1500, 2500],
-            [500, 1000]
+            [500, 1000],
+            [1500, 5000]
         ],
-        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800, 3500],
-        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1],
-        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1]
+        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800, 3500, 0],
+        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0],
+        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 0]
 }
 const dragon2Stats = {
-    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222, 0.1],
-    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    zoneAbility: true,
+    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222, 0.11, 0.2],
+    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     facing: -1,
     rewards: [
             0,
@@ -112,10 +116,11 @@ const dragon2Stats = {
             0,
             Math.round(Math.random() * 8 + 24),
             Math.round(Math.random() * 12 + 28),
-            Math.round(Math.random() * 8 + 44)
+            Math.round(Math.random() * 8 + 44),
+            Math.round(Math.random() * 5 + 38)
         ],
-        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 38],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8],
+        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 38, 52],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1],
         restTimes: [
             [0, 0],
             [0, 0],
@@ -133,7 +138,8 @@ const dragon2Stats = {
             [0, 0],
             [2250, 2750],
             [500, 5000],
-            [0, 0]
+            [0, 0],
+            [0, 1500]
         ],
         chargeTimes: [
             [0, 0],
@@ -152,11 +158,12 @@ const dragon2Stats = {
             [0, 0],
             [1500, 2000],
             [500, 5000],
-            [500, 1000]
+            [500, 1000],
+            [500, 3500]
         ],
-        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250, 2750],
-        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1]
+        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250, 2500, 0],
+        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0]
 }
 const dragon = new Dragon(dragonSpawnX, dragonSpawnY, dragon1Stats);
 const dragon2 = new Dragon(dragon2SpawnX, dragon2SpawnY, dragon2Stats);
@@ -588,6 +595,7 @@ function update(deltaTime) {
         
     }
     const activeDragons = getActiveDragons();
+    player.abilitySlowMultiplier = dragon2.isPlayerInAbilityZone(player, mapWidth, mapHeight) ? 0.6 : 1;
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, activeDragons);
     activeDragons.forEach(currentDragon => {
         if (!currentDragon.alive && !currentDragon.fading) {
@@ -953,6 +961,7 @@ function draw() {
         ctx.fillStyle = "rgb(134, 181, 202)";
     }
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    dragon2.drawAbilityZone(ctx, mapWidth, mapHeight);
     player.draw(ctx, mapWidth, mapHeight);
     dragon.draw(ctx, mapWidth, mapHeight, level);
     if (level >= 15) {
@@ -1313,6 +1322,8 @@ function reset(isLevelCleared) {
         playerSpawnX = 0.46;
         playerSpawnY = 0.46;
         dragonSpawnX = 0.04;
+        dragon2SpawnX = 0.75;
+        dragon2SpawnY = 0.65;
     }
     if (level == 17) {
         playerSpawnX = 0.8;
@@ -1322,6 +1333,7 @@ function reset(isLevelCleared) {
     }
     player.alive = true;
     player.hp = player.maxHp;
+    player.abilitySlowMultiplier = 1;
     player.facing = -1;
     player.fadeTime = 1;
     shooting = false;
@@ -1418,7 +1430,7 @@ function reset(isLevelCleared) {
     dragon.y = dragonSpawnY;
     dragon.imageWidth = dragon.BASEIMGWIDTH;
     dragon.imageHeight = dragon.BASEIMGHEIGHT;
-    dragon.alive = restartingAfterGameOver || isLevelCleared || dragonWasAlive;
+    dragon.alive = restartingAfterGameOver || isLevelCleared || dragonWasAlive || level < 15;
     dragon.facing = 1;
     dragon.fadeTime = 1;
     dragon.hpChooser = Math.min(level - 1, dragon.maxHp.length - 1);
@@ -1522,6 +1534,14 @@ function reset(isLevelCleared) {
     dragon2.collected = false;
     dragon2.iceActive = false;
     dragon2.homingFireballActive = false;
+    dragon2.zoneAbilityActive = false;
+    dragon2.zoneRadius = 0;
+    dragon2.zoneX = 0;
+    dragon2.zoneY = 0;
+    dragon2.abilityCooldown = 0;
+    dragon2.abilityDuration = 0;
+    dragon2.cooldownTime = Math.random() * 12500 + 15000;
+    dragon2.durationTime = Math.random() * 10000 + 8000;
     dragon2.boss = false;
     dragon2.bossMultiplier = 1;
     dragon2.facing = dragon2Stats.facing;
