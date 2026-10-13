@@ -8,6 +8,7 @@ export default class Player {
         this.baseSpeedX = 0.22;
         this.baseSpeedY = 0.42;
         this.speedMultiplier = 1;
+        this.abilitySlowMultiplier = 1;
         this.speedUpgraded = 1;
         this.speedX = this.baseSpeedX;
         this.speedY = this.baseSpeedY;
@@ -50,6 +51,7 @@ export default class Player {
         this.critChance = 7;
         this.canIce = false;
         this.iceChance = 15;
+        this.freezeTime = 1000;
         this.homingBulletActive = false;
         this.canEvade = false;
         this.evadeChance = 10;
@@ -80,6 +82,7 @@ export default class Player {
         this.fireShield = new FireShield(-2, -2, this.sizeMultiplier);
         
         this.dragon = null;
+        this.dragons = [];
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -136,7 +139,8 @@ export default class Player {
 
     update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, baseWidth, baseHeight, dragon = null) {
         if (dragon) {
-            this.dragon = dragon;
+            this.dragons = Array.isArray(dragon) ? dragon : [dragon];
+            this.dragon = this.dragons[0];
         }
         this.bullets.forEach(b => b.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
         for (let i = this.bullets.length - 1; i >= 0; i--) {
@@ -171,8 +175,8 @@ export default class Player {
             this.imageHeight = this.BASEIMGHEIGHT * (mapHeight / baseHeight) * this.sizeMultiplier;
             this.width = this.imageWidth / mapWidth;
             this.height = this.imageHeight / mapHeight;
-            this.speedX = this.baseSpeedX * this.speedMultiplier * this.speedUpgraded;
-            this.speedY = this.baseSpeedY * this.speedMultiplier * this.speedUpgraded;
+            this.speedX = this.baseSpeedX * this.speedMultiplier * this.speedUpgraded * this.abilitySlowMultiplier;
+            this.speedY = this.baseSpeedY * this.speedMultiplier * this.speedUpgraded * this.abilitySlowMultiplier;
             this.shootingDelay = this.baseShootingDelay * this.fireRateMultiplier * this.fireRateUpgraded;
             let dx = 0;
             let dy = 0;
@@ -246,25 +250,46 @@ export default class Player {
     shoot() {
         let crit = Math.random() * this.critChance;
         const ice = this.canIce ? Math.random() * this.iceChance : 0;
+        const target = this.getNearestLivingDragon();
         if (this.facing < 0) {
             this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + (crit < 1 && this.canCritApplied ? this.dmgUpgrade : 0), 
-            this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false, this.canIce && ice < 1, this.homingBulletActive, this.dragon));
+            this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false, this.canIce && ice < 1, this.homingBulletActive, target));
         } else {
             this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg + (crit < 1 && this.canCritApplied ? this.dmgUpgrade : 0), 
-            this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false, this.canIce && ice < 1, this.homingBulletActive, this.dragon));
+            this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false, this.canIce && ice < 1, this.homingBulletActive, target));
         }
+    }
+
+    getNearestLivingDragon() {
+        return this.dragons
+            .filter(dragon => dragon.alive)
+            .reduce((nearest, dragon) => {
+                if (!nearest) {
+                    return dragon;
+                }
+                const playerCenterX = this.x + this.width / 2;
+                const playerCenterY = this.y + this.height / 2;
+                const nearestCenterX = nearest.x + nearest.width / 2;
+                const nearestCenterY = nearest.y + nearest.height / 2;
+                const dragonCenterX = dragon.x + dragon.width / 2;
+                const dragonCenterY = dragon.y + dragon.height / 2;
+                const nearestDistance = (nearestCenterX - playerCenterX) ** 2 + (nearestCenterY - playerCenterY) ** 2;
+                const dragonDistance = (dragonCenterX - playerCenterX) ** 2 + (dragonCenterY - playerCenterY) ** 2;
+                return dragonDistance < nearestDistance ? dragon : nearest;
+            }, null);
     }
 
     shootSuperBullet() {
         let crit = Math.random() * this.critChance;
         const ice = this.canIce ? Math.random() * this.iceChance : 0;
         if (this.superShotReady) {
+            const target = this.getNearestLivingDragon();
             if (this.facing < 0) {
                 this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), 
-                this.sizeMultiplier * this.bulletSizeMultiplier * 2.5, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, this.dragon));
+                this.sizeMultiplier * this.bulletSizeMultiplier * 2.5, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, target));
             } else {
                 this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), 
-                this.sizeMultiplier * this.bulletSizeMultiplier * 2.5, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, this.dragon));
+                this.sizeMultiplier * this.bulletSizeMultiplier * 2.5, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, target));
             }   
             this.superShotReady = false;
         }
