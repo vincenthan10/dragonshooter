@@ -176,12 +176,9 @@ export default class Dragon {
 
         ctx.save();
         ctx.fillStyle = "rgba(151, 134, 5, 0.5)";
-        ctx.strokeStyle = "rgb(151, 134, 5)";
-        ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(this.zoneX * mapWidth, this.zoneY * mapHeight, this.zoneRadius * mapWidth, 0, Math.PI * 2);
         ctx.fill();
-        ctx.stroke();
         ctx.restore();
     }
 
@@ -246,7 +243,7 @@ export default class Dragon {
         }
 
         if (this.alive) {
-            const hasZoneAbility = this.zoneAbility && level == 18;
+            const hasZoneAbility = this.zoneAbility && (level == 18 || level == 19);
             if (hasZoneAbility) {
                 if (!this.zoneAbilityActive) {
                     this.abilityCooldown += deltaTime;
@@ -256,7 +253,7 @@ export default class Dragon {
                         this.abilityDuration = 0;
                         this.cooldownTime = Math.random() * 12500 + 15000;
                         this.durationTime = Math.random() * 10000 + 8000;
-                        this.zoneRadius = Math.random() * 0.1 + 0.1;
+                        this.zoneRadius = Math.random() * 0.15 + 0.1;
                         this.charging = false;
                         this.moveTime = 0;
 
@@ -279,9 +276,11 @@ export default class Dragon {
                 }
             }
 
-            if (this.boss) {
+            if (this.boss && !(this.zoneAbility && level == 19)) {
                 if (level == 4) {
                     this.bossMultiplier = 1.2;
+                } else if (level == 19) {
+                    this.bossMultiplier = 1;
                 } else {
                     this.bossMultiplier = 0.8;
                 }
@@ -426,7 +425,7 @@ export default class Dragon {
                     this.abilitySpeedMultiplier = this.abilityMovingToPlayer ? 1.4 : 1.6;
                 }
                 this.shooting = false;
-                if (level == 4) {
+                if (level == 4 || level == 19) {
                     this.charging = false;
                 }
             } else {
@@ -438,8 +437,14 @@ export default class Dragon {
             this.width = this.imageWidth / mapWidth;
             this.height = this.imageHeight / mapHeight;
             const shootingPhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 0.9 : 0.7;
-            this.shootingDelay = this.shootingDelays[this.hpChooser] * shootingPhaseMultiplier * this.fireRateMultiplier / this.bossMultiplier;
+            const dragon2Enraged = level == 19 && !this.burstShooting &&
+                this.primaryDragon && !this.primaryDragon.alive;
+            this.shootingDelay = this.shootingDelays[this.hpChooser] * shootingPhaseMultiplier *
+                this.fireRateMultiplier / this.bossMultiplier * (dragon2Enraged ? 2 / 3 : 1);
             this.baseSpeed = this.baseSpeeds[this.hpChooser] * (this.phase == 1 ? 1 : this.phase == 2 ? 1.1 : 1.3);
+            if (level == 19 && this.burstShooting && this.secondaryDragon && !this.secondaryDragon.alive) {
+                this.baseSpeed *= 4 / 3;
+            }
             this.xMultiplier = this.xMultipliers[this.hpChooser];
             if (this.zoneAbilityActive) {
                 const dx = target.x + target.width / 2 - this.x - this.width / 2;
@@ -450,7 +455,8 @@ export default class Dragon {
                     this.dirY = dy / distance;
                     this.facing = this.dirX > 0 ? 1 : -1;
                 }
-                this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier * 0.5;
+                const zoneChaseMultiplier = level == 19 ? 1 : 0.5;
+                this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier * zoneChaseMultiplier;
                 this.moveWithBoundaryBounce(deltaTime, level);
             }
             if (this.hpChooser == 5) {
@@ -650,9 +656,9 @@ export default class Dragon {
     }
 
     shootFireball(level) {
-        const hasLevel17Effects = level == 17;
-        const ice = hasLevel17Effects ? Math.random() < 1 / 3 : this.iceActive;
-        const homing = hasLevel17Effects ? Math.random() < 1 / 19 : this.homingFireballActive;
+        const usesRandomFireballEffects = level == 17 || (level == 19 && this.burstShooting);
+        const ice = usesRandomFireballEffects ? Math.random() < 1 / 3 : this.iceActive;
+        const homing = usesRandomFireballEffects ? Math.random() < 1 / 19 : this.homingFireballActive;
         if (this.facing < 0) {
             this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, ice, homing, this.player));
         } else {
