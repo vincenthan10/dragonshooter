@@ -28,6 +28,7 @@ export default class Fireball {
         this.lastAdjustmentTime = 0;
         this.adjustmentInterval = 250; // Update trajectory every 250ms
         this.canDamage = true;
+        this.reflected = false;
     }
 
     draw(ctx, mapWidth, mapHeight) {
@@ -80,11 +81,21 @@ export default class Fireball {
                 this.lastAdjustmentTime = 0;
             }
         }
-        
+
         this.x += this.speed;
         if (this.homing && this.speedY !== undefined) {
             this.y += this.speedY;
         }
+    }
+
+    reflect(target) {
+        this.reflected = true;
+        this.dir *= -1;
+        this.speed *= -1;
+        this.target = target;
+        this.img.src = this.dir > 0
+            ? (this.ice ? "images/fireballice.png" : "images/fireball.png")
+            : (this.ice ? "images/fireballiceL.png" : "images/fireballL.png");
     }
 
     isColliding(entity) {
