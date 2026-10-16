@@ -327,6 +327,28 @@ let upgradePool = [
         }
     },
     {
+        name: "Lightning Reflector",
+        baseCost: 300,
+        availableLevel: 14,
+        target: "player",
+        currentLevel: 0,
+        maxLevel: 1,
+        apply(player) {
+            if (player.lightningHelmet.alive) {
+                player.lightningHelmet.maxHp += 210;
+                player.lightningHelmet.hp += 210;
+            } else {
+                player.lightningHelmet.maxHp = 210;
+                player.lightningHelmet.hp = 210;
+                player.lightningHelmet.alive = true;
+            }
+            player.lightningHelmet.reflectsLightning = true;
+        },
+        getCost() {
+            return this.baseCost;
+        }
+    },
+    {
         name: "Reduce Dragon HP",
         baseCost: 40,
         availableLevel: 1,
@@ -483,6 +505,49 @@ function getActiveDragons() {
     return level >= 15 ? [dragon, dragon2] : [dragon];
 }
 
+function createUpgradeChoices() {
+    available = upgradePool.filter(upgrade =>
+        (upgrade.maxLevel == undefined ||
+        upgrade.currentLevel < upgrade.maxLevel) &&
+        upgrade.availableLevel <= level
+    );
+
+    const lightningHelmet = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
+    const lightningReflector = upgradePool.find(upgrade => upgrade.name === "Lightning Reflector");
+    const fireShield = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
+    const mysteryBox = upgradePool.find(upgrade => upgrade.name === "Unlock Mystery Box");
+    const luckUp = upgradePool.find(upgrade => upgrade.name === "Luck Up");
+    if (available.includes(lightningHelmet) && player.lightningHelmet.alive) {
+        available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
+    }
+    if (available.includes(lightningReflector) && player.lightningHelmet.reflectsLightning) {
+        available = available.filter(upgrade => upgrade.name !== "Lightning Reflector");
+    }
+    if (available.includes(fireShield) && player.fireShield.alive) {
+        available = available.filter(upgrade => upgrade.name !== "Fire Shield");
+    }
+    if (available.includes(mysteryBox) || player.autoCollectMysteryBox) {
+        available = available.filter(upgrade => upgrade.name !== "Auto-Collect Mystery Box");
+    }
+    if (available.includes(luckUp) && (!player.canCrit && !player.canIce && !player.canEvade)) {
+        available = available.filter(upgrade => upgrade.name !== "Luck Up");
+    }
+
+    chosen = [];
+    while (chosen.length < 3 && available.length > 0) {
+        const index = Math.floor(Math.random() * available.length);
+        const upgrade = available.splice(index, 1)[0];
+        const isLightningUpgrade = upgrade.name === "Lightning Helmet" || upgrade.name === "Lightning Reflector";
+        const alreadyHasLightningUpgrade = chosen.some(option =>
+            option && (option.name === "Lightning Helmet" || option.name === "Lightning Reflector")
+        );
+        if (isLightningUpgrade && alreadyHasLightningUpgrade) {
+            continue;
+        }
+        chosen.push(upgrade);
+    }
+}
+
 function getDragonRewardTotal() {
     return getActiveDragons().reduce((total, currentDragon) => total + currentDragon.reward, 0);
 }
@@ -522,7 +587,15 @@ function getUpgradePreviewText(upgrade) {
         case "Critical Hit Up":
             return { line: "damage", text: ` → ${current.damage + 1}` };
         case "Lightning Helmet":
-            return { line: "lightningHelmet", text: ` → ${player.lightningHelmet.hp}` };
+            return {
+                line: "lightningHelmet",
+                resultHp: player.lightningHelmet.alive ? player.lightningHelmet.hp : player.lightningHelmet.maxHp
+            };
+        case "Lightning Reflector":
+            return {
+                line: "lightningHelmet",
+                resultHp: player.lightningHelmet.alive ? player.lightningHelmet.hp + 210 : 210
+            };
         case "Fire Shield":
             return { line: "fireShield", text: ` → ${player.fireShield.hp}` };
         case "Speed Up":
@@ -573,8 +646,8 @@ function update(deltaTime) {
     //console.log(explosions);
     if (level >= 2) {
         cloud.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, level);
-        cloud.collisionHandler(player, mapWidth);
-        getActiveDragons().forEach(currentDragon => cloud.collisionHandler(currentDragon, mapWidth));
+        cloud.collisionHandler(player, mapWidth, mapHeight, getActiveDragons());
+        getActiveDragons().forEach(currentDragon => cloud.collisionHandler(currentDragon, mapWidth, mapHeight));
     }
     if (player.unlockedMysteryBox) {
         mystery.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT);
@@ -1146,6 +1219,7 @@ function draw() {
         const hoveredIndex = upgradeOptionButtons.findIndex(btn => btn.hover);
         const activeHoverIndex = hoveredIndex >= 0 ? hoveredIndex : upgradeHoverIndex;
         const hoveredPreview = activeHoverIndex >= 0 ? getUpgradePreviewText(chosen[activeHoverIndex]) : null;
+        const hoveredUpgrade = activeHoverIndex >= 0 ? chosen[activeHoverIndex] : null;
         ctx.font = "18px Arial";
         ctx.fillStyle = "white";
         ctx.fillText("Current Stats", statPanelX, statPanelY);
@@ -1215,7 +1289,24 @@ function draw() {
             if (name === "Lightning Helmet") {
                 ctx.drawImage(lightningHelmetPreview.icon, statPanelX, previewY - 10, 28, 18);
                 ctx.fillText("Lightning Helmet", statPanelX + 34, previewY);
-                ctx.fillText(`HP: ${hasLightningHelmet ? player.lightningHelmet.hp : lightningHelmetPreview.hp}`, statPanelX + 34, previewY + 18);
+                const helmetHp = hasLightningHelmet ? player.lightningHelmet.hp : lightningHelmetPreview.hp;
+                const previewingReflector = hoveredUpgrade && hoveredUpgrade.name === "Lightning Reflector";
+                ctx.fillStyle = owned ? "white" : "#4cff7a";
+                if (previewingReflector && !hasLightningHelmet) {
+                    ctx.fillStyle = "#4cff7a";
+                    ctx.fillText(`HP: ${hoveredPreview.resultHp}`, statPanelX + 34, previewY + 18);
+                } else {
+                    const helmetHpText = `HP: ${helmetHp}`;
+                    ctx.fillText(helmetHpText, statPanelX + 34, previewY + 18);
+                    if (previewingReflector) {
+                        ctx.fillStyle = "#4cff7a";
+                        ctx.fillText(` → ${hoveredPreview.resultHp}`, statPanelX + 34 + ctx.measureText(helmetHpText).width, previewY + 18);
+                    }
+                }
+                if ((hasLightningHelmet && player.lightningHelmet.reflectsLightning) || previewingReflector) {
+                    ctx.fillStyle = previewingReflector ? "#4cff7a" : "white";
+                    ctx.fillText("Reflects", statPanelX + 34, previewY + 36);
+                }
             } else if (name === "Fire Shield") {
                 ctx.drawImage(fireShieldPreview.icon, statPanelX, previewY - 10, 28, 18);
                 ctx.fillText("Fire Shield", statPanelX + 34, previewY);
@@ -1386,8 +1477,10 @@ function reset(isLevelCleared) {
         player.evadeChance = 10;
         player.homingBulletActive = false;
         player.unlockedMysteryBox = false;
+        player.lightningHelmet.alive = true;
+        player.lightningHelmet.maxHp = 90;
         player.lightningHelmet.hp = player.lightningHelmet.maxHp;
-        player.lightningHelmet.alive = false;
+        player.lightningHelmet.reflectsLightning = true;
         player.fireShield.hp = player.fireShield.maxHp;
         player.fireShield.alive = false;
         player.autoCollectMysteryBox = false;
@@ -1621,33 +1714,7 @@ document.addEventListener("keydown", (e) => {
             level = Math.min(level + 1, dragon1Stats.maxHp.length);
             reset(true);
         } else if (gameState == "victory") {
-            available = upgradePool.filter(upgrade =>
-                (upgrade.maxLevel == undefined ||
-                upgrade.currentLevel < upgrade.maxLevel) &&
-                upgrade.availableLevel <= level
-            );
-            const _lh = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
-            const _fs = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
-            const _mb = upgradePool.find(upgrade => upgrade.name === "Unlock Mystery Box");
-            const _lk = upgradePool.find(upgrade => upgrade.name === "Luck Up");
-            if (available.includes(_lh) && player.lightningHelmet.alive) {
-                available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
-            }
-            if (available.includes(_fs) && player.fireShield.alive) {
-                available = available.filter(upgrade => upgrade.name !== "Fire Shield");
-            }
-            if (available.includes(_mb) || player.autoCollectMysteryBox) {
-                available = available.filter(upgrade => upgrade.name !== "Auto-Collect Mystery Box");
-            }
-            if (available.includes(_lk) && (!player.canCrit && !player.canIce && !player.canEvade)) {
-                available = available.filter(upgrade => upgrade.name !== "Luck Up");
-            }
-            chosen = [];
-            for (let i = 0; i < 3; i++) {
-                let index = Math.floor(Math.random() * available.length);
-                chosen.push(available[index]);
-                available.splice(index, 1);
-            }
+            createUpgradeChoices();
             upgradeHoverIndex = -1;
             gameState = "upgrade";
         } else if (gameState == "gameover") {
@@ -1740,25 +1807,7 @@ canvas.addEventListener("mousedown", (e) => {
     } else if (gameState === "gameover" && gameOverButton.hover) {
         gameState = "title";
     } else if (gameState === "victory" && victoryButton.hover) {
-        available = upgradePool.filter(upgrade =>
-            (upgrade.maxLevel == undefined ||
-            upgrade.currentLevel < upgrade.maxLevel) &&
-            upgrade.availableLevel <= level
-        );
-        const _lh = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
-        const _fs = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
-        if (available.includes(_lh) && player.lightningHelmet.alive) {
-            available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
-        }
-        if (available.includes(_fs) && player.fireShield.alive) {
-            available = available.filter(upgrade => upgrade.name !== "Fire Shield");
-        }
-        chosen = [];
-        for (let i = 0; i < 3; i++) {
-            let index = Math.floor(Math.random() * available.length);
-            chosen.push(available[index]);
-            available.splice(index, 1);
-        }
+        createUpgradeChoices();
         upgradeHoverIndex = -1;
         gameState = "upgrade";
     } else if (gameState === "paused" && pauseButton.hover) {
@@ -1799,25 +1848,7 @@ canvas.addEventListener("touchstart", (e) => {
         const over = mx >= victoryButton.x && mx <= victoryButton.x + victoryButton.w && my >= victoryButton.y && my <= victoryButton.y + victoryButton.h;
         if (over) {
             e.preventDefault();
-            available = upgradePool.filter(upgrade =>
-                (upgrade.maxLevel == undefined ||
-                upgrade.currentLevel < upgrade.maxLevel) &&
-                upgrade.availableLevel <= level
-            );
-            const _lh = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
-            const _fs = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
-            if (available.includes(_lh) && player.lightningHelmet.alive) {
-                available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
-            }
-            if (available.includes(_fs) && player.fireShield.alive) {
-                available = available.filter(upgrade => upgrade.name !== "Fire Shield");
-            }
-            chosen = [];
-            for (let i = 0; i < 3; i++) {
-                let index = Math.floor(Math.random() * available.length);
-                chosen.push(available[index]);
-                available.splice(index, 1);
-            }
+            createUpgradeChoices();
             upgradeHoverIndex = -1;
             gameState = "upgrade";
         }
