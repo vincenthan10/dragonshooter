@@ -2,7 +2,7 @@ export default class FireShield {
     constructor(x, y, sizeMultiplier) {
         this.x = x;
         this.y = y;
-        this.maxHp = 3;
+        this.maxHp = 15;
         this.hp = this.maxHp;
         this.alive = false;
 
