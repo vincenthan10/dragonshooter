@@ -2,9 +2,10 @@ export default class LightningHelmet {
     constructor(x, y, sizeMultiplier) {
         this.x = x;
         this.y = y;
-        this.maxHp = 45;
+        this.maxHp = 90;
         this.hp = this.maxHp;
         this.alive = false;
+        this.reflectsLightning = false;
 
         this.img = new Image();
         this.img.src = "images/lightninghelmet.png";
