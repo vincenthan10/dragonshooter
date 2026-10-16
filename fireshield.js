@@ -5,6 +5,7 @@ export default class FireShield {
         this.maxHp = 15;
         this.hp = this.maxHp;
         this.alive = false;
+        this.reflectsFire = false;
 
         this.img = new Image();
         this.img.src = "images/fireshield.png";
