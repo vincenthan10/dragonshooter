@@ -313,6 +313,28 @@ let upgradePool = [
         }
     },
     {
+        name: "Fire Reflector",
+        baseCost: 300,
+        availableLevel: 14,
+        target: "player",
+        currentLevel: 0,
+        maxLevel: 1,
+        apply(player) {
+            if (player.fireShield.alive) {
+                player.fireShield.maxHp += 45;
+                player.fireShield.hp += 45;
+            } else {
+                player.fireShield.maxHp = 45;
+                player.fireShield.hp = 45;
+                player.fireShield.alive = true;
+            }
+            player.fireShield.reflectsFire = true;
+        },
+        getCost() {
+            return this.baseCost;
+        }
+    },
+    {
         name: "Lightning Helmet",
         baseCost: 175,
         availableLevel: 4,
@@ -515,6 +537,7 @@ function createUpgradeChoices() {
     const lightningHelmet = upgradePool.find(upgrade => upgrade.name === "Lightning Helmet");
     const lightningReflector = upgradePool.find(upgrade => upgrade.name === "Lightning Reflector");
     const fireShield = upgradePool.find(upgrade => upgrade.name === "Fire Shield");
+    const fireReflector = upgradePool.find(upgrade => upgrade.name === "Fire Reflector");
     const mysteryBox = upgradePool.find(upgrade => upgrade.name === "Unlock Mystery Box");
     const luckUp = upgradePool.find(upgrade => upgrade.name === "Luck Up");
     if (available.includes(lightningHelmet) && player.lightningHelmet.alive) {
@@ -525,6 +548,9 @@ function createUpgradeChoices() {
     }
     if (available.includes(fireShield) && player.fireShield.alive) {
         available = available.filter(upgrade => upgrade.name !== "Fire Shield");
+    }
+    if (available.includes(fireReflector) && player.fireShield.reflectsFire) {
+        available = available.filter(upgrade => upgrade.name !== "Fire Reflector");
     }
     if (available.includes(mysteryBox) || player.autoCollectMysteryBox) {
         available = available.filter(upgrade => upgrade.name !== "Auto-Collect Mystery Box");
@@ -541,7 +567,11 @@ function createUpgradeChoices() {
         const alreadyHasLightningUpgrade = chosen.some(option =>
             option && (option.name === "Lightning Helmet" || option.name === "Lightning Reflector")
         );
-        if (isLightningUpgrade && alreadyHasLightningUpgrade) {
+        const isFireUpgrade = upgrade.name === "Fire Shield" || upgrade.name === "Fire Reflector";
+        const alreadyHasFireUpgrade = chosen.some(option =>
+            option && (option.name === "Fire Shield" || option.name === "Fire Reflector")
+        );
+        if ((isLightningUpgrade && alreadyHasLightningUpgrade) || (isFireUpgrade && alreadyHasFireUpgrade)) {
             continue;
         }
         chosen.push(upgrade);
@@ -598,6 +628,11 @@ function getUpgradePreviewText(upgrade) {
             };
         case "Fire Shield":
             return { line: "fireShield", text: ` → ${player.fireShield.hp}` };
+        case "Fire Reflector":
+            return {
+                line: "fireShield",
+                resultHp: player.fireShield.alive ? player.fireShield.hp + 45 : 45
+            };
         case "Speed Up":
             return { line: "speed", text: ` → ${formatStat(current.speed * 1.1)}` };
         case "Fire Rate Up":
@@ -720,16 +755,57 @@ function update(deltaTime) {
     
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
         let fireball = dragon.fireballs[i];
+        if (fireball.reflected) {
+            const hitDragon = activeDragons.find(targetDragon =>
+                targetDragon.alive &&
+                (fireball.super ? fireball.isSuperColliding(targetDragon) : fireball.isColliding(targetDragon))
+            );
+            if (hitDragon) {
+                hitDragon.takeDamage(fireball.damage);
+                if (fireball.ice && hitDragon.hp > 0) {
+                    hitDragon.freeze(1000);
+                }
+                const knockbackAmount = fireball.super
+                    ? 0.0375 / Math.pow(hitDragon.sizeMultiplier, 4)
+                    : 0.015 * Math.pow(fireball.sizeMultiplier, 4) / Math.pow(hitDragon.sizeMultiplier, 4);
+                if (fireball.homing && fireball.speedY !== undefined) {
+                    const speed = Math.hypot(fireball.speed, fireball.speedY);
+                    if (speed > 0) {
+                        hitDragon.x += fireball.speed / speed * knockbackAmount;
+                        hitDragon.y += fireball.speedY / speed * knockbackAmount;
+                    }
+                } else {
+                    hitDragon.x += fireball.dir * knockbackAmount;
+                }
+                if (fireball.super) {
+                    const explosionSrc = fireball.ice ? "images/fireexplosionice.png" : fireExplosion.src;
+                    explosions.push(new Explosion(hitDragon.x - 0.3, hitDragon.y - 0.3, explosionSrc,
+                        basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, fireball.ice ? 250 : 400, 10));
+                } else if (fireball.ice) {
+                    explosions.push(new Explosion(fireball.x, fireball.y - 0.05,
+                        "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                } else {
+                    explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src,
+                        fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
+                }
+                dragon.fireballs.splice(i, 1);
+                continue;
+            }
+            continue;
+        }
         if (fireball.super) {
-            if (fireball.isSuperColliding(player) && fireball.canDamage && player.alive) {
+            if (!fireball.reflected && fireball.isSuperColliding(player) && fireball.canDamage && player.alive) {
                 let roll = player.canEvade ? Math.random() * player.evadeChance : 2;
                 if (roll < 1) {
                     fireball.canDamage = false;
                     fireball.target = null;
                 } else {
                     const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
+                    const shieldReflects = player.fireShield.alive &&
+                        player.fireShield.reflectsFire &&
+                        player.facing * fireballHorizontalDirection < 0;
                     if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
-                        player.fireShield.hp -= 3;
+                        player.fireShield.hp -= 10;
                         if (player.fireShield.hp <= 0) {
                             player.fireShield.alive = false;
                         }
@@ -745,6 +821,11 @@ function update(deltaTime) {
                     const knockbackAmount = 0.05 / Math.pow(player.sizeMultiplier, 4);
                     player.x += fireball.dir * knockbackAmount;
 
+                    if (shieldReflects) {
+                        const target = fireball.homing ? player.getNearestLivingDragon(activeDragons) : dragon;
+                        fireball.reflect(target);
+                        continue;
+                    }
                     if (fireball.ice) {
                         explosions.push(new Explosion(player.x - 0.3, player.y - 0.3, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 10));
                     } else {
@@ -774,13 +855,16 @@ function update(deltaTime) {
                 }
             }
         } else {
-            if (fireball.isColliding(player) && fireball.canDamage && player.alive) {
+            if (!fireball.reflected && fireball.isColliding(player) && fireball.canDamage && player.alive) {
                 let roll = player.canEvade ? Math.random() * player.evadeChance : 2;
                 if (roll < 1) {
                     fireball.canDamage = false;
                     fireball.target = null;
                 } else {
                     const fireballHorizontalDirection = fireball.speed === 0 ? fireball.dir : Math.sign(fireball.speed);
+                    const shieldReflects = player.fireShield.alive &&
+                        player.fireShield.reflectsFire &&
+                        player.facing * fireballHorizontalDirection < 0;
                     if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
                         player.fireShield.hp -= Math.max(fireball.damage, 0.5);
                         if (player.fireShield.hp <= 0) {
@@ -807,6 +891,11 @@ function update(deltaTime) {
                     } else {
                         // For regular fireballs, use simple directional knockback
                         player.x = player.x + fireball.dir * knockbackAmount;
+                    }
+                    if (shieldReflects) {
+                        const target = fireball.homing ? player.getNearestLivingDragon(activeDragons) : dragon;
+                        fireball.reflect(target);
+                        continue;
                     }
                     if (fireball.ice) {
                         explosions.push(new Explosion(fireball.x, fireball.y - 0.05, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
@@ -1310,13 +1399,28 @@ function draw() {
             } else if (name === "Fire Shield") {
                 ctx.drawImage(fireShieldPreview.icon, statPanelX, previewY - 10, 28, 18);
                 ctx.fillText("Fire Shield", statPanelX + 34, previewY);
-                ctx.fillText(`HP: ${hasFireShield ? player.fireShield.hp : fireShieldPreview.hp}`, statPanelX + 34, previewY + 18);
+                const shieldHp = hasFireShield ? player.fireShield.hp : fireShieldPreview.hp;
+                const previewingReflector = hoveredUpgrade && hoveredUpgrade.name === "Fire Reflector";
+                ctx.fillStyle = owned ? "white" : "#4cff7a";
+                if (previewingReflector && !hasFireShield) {
+                    ctx.fillText(`HP: ${hoveredPreview.resultHp}`, statPanelX + 34, previewY + 18);
+                } else {
+                    const shieldHpText = `HP: ${shieldHp}`;
+                    ctx.fillText(shieldHpText, statPanelX + 34, previewY + 18);
+                    if (previewingReflector) {
+                        ctx.fillStyle = "#4cff7a";
+                        ctx.fillText(` → ${hoveredPreview.resultHp}`, statPanelX + 34 + ctx.measureText(shieldHpText).width, previewY + 18);
+                    }
+                }
+                if ((hasFireShield && player.fireShield.reflectsFire) || previewingReflector) {
+                    ctx.fillStyle = previewingReflector ? "#4cff7a" : "white";
+                    ctx.fillText("Reflects", statPanelX + 34, previewY + 36);
+                }
             }
         }
 
-        // top slot at +168, bottom slot at +208
         drawEquipPreview(topEquip, 168, topIsHovered);
-        drawEquipPreview(bottomEquip, 208, bottomIsHovered);
+        drawEquipPreview(bottomEquip, 228, bottomIsHovered);
         
         ctx.font = "18px Arial";
         const optionOffsets = [-40, -10, 20];
@@ -1483,6 +1587,9 @@ function reset(isLevelCleared) {
         player.lightningHelmet.reflectsLightning = true;
         player.fireShield.hp = player.fireShield.maxHp;
         player.fireShield.alive = false;
+        player.fireShield.maxHp = 15;
+        player.fireShield.hp = player.fireShield.maxHp;
+        player.fireShield.reflectsFire = false;
         player.autoCollectMysteryBox = false;
         player.autoCollectedCount = 0;
         upgradePool.forEach(upgrade => {
