@@ -76,7 +76,7 @@ export default class Player {
         this.unlockedMysteryBox = false;
         this.autoCollectMysteryBox = false;
         this.autoCollectedCount = 0;
-        this.autoCollectMax = 25;
+        this.autoCollectMax = 40;
 
         this.lightningHelmet = new LightningHelmet(-2, -2, this.sizeMultiplier);
         this.fireShield = new FireShield(-2, -2, this.sizeMultiplier);
@@ -260,8 +260,8 @@ export default class Player {
         }
     }
 
-    getNearestLivingDragon() {
-        return this.dragons
+    getNearestLivingDragon(dragons = this.dragons) {
+        return dragons
             .filter(dragon => dragon.alive)
             .reduce((nearest, dragon) => {
                 if (!nearest) {
