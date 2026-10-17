@@ -53,6 +53,7 @@ export default class Player {
         this.iceChance = 15;
         this.freezeTime = 1000;
         this.homingBulletActive = false;
+        this.homingAdjustmentInterval = 750;
         this.canEvade = false;
         this.evadeChance = 10;
 
@@ -250,31 +251,31 @@ export default class Player {
     shoot() {
         let crit = Math.random() * this.critChance;
         const ice = this.canIce ? Math.random() * this.iceChance : 0;
-        const target = this.getNearestLivingDragon();
+        const bulletX = this.facing < 0 ? this.x : this.x + this.width;
+        const bulletY = this.y + 0.02;
+        const target = this.getNearestLivingDragon(this.dragons, bulletX, bulletY);
         if (this.facing < 0) {
-            this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg + (crit < 1 && this.canCritApplied ? this.dmgUpgrade : 0), 
-            this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false, this.canIce && ice < 1, this.homingBulletActive, target));
+            this.bullets.push(new Bullet(bulletX, bulletY, -1, this.bulletDmg + (crit < 1 && this.canCritApplied ? this.dmgUpgrade : 0), 
+            this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false, this.canIce && ice < 1, this.homingBulletActive, target, this.homingAdjustmentInterval));
         } else {
-            this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg + (crit < 1 && this.canCritApplied ? this.dmgUpgrade : 0), 
-            this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false, this.canIce && ice < 1, this.homingBulletActive, target));
+            this.bullets.push(new Bullet(bulletX, bulletY, 1, this.bulletDmg + (crit < 1 && this.canCritApplied ? this.dmgUpgrade : 0), 
+            this.sizeMultiplier * this.bulletSizeMultiplier, this.bulletHealth + this.bhealthUpgrade, false, this.canIce && ice < 1, this.homingBulletActive, target, this.homingAdjustmentInterval));
         }
     }
 
-    getNearestLivingDragon(dragons = this.dragons) {
+    getNearestLivingDragon(dragons, shotX, shotY) {
         return dragons
             .filter(dragon => dragon.alive)
             .reduce((nearest, dragon) => {
                 if (!nearest) {
                     return dragon;
                 }
-                const playerCenterX = this.x + this.width / 2;
-                const playerCenterY = this.y + this.height / 2;
                 const nearestCenterX = nearest.x + nearest.width / 2;
                 const nearestCenterY = nearest.y + nearest.height / 2;
                 const dragonCenterX = dragon.x + dragon.width / 2;
                 const dragonCenterY = dragon.y + dragon.height / 2;
-                const nearestDistance = (nearestCenterX - playerCenterX) ** 2 + (nearestCenterY - playerCenterY) ** 2;
-                const dragonDistance = (dragonCenterX - playerCenterX) ** 2 + (dragonCenterY - playerCenterY) ** 2;
+                const nearestDistance = (nearestCenterX - shotX) ** 2 + (nearestCenterY - shotY) ** 2;
+                const dragonDistance = (dragonCenterX - shotX) ** 2 + (dragonCenterY - shotY) ** 2;
                 return dragonDistance < nearestDistance ? dragon : nearest;
             }, null);
     }
@@ -283,13 +284,15 @@ export default class Player {
         let crit = Math.random() * this.critChance;
         const ice = this.canIce ? Math.random() * this.iceChance : 0;
         if (this.superShotReady) {
-            const target = this.getNearestLivingDragon();
+            const bulletX = this.facing < 0 ? this.x : this.x + this.width;
+            const bulletY = this.y + 0.02;
+            const target = this.getNearestLivingDragon(this.dragons, bulletX, bulletY);
             if (this.facing < 0) {
-                this.bullets.push(new Bullet(this.x, this.y + 0.02, -1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), 
-                this.sizeMultiplier * this.bulletSizeMultiplier * 2.5, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, target));
+                this.bullets.push(new Bullet(bulletX, bulletY, -1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), 
+                this.sizeMultiplier * this.bulletSizeMultiplier * 2.5, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, target, this.homingAdjustmentInterval));
             } else {
-                this.bullets.push(new Bullet(this.x + this.width, this.y + 0.02, 1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), 
-                this.sizeMultiplier * this.bulletSizeMultiplier * 2.5, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, target));
+                this.bullets.push(new Bullet(bulletX, bulletY, 1, this.bulletDmg * 15 + (crit < 1 && this.canCritApplied ? this.dmgUpgrade * 3 : 0), 
+                this.sizeMultiplier * this.bulletSizeMultiplier * 2.5, this.bulletHealth + this.bhealthUpgrade, true, this.canIce && ice < 1, this.homingBulletActive, target, this.homingAdjustmentInterval));
             }   
             this.superShotReady = false;
         }
