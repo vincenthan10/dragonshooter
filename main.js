@@ -452,7 +452,8 @@ let upgradePool = [
         currentLevel: 0,
         apply(player) {
             player.homingBulletActive = true;
-            player.fireRateUpgraded *= (this.currentLevel == 0 ? 1.3 : 0.85);
+            player.fireRateUpgraded *= (this.currentLevel == 0 ? 1.3 : 1 / 1.3);
+            player.homingAdjustmentInterval = this.currentLevel == 1 ? 250 : 750;
         },
         maxLevel: 2,
         getCost() {
@@ -873,7 +874,7 @@ function update(deltaTime) {
                     } else {
                         player.hp -= fireball.damage;
                         if (fireball.ice) {
-                            player.freeze(1000);
+                            player.freeze(level == 14 ? 1000 : 2000);
                         }
                     }
                     const knockbackAmount = 0.02 * Math.pow(fireball.sizeMultiplier, 4) / Math.pow(player.sizeMultiplier, 4);
