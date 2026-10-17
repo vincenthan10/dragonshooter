@@ -1,5 +1,5 @@
 export default class Bullet {
-    constructor(x, y, dir, damage, sizeMultiplier, health, superType, iceType, homing = false, target = null) {
+    constructor(x, y, dir, damage, sizeMultiplier, health, superType, iceType, homing = false, target = null, adjustmentInterval) {
         this.x = x;
         this.y = y;
         this.baseSpeed = 0.0072;
@@ -23,7 +23,7 @@ export default class Bullet {
         this.homing = homing;
         this.target = target;
         this.lastAdjustmentTime = 0;
-        this.adjustmentInterval = 750; // Update trajectory every 750ms
+        this.adjustmentInterval = adjustmentInterval; // Update trajectory every 750ms, or 250ms if bought Homing Bullets II
     }
 
     draw(ctx, mapWidth, mapHeight) {
