@@ -806,7 +806,7 @@ function update(deltaTime) {
                         player.fireShield.reflectsFire &&
                         player.facing * fireballHorizontalDirection < 0;
                     if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
-                        player.fireShield.hp -= 10;
+                        player.fireShield.hp -= 5;
                         if (player.fireShield.hp <= 0) {
                             player.fireShield.alive = false;
                         }
@@ -867,7 +867,7 @@ function update(deltaTime) {
                         player.fireShield.reflectsFire &&
                         player.facing * fireballHorizontalDirection < 0;
                     if (player.fireShield.alive && player.facing * fireballHorizontalDirection < 0) {
-                        player.fireShield.hp -= Math.max(fireball.damage, 0.5);
+                        player.fireShield.hp -= fireball.damage + (fireball.ice ? 0.5 : 0) + (fireball.homing ? 0.5 : 0);
                         if (player.fireShield.hp <= 0) {
                             player.fireShield.alive = false;
                         } 
@@ -1582,10 +1582,10 @@ function reset(isLevelCleared) {
         player.evadeChance = 10;
         player.homingBulletActive = false;
         player.unlockedMysteryBox = false;
-        player.lightningHelmet.alive = true;
-        player.lightningHelmet.maxHp = 90;
+        player.lightningHelmet.alive = false;
+        player.lightningHelmet.maxHp = 60;
         player.lightningHelmet.hp = player.lightningHelmet.maxHp;
-        player.lightningHelmet.reflectsLightning = true;
+        player.lightningHelmet.reflectsLightning = false;
         player.fireShield.hp = player.fireShield.maxHp;
         player.fireShield.alive = false;
         player.fireShield.maxHp = 15;
