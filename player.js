@@ -67,6 +67,16 @@ export default class Player {
         this.forceFieldDamageDelay = 400;
         this.forceFieldDamageTimer = 0;
 
+        this.poisonGasActive = false;
+        this.poisonGasX = 0;
+        this.poisonGasY = 0;
+        this.poisonGasRadius = 0;
+        this.poisonGasRadiusMin = 0.1;
+        this.poisonGasRadiusMax = 0.2;
+        this.poisonGasDamage = 1;
+        this.poisonGasDamageDelay = 1000;
+        this.poisonGasDamageTimer = 0;
+
         this.collected = false;
         this.superShotReady = false;
 
@@ -136,6 +146,18 @@ export default class Player {
         }
         this.bullets.forEach(b => b.draw(ctx, mapWidth, mapHeight));
         ctx.restore();
+    }
+
+    drawPoisonGas(ctx, mapWidth, mapHeight) {
+        if (this.poisonGasActive) {
+            ctx.save();
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = "#874caf";
+            ctx.beginPath();
+            ctx.arc(this.poisonGasX * mapWidth, this.poisonGasY * mapHeight, this.poisonGasRadius * mapWidth, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
     }
 
     update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, baseWidth, baseHeight, dragon = null) {
@@ -322,5 +344,22 @@ export default class Player {
         }
 
         return false;
+    }
+
+    isDragonInPoisonGas(dragon, mapWidth, mapHeight) {
+        if (!this.poisonGasActive || !dragon.alive) {
+            return false;
+        }
+
+        const dragonLeft = dragon.x * mapWidth;
+        const dragonRight = (dragon.x + dragon.width) * mapWidth;
+        const dragonTop = dragon.y * mapHeight;
+        const dragonBottom = (dragon.y + dragon.height) * mapHeight;
+        const circleX = this.poisonGasX * mapWidth;
+        const circleY = this.poisonGasY * mapHeight;
+        const radius = this.poisonGasRadius * mapWidth;
+        const closestX = Math.max(dragonLeft, Math.min(circleX, dragonRight));
+        const closestY = Math.max(dragonTop, Math.min(circleY, dragonBottom));
+        return Math.hypot(closestX - circleX, closestY - circleY) <= radius;
     }
 }
