@@ -440,10 +440,10 @@ export default class Dragon {
             const dragon2Enraged = level == 19 && !this.burstShooting &&
                 this.primaryDragon && !this.primaryDragon.alive;
             this.shootingDelay = this.shootingDelays[this.hpChooser] * shootingPhaseMultiplier *
-                this.fireRateMultiplier / this.bossMultiplier * (dragon2Enraged ? 2 / 3 : 1);
+                this.fireRateMultiplier / this.bossMultiplier * (dragon2Enraged ? 1 / 2 : 1);
             this.baseSpeed = this.baseSpeeds[this.hpChooser] * (this.phase == 1 ? 1 : this.phase == 2 ? 1.1 : 1.3);
             if (level == 19 && this.burstShooting && this.secondaryDragon && !this.secondaryDragon.alive) {
-                this.baseSpeed *= 4 / 3;
+                this.baseSpeed *= 3 / 2;
             }
             this.xMultiplier = this.xMultipliers[this.hpChooser];
             if (this.zoneAbilityActive) {
