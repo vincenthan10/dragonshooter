@@ -516,6 +516,25 @@ let upgradePool = [
         getCost() {
             return this.baseCost;
         }
+    },
+    {
+        name: "Poison Gas",
+        baseCost: 180,
+        availableLevel: 14,
+        target: "player",
+        currentLevel: 0,
+        maxLevel: 2,
+        apply(player) {
+            player.poisonGasActive = true;
+            if (this.currentLevel == 1) {
+                player.poisonGasDamageDelay = 900;
+                player.poisonGasRadiusMin = 0.15;
+                player.poisonGasRadiusMax = 0.3;
+            }
+        },
+        getCost() {
+            return this.baseCost + this.currentLevel * 90;
+        }
     }
 ]
 let available = [];
@@ -647,7 +666,7 @@ function getUpgradePreviewText(upgrade) {
         case "Bullet Size Up":
             return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.18)}` };
         case "Homing Bullets":
-            return { line: "reload", text: ` → ${formatStat(current.reloadTime * (upgrade.currentLevel == 0 ? 1.3 : 0.85))}s` };
+            return { line: "reload", text: ` → ${formatStat(current.reloadTime * (upgrade.currentLevel == 0 ? 1.3 : 1 / 1.3))}s` };
         default:
             return null;
     }
@@ -1105,6 +1124,18 @@ function update(deltaTime) {
     } else {
         player.forceFieldDamageTimer = 0;
     }
+    const poisonGasTargets = player.poisonGasActive
+        ? activeDragons.filter(currentDragon => player.isDragonInPoisonGas(currentDragon, mapWidth, mapHeight))
+        : [];
+    if (poisonGasTargets.length > 0) {
+        if (player.poisonGasDamageTimer >= player.poisonGasDamageDelay) {
+            poisonGasTargets.forEach(currentDragon => currentDragon.takeDamage(player.poisonGasDamage));
+            player.poisonGasDamageTimer = 0;
+        }
+        player.poisonGasDamageTimer += deltaTime;
+    } else {
+        player.poisonGasDamageTimer = 0;
+    }
     explosions.forEach(e => e.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT));
 
 }
@@ -1131,12 +1162,13 @@ function draw() {
         ctx.fillStyle = "rgb(134, 181, 202)";
     }
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    dragon2.drawAbilityZone(ctx, mapWidth, mapHeight);
     player.draw(ctx, mapWidth, mapHeight);
     dragon.draw(ctx, mapWidth, mapHeight, level);
     if (level >= 15) {
         dragon2.draw(ctx, mapWidth, mapHeight, level);
     }
+    player.drawPoisonGas(ctx, mapWidth, mapHeight);
+    dragon2.drawAbilityZone(ctx, mapWidth, mapHeight);
     if (level >= 2) {
         cloud.draw(ctx, mapWidth, mapHeight);
         cloud.drawIce(ctx, mapWidth, mapHeight);
@@ -1556,6 +1588,7 @@ function reset(isLevelCleared) {
     player.canCritApplied = player.canCrit;
     player.forceFieldActive = false;
     player.forceFieldDamageTimer = 0;
+    player.poisonGasDamageTimer = 0;
     if (gameOver) {
         level = 1;
         playerSpawnX = 0.74;
@@ -1593,6 +1626,11 @@ function reset(isLevelCleared) {
         player.fireShield.reflectsFire = false;
         player.autoCollectMysteryBox = false;
         player.autoCollectedCount = 0;
+        player.poisonGasActive = true;
+        player.poisonGasDamageTimer = 0;
+        player.poisonGasDamageDelay = 1000;
+        player.poisonGasRadiusMin = 0.1;
+        player.poisonGasRadiusMax = 0.2;
         upgradePool.forEach(upgrade => {
             upgrade.currentLevel = 0;
         })
@@ -1602,6 +1640,17 @@ function reset(isLevelCleared) {
         dragon.rewards = dragon1Stats.rewards;
         cloud.iceDamage = 1;
         gameOver = false;
+    }
+
+    if (player.poisonGasActive && (isLevelCleared || player.poisonGasRadius <= 0)) {
+        player.poisonGasRadius = Math.random() * (player.poisonGasRadiusMax - player.poisonGasRadiusMin) + player.poisonGasRadiusMin;
+        const radiusPixels = player.poisonGasRadius * mapWidth;
+        const minX = radiusPixels;
+        const maxX = mapWidth - radiusPixels;
+        const minY = radiusPixels;
+        const maxY = mapHeight - radiusPixels;
+        player.poisonGasX = maxX >= minX ? (minX + Math.random() * (maxX - minX)) / mapWidth : 0.5;
+        player.poisonGasY = maxY >= minY ? (minY + Math.random() * (maxY - minY)) / mapHeight : 0.5;
     }
 
     player.x = playerSpawnX;
