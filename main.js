@@ -378,6 +378,7 @@ let upgradePool = [
         currentLevel: 0,
         apply(dragons) {
             dragons.forEach(dragon => {
+                dragon.maxHp = dragon.maxHp.slice();
                 dragon.maxHp[level] = Math.round(dragon.maxHp[level] * 2 / 3);
             });
         },
@@ -528,8 +529,8 @@ let upgradePool = [
             player.poisonGasActive = true;
             if (this.currentLevel == 1) {
                 player.poisonGasDamageDelay = 900;
-                player.poisonGasRadiusMin = 0.15;
-                player.poisonGasRadiusMax = 0.3;
+                player.poisonGasRadiusMin = 0.12;
+                player.poisonGasRadiusMax = 0.24;
             }
         },
         getCost() {
@@ -1626,18 +1627,19 @@ function reset(isLevelCleared) {
         player.fireShield.reflectsFire = false;
         player.autoCollectMysteryBox = false;
         player.autoCollectedCount = 0;
-        player.poisonGasActive = true;
+        player.poisonGasActive = false;
         player.poisonGasDamageTimer = 0;
         player.poisonGasDamageDelay = 1000;
-        player.poisonGasRadiusMin = 0.1;
-        player.poisonGasRadiusMax = 0.2;
+        player.poisonGasRadiusMin = 0.06;
+        player.poisonGasRadiusMax = 0.15;
         upgradePool.forEach(upgrade => {
             upgrade.currentLevel = 0;
         })
         dragon.boss = false;
-        dragon.maxHp = dragon1Stats.maxHp;;
+        dragon.maxHp = dragon1Stats.maxHp;
         dragon.hp = dragon.maxHp[0];
         dragon.rewards = dragon1Stats.rewards;
+        dragon2.maxHp = dragon2Stats.maxHp;
         cloud.iceDamage = 1;
         gameOver = false;
     }
