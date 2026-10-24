@@ -71,8 +71,8 @@ export default class Player {
         this.poisonGasX = 0;
         this.poisonGasY = 0;
         this.poisonGasRadius = 0;
-        this.poisonGasRadiusMin = 0.1;
-        this.poisonGasRadiusMax = 0.2;
+        this.poisonGasRadiusMin = 0.06;
+        this.poisonGasRadiusMax = 0.15;
         this.poisonGasDamage = 1;
         this.poisonGasDamageDelay = 1000;
         this.poisonGasDamageTimer = 0;
