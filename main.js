@@ -23,32 +23,26 @@ let dragonSpawnX = 0.1;
 let dragonSpawnY = 0.3;
 let dragon2SpawnX = 0.75;
 let dragon2SpawnY = 0.65;
+const dragon1RewardRanges = [
+    [26, 42], [42, 60], [57, 77], [105, 121], [44, 71], [54, 69], [58, 76],
+    [76, 102], [106, 126], [55, 70], [48, 72], [66, 76], [67, 91], [136, 150],
+    [29, 38], [30, 38], [32, 38], [35, 45], [70, 79]
+];
+const dragon2RewardRanges = [[24, 32], [28, 40], [44, 52], [38, 43], [68, 76]];
+function generateDragon1Rewards() {
+    return dragon1RewardRanges.map(([min, max]) => Math.round(Math.random() * (max - min) + min));
+}
+function generateDragon2Rewards() {
+    return Array(14).fill(0).concat(
+        dragon2RewardRanges.map(([min, max]) => Math.round(Math.random() * (max - min) + min))
+    );
+}
 const dragon1Stats = {
     burstShooting: true,
     baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18, 0.165, 0.3, 0.125],
     xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0.01, 1, 1],
     facing: 1,
-    rewards: [
-            Math.round(Math.random() * 16 + 26), 
-            Math.round(Math.random() * 18 + 42), 
-            Math.round(Math.random() * 20 + 57), 
-            Math.round(Math.random() * 16 + 105),
-            Math.round(Math.random() * 27 + 44),
-            Math.round(Math.random() * 15 + 54),
-            Math.round(Math.random() * 18 + 58),
-            Math.round(Math.random() * 26 + 76),
-            Math.round(Math.random() * 20 + 106),
-            Math.round(Math.random() * 15 + 55),
-            Math.round(Math.random() * 24 + 48),
-            Math.round(Math.random() * 10 + 66),
-            Math.round(Math.random() * 24 + 67),
-            Math.round(Math.random() * 14 + 136),
-            Math.round(Math.random() * 9 + 29),
-            Math.round(Math.random() * 8 + 30),
-            Math.round(Math.random() * 6 + 32),
-            Math.round(Math.random() * 10 + 35),
-            Math.round(Math.random() * 9 + 70)
-        ],
+    rewards: generateDragon1Rewards(),
         maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40, 26, 35, 50],
         sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1, 1.2],
         restTimes: [
@@ -102,27 +96,7 @@ const dragon2Stats = {
     baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222, 0.11, 0.2, 0.08],
     xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     facing: -1,
-    rewards: [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            Math.round(Math.random() * 8 + 24),
-            Math.round(Math.random() * 12 + 28),
-            Math.round(Math.random() * 8 + 44),
-            Math.round(Math.random() * 5 + 38),
-            Math.round(Math.random() * 8 + 68)
-        ],
+    rewards: generateDragon2Rewards(),
         maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 38, 52, 68],
         sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 0.8],
         restTimes: [
@@ -305,8 +279,10 @@ let upgradePool = [
         target: "player",
         currentLevel: 0,
         apply(player) {
+            player.fireShield.maxHp = 15;
             player.fireShield.hp = player.fireShield.maxHp;
             player.fireShield.alive = true;
+            player.fireShield.reflectsFire = false;
         },
         getCost() {
             return this.baseCost;
@@ -341,8 +317,10 @@ let upgradePool = [
         target: "player",
         currentLevel: 0,
         apply(player) {
+            player.lightningHelmet.maxHp = 45;
             player.lightningHelmet.hp = player.lightningHelmet.maxHp;
             player.lightningHelmet.alive = true;
+            player.lightningHelmet.reflectsLightning = false;
         },
         getCost() {
             return this.baseCost;
@@ -365,6 +343,22 @@ let upgradePool = [
                 player.lightningHelmet.alive = true;
             }
             player.lightningHelmet.reflectsLightning = true;
+        },
+        getCost() {
+            return this.baseCost;
+        }
+    },
+    {
+        name: "Spear",
+        baseCost: 200,
+        availableLevel: 14,
+        target: "player",
+        currentLevel: 0,
+        maxLevel: 1,
+        apply(player) {
+            player.spear.uses = player.spear.maxUses;
+            player.spear.active = true;
+            player.spear.usedThisLevel = false;
         },
         getCost() {
             return this.baseCost;
@@ -542,6 +536,7 @@ let available = [];
 let chosen = [];
 let upgradeHoverIndex = -1;
 
+// let level = Math.floor(Math.random() * 19) + 1;
 let level = 1;
 
 function getActiveDragons() {
@@ -829,6 +824,7 @@ function update(deltaTime) {
                         player.fireShield.hp -= 5;
                         if (player.fireShield.hp <= 0) {
                             player.fireShield.alive = false;
+                            player.fireShield.reflectsFire = false;
                         }
                         if (fireball.ice) {
                             player.freeze(5000);
@@ -890,6 +886,7 @@ function update(deltaTime) {
                         player.fireShield.hp -= fireball.damage + (fireball.ice ? 0.5 : 0) + (fireball.homing ? 0.5 : 0);
                         if (player.fireShield.hp <= 0) {
                             player.fireShield.alive = false;
+                            player.fireShield.reflectsFire = false;
                         } 
                     } else {
                         player.hp -= fireball.damage;
@@ -1591,6 +1588,9 @@ function reset(isLevelCleared) {
     player.forceFieldDamageTimer = 0;
     player.poisonGasDamageTimer = 0;
     if (gameOver) {
+        dragon1Stats.rewards = generateDragon1Rewards();
+        dragon2Stats.rewards = generateDragon2Rewards();
+        dragon2.rewards = dragon2Stats.rewards;
         level = 1;
         playerSpawnX = 0.74;
         playerSpawnY = 0.4;
@@ -1625,6 +1625,9 @@ function reset(isLevelCleared) {
         player.fireShield.maxHp = 15;
         player.fireShield.hp = player.fireShield.maxHp;
         player.fireShield.reflectsFire = false;
+        player.spear.active = false;
+        player.spear.maxUses = 8;
+        player.spear.uses = player.spear.maxUses;
         player.autoCollectMysteryBox = false;
         player.autoCollectedCount = 0;
         player.poisonGasActive = false;
@@ -1657,6 +1660,8 @@ function reset(isLevelCleared) {
 
     player.x = playerSpawnX;
     player.y = playerSpawnY;
+    player.spear.attacking = false;
+    player.spear.usedThisLevel = false;
     cloud.warningActive = false;
     cloud.lightningActive = false;
     cloud.damageTime = 0;
@@ -1871,6 +1876,7 @@ document.addEventListener("keydown", (e) => {
         } else if (gameState == "upgrade") {
             gameState = "game";
             level = Math.min(level + 1, dragon1Stats.maxHp.length);
+            // level = Math.floor(Math.random() * 19) + 1;
             reset(true);
         } else if (gameState == "victory") {
             createUpgradeChoices();
@@ -1983,6 +1989,7 @@ canvas.addEventListener("mousedown", (e) => {
         if (upgradeContinueButton.hover) {
             gameState = "game";
             level = Math.min(level + 1, dragon1Stats.maxHp.length);
+            // level = Math.floor(Math.random() * 19) + 1;
             reset(true);
         }
     }
