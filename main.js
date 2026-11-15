@@ -728,6 +728,7 @@ function update(deltaTime) {
     const activeDragons = getActiveDragons();
     player.abilitySlowMultiplier = dragon2.isPlayerInAbilityZone(player, mapWidth, mapHeight) ? 0.6 : 1;
     player.update(deltaTime, keysPressed, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, activeDragons);
+    player.spear.update(deltaTime, mapWidth, mapHeight, BASEMAPWIDTH, BASEMAPHEIGHT, player);
     activeDragons.forEach(currentDragon => {
         if (!currentDragon.alive && !currentDragon.fading) {
             currentDragon.fading = true;
@@ -764,6 +765,12 @@ function update(deltaTime) {
     }
     for (const dragon of activeDragons) {
     dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player, level, player);
+    if (player.spear.attacking && dragon.alive && player.spear.isColliding(dragon)) {
+        dragon.takeDamage(1);
+        const knockbackAmount = 0.014 * Math.pow(player.sizeMultiplier, 2) / Math.pow(dragon.sizeMultiplier, 2) /
+            (dragon.boss ? Math.pow(dragon.bossMultiplier, 2) : 1);
+        dragon.x += player.spear.facing * knockbackAmount;
+    }
     if (dragon.alive && dragon.isColliding(player) && lastHit >= bodyHitTime) {
         player.hp--;
         lastHit = 0;
@@ -1661,7 +1668,7 @@ function reset(isLevelCleared) {
     player.x = playerSpawnX;
     player.y = playerSpawnY;
     player.spear.attacking = false;
-    player.spear.usedThisLevel = false;
+    player.spear.usedThisLevel = isLevelCleared ? false : player.spear.usedThisLevel;
     cloud.warningActive = false;
     cloud.lightningActive = false;
     cloud.damageTime = 0;
@@ -1846,6 +1853,9 @@ document.addEventListener("keydown", (e) => {
     if (gameState == "game") {
         if (e.code === "Space") {
             shooting = true;
+        }
+        if (e.code === "KeyT" && !e.repeat && player.alive && !player.isFrozen) {
+            player.spear.startAttack(player.facing);
         }
         if (player.alive && e.code === "KeyR" && player.superShotReady && !player.isFrozen) {
             player.shootSuperBullet();
