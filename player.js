@@ -1,6 +1,7 @@
 import Bullet from "./bullet.js";
 import LightningHelmet from "./lightninghelmet.js";
 import FireShield from "./fireshield.js";
+import Spear from "./spear.js";
 export default class Player {
     constructor(x, y) {
         this.x = x;
@@ -91,6 +92,7 @@ export default class Player {
 
         this.lightningHelmet = new LightningHelmet(-2, -2, this.sizeMultiplier);
         this.fireShield = new FireShield(-2, -2, this.sizeMultiplier);
+        this.spear = new Spear(-2, -2, this.sizeMultiplier);
         
         this.dragon = null;
         this.dragons = [];
@@ -105,6 +107,7 @@ export default class Player {
             } else {
                 ctx.drawImage(this.isFrozen ? this.frozenImgR : this.imgR, this.x * mapWidth, this.y * mapHeight, this.imageWidth, this.imageHeight)
             }
+            this.spear.draw(ctx, mapWidth, mapHeight);
             if (this.lightningHelmet.alive) {
                 this.lightningHelmet.draw(ctx, mapWidth, mapHeight);
             }
@@ -214,8 +217,13 @@ export default class Player {
                 dx = this.speedX * dt;
             }
 
-            if (dx < 0) this.facing = -1;
-            else if (dx > 0) this.facing = 1;
+            if (!this.spear.attacking) {
+                if (dx < 0) this.facing = -1;
+                else if (dx > 0) this.facing = 1;
+            } else {
+                dx *= 0.5;
+                dy *= 0.5;
+            }
 
             if (dx !== 0 && dy !== 0) {
                 dx /= Math.sqrt(2);
@@ -248,6 +256,9 @@ export default class Player {
                 this.fireShield.x = this.facing > 0 ? this.x + this.width * 0.63 : this.x;
                 this.fireShield.y = this.y + this.width / 10;
                 this.fireShield.sizeMultiplier = this.sizeMultiplier;
+            }
+            if (this.spear.attacking) {
+                this.spear.sizeMultiplier = this.sizeMultiplier;
             }
             // console.log(this.x + ", " + this.y);
         } else {
