@@ -294,7 +294,6 @@ let upgradePool = [
         availableLevel: 14,
         target: "player",
         currentLevel: 0,
-        maxLevel: 1,
         apply(player) {
             if (player.fireShield.alive) {
                 player.fireShield.maxHp += 45;
@@ -332,7 +331,6 @@ let upgradePool = [
         availableLevel: 14,
         target: "player",
         currentLevel: 0,
-        maxLevel: 1,
         apply(player) {
             if (player.lightningHelmet.alive) {
                 player.lightningHelmet.maxHp += 210;
@@ -354,7 +352,6 @@ let upgradePool = [
         availableLevel: 14,
         target: "player",
         currentLevel: 0,
-        maxLevel: 1,
         apply(player) {
             player.spear.uses = player.spear.maxUses;
             player.spear.active = true;
@@ -556,6 +553,7 @@ function createUpgradeChoices() {
     const fireReflector = upgradePool.find(upgrade => upgrade.name === "Fire Reflector");
     const mysteryBox = upgradePool.find(upgrade => upgrade.name === "Unlock Mystery Box");
     const luckUp = upgradePool.find(upgrade => upgrade.name === "Luck Up");
+    const spear = upgradePool.find(upgrade => upgrade.name === "Spear");
     if (available.includes(lightningHelmet) && player.lightningHelmet.alive) {
         available = available.filter(upgrade => upgrade.name !== "Lightning Helmet");
     }
@@ -573,6 +571,9 @@ function createUpgradeChoices() {
     }
     if (available.includes(luckUp) && (!player.canCrit && !player.canIce && !player.canEvade)) {
         available = available.filter(upgrade => upgrade.name !== "Luck Up");
+    }
+    if (available.includes(spear) && spear.currentLevel > 0 && player.spear.active && player.spear.uses > 0) {
+        available = available.filter(upgrade => upgrade.name !== "Spear");
     }
 
     chosen = [];
@@ -600,6 +601,10 @@ function getDragonRewardTotal() {
 
 function formatStat(value) {
     return Number(value).toFixed(3);
+}
+
+function formatChance(chanceDenominator) {
+    return `${(100 / chanceDenominator).toFixed(1)}%`;
 }
 
 function getCurrentPlayerStats() {
@@ -663,6 +668,28 @@ function getUpgradePreviewText(upgrade) {
             return { line: "bulletSize", text: ` → ${formatStat(current.bulletSize * 1.18)}` };
         case "Homing Bullets":
             return { line: "reload", text: ` → ${formatStat(current.reloadTime * (upgrade.currentLevel == 0 ? 1.3 : 1 / 1.3))}s` };
+        case "Ice Bullets":
+            return upgrade.currentLevel == 1 ? { freezeTime: 1500 } : null;
+        case "Luck Up": {
+            const chanceReductions = [
+                { crit: 1.3, ice: 3, evade: 2 },
+                { crit: 1.2, ice: 2.5, evade: 1.5 },
+                { crit: 1, ice: 2.5, evade: 1.5 }
+            ][upgrade.currentLevel];
+            return {
+                luck: {
+                    critChance: player.critChance - chanceReductions.crit,
+                    iceChance: player.iceChance - chanceReductions.ice,
+                    evadeChance: player.evadeChance - chanceReductions.evade
+                }
+            };
+        }
+        case "Poison Gas":
+            return upgrade.currentLevel == 1
+                ? { poisonGas: { radiusMin: 0.12, radiusMax: 0.24, damageDelay: 900 } }
+                : null;
+        case "Spear":
+            return { spearUses: player.spear.maxUses };
         default:
             return null;
     }
@@ -1347,118 +1374,202 @@ function draw() {
         const activeHoverIndex = hoveredIndex >= 0 ? hoveredIndex : upgradeHoverIndex;
         const hoveredPreview = activeHoverIndex >= 0 ? getUpgradePreviewText(chosen[activeHoverIndex]) : null;
         const hoveredUpgrade = activeHoverIndex >= 0 ? chosen[activeHoverIndex] : null;
-        ctx.font = "18px Arial";
+        const hoveredName = hoveredUpgrade ? hoveredUpgrade.name : null;
+        let sidebarY = statPanelY;
+        ctx.font = "16px Arial";
         ctx.fillStyle = "white";
-        ctx.fillText("Current Stats", statPanelX, statPanelY);
-        ctx.font = "14px Arial";
+        ctx.fillText("Current Stats", statPanelX, sidebarY);
+        sidebarY += 24;
+        ctx.font = "12px Arial";
 
         const statRows = [
-            { key: "hp", label: `HP: ${stats.hp}`, y: statPanelY + 24 },
-            { key: "reload", label: `Reload: ${formatStat(stats.reloadTime)}s`, y: statPanelY + 44 },
-            { key: "speed", label: `Speed: ${formatStat(stats.speed)}`, y: statPanelY + 64 },
-            { key: "damage", label: `Max Damage: ${stats.damage}`, y: statPanelY + 84 },
-            { key: "bulletHealth", label: `Bullet Health: ${stats.bulletHealth}`, y: statPanelY + 104 },
-            { key: "bulletSize", label: `Bullet Size: ${formatStat(stats.bulletSize)}`, y: statPanelY + 124 },
-            { key: "lives", label: `Lives: ${stats.lives}`, y: statPanelY + 144 }
+            { key: "hp", label: `HP: ${stats.hp}` },
+            { key: "reload", label: `Reload: ${formatStat(stats.reloadTime)}s` },
+            { key: "speed", label: `Speed: ${formatStat(stats.speed)}` },
+            { key: "damage", label: `Max Damage: ${stats.damage}` },
+            { key: "bulletHealth", label: `Bullet Health: ${stats.bulletHealth}` },
+            { key: "bulletSize", label: `Bullet Size: ${formatStat(stats.bulletSize)}` },
+            { key: "lives", label: `Lives: ${stats.lives}` }
         ];
 
-        statRows.forEach(({ key, label, y }) => {
-            ctx.fillStyle = "white";
-            ctx.fillText(label, statPanelX, y);
-            if (hoveredPreview && hoveredPreview.line === key) {
+        const drawStatLine = (label, value, previewValue = null, isPreviewing = false) => {
+            const text = `${label}: ${value}`;
+            ctx.fillStyle = isPreviewing ? "#4cff7a" : "white";
+            ctx.fillText(text, statPanelX, sidebarY);
+            if (previewValue !== null && previewValue !== undefined) {
                 ctx.fillStyle = "#4cff7a";
-                ctx.fillText(hoveredPreview.text, statPanelX + ctx.measureText(label).width, y);
+                ctx.fillText(` → ${previewValue}`, statPanelX + ctx.measureText(text).width, sidebarY);
             }
+            sidebarY += 18;
+        };
+
+        statRows.forEach(({ key, label }) => {
+            const previewText = hoveredPreview && hoveredPreview.line === key ? hoveredPreview.text : null;
+            ctx.fillStyle = "white";
+            ctx.fillText(label, statPanelX, sidebarY);
+            if (previewText) {
+                ctx.fillStyle = "#4cff7a";
+                ctx.fillText(previewText, statPanelX + ctx.measureText(label).width, sidebarY);
+            }
+            sidebarY += 18;
         });
+        const previewingCritUnlock = !player.canCrit && hoveredName === "Critical Hit Up";
+        if (player.canCrit || previewingCritUnlock) {
+            const chanceText = `Critical Hit Chance: ${formatChance(player.critChance)}`;
+            const previewChance = hoveredPreview && hoveredPreview.luck ? hoveredPreview.luck.critChance : null;
+            ctx.fillStyle = previewingCritUnlock ? "#4cff7a" : "white";
+            ctx.fillText(chanceText, statPanelX, sidebarY);
+            if (!previewingCritUnlock && previewChance !== null) {
+                ctx.fillStyle = "#4cff7a";
+                ctx.fillText(` → ${formatChance(previewChance)}`, statPanelX + ctx.measureText(chanceText).width, sidebarY);
+            }
+            sidebarY += 18;
+        }
+        sidebarY += 9;
 
         const hasLightningHelmet = player.lightningHelmet && player.lightningHelmet.alive;
         const hasFireShield = player.fireShield && player.fireShield.alive;
-        let topEquip = null;
-        let bottomEquip = null;
-        let topIsHovered = false;
-        let bottomIsHovered = false;
+        const hasSpear = player.spear.active && player.spear.uses > 0 &&
+            upgradePool.some(upgrade => upgrade.name === "Spear" && upgrade.currentLevel > 0);
+        const previewingLightning = hoveredPreview && hoveredPreview.line === "lightningHelmet";
+        const previewingFire = hoveredPreview && hoveredPreview.line === "fireShield";
 
-        const hoveredName = hoveredPreview ? (hoveredPreview.line === "lightningHelmet" ? "Lightning Helmet" : (hoveredPreview.line === "fireShield" ? "Fire Shield" : null)) : null;
-
-        if (hasLightningHelmet && hasFireShield) {
-            // both owned: show Lightning top, Fire bottom; hovering can still highlight the hovered row
-            topEquip = "Lightning Helmet";
-            bottomEquip = "Fire Shield";
-            if (hoveredName === "Lightning Helmet") topIsHovered = true;
-            if (hoveredName === "Fire Shield") bottomIsHovered = true;
-        } else if (hasLightningHelmet || hasFireShield) {
-            // one owned: owned goes to top (white). If hovering the other, show it in bottom (green) only while hovering.
-            const ownedName = hasLightningHelmet ? "Lightning Helmet" : "Fire Shield";
-            const otherName = ownedName === "Lightning Helmet" ? "Fire Shield" : "Lightning Helmet";
-            topEquip = ownedName;
-            if (hoveredName === otherName) {
-                bottomEquip = otherName;
-                bottomIsHovered = true;
-            }
-            if (hoveredName === ownedName) topIsHovered = true; // still allow hover highlight if hovering the owned item
-        } else {
-            // owns none: top shows hovered equipment in green; bottom empty unless both hovered somehow
-            if (hoveredName) {
-                topEquip = hoveredName;
-                topIsHovered = true;
-            }
-        }
-
-        const drawEquipPreview = (name, yOffset, isHovered) => {
-            if (!name) return;
-            const previewY = statPanelY + yOffset;
+        const drawEquipPreview = (name) => {
+            const previewY = sidebarY;
             const owned = (name === "Lightning Helmet" && hasLightningHelmet) || (name === "Fire Shield" && hasFireShield);
-            // color: owned -> white, otherwise hovered -> green
-            if (owned) ctx.fillStyle = "white";
-            else if (isHovered) ctx.fillStyle = "#4cff7a";
-            else ctx.fillStyle = "#4cff7a";
+            const previewingReflector = (name === "Lightning Helmet" && hoveredUpgrade && hoveredUpgrade.name === "Lightning Reflector") ||
+                (name === "Fire Shield" && hoveredUpgrade && hoveredUpgrade.name === "Fire Reflector");
+            ctx.fillStyle = owned ? "white" : "#4cff7a";
 
             if (name === "Lightning Helmet") {
-                ctx.drawImage(lightningHelmetPreview.icon, statPanelX, previewY - 10, 28, 18);
-                ctx.fillText("Lightning Helmet", statPanelX + 34, previewY);
+                ctx.drawImage(lightningHelmetPreview.icon, statPanelX, previewY - 9, 24, 16);
+                ctx.fillText("Lightning Helmet", statPanelX + 30, previewY);
                 const helmetHp = hasLightningHelmet ? player.lightningHelmet.hp : lightningHelmetPreview.hp;
-                const previewingReflector = hoveredUpgrade && hoveredUpgrade.name === "Lightning Reflector";
                 ctx.fillStyle = owned ? "white" : "#4cff7a";
                 if (previewingReflector && !hasLightningHelmet) {
                     ctx.fillStyle = "#4cff7a";
-                    ctx.fillText(`HP: ${hoveredPreview.resultHp}`, statPanelX + 34, previewY + 18);
+                    ctx.fillText(`HP: ${hoveredPreview.resultHp}`, statPanelX + 30, previewY + 14);
                 } else {
                     const helmetHpText = `HP: ${helmetHp}`;
-                    ctx.fillText(helmetHpText, statPanelX + 34, previewY + 18);
+                    ctx.fillText(helmetHpText, statPanelX + 30, previewY + 14);
                     if (previewingReflector) {
                         ctx.fillStyle = "#4cff7a";
-                        ctx.fillText(` → ${hoveredPreview.resultHp}`, statPanelX + 34 + ctx.measureText(helmetHpText).width, previewY + 18);
+                        ctx.fillText(` → ${hoveredPreview.resultHp}`, statPanelX + 30 + ctx.measureText(helmetHpText).width, previewY + 14);
                     }
                 }
                 if ((hasLightningHelmet && player.lightningHelmet.reflectsLightning) || previewingReflector) {
                     ctx.fillStyle = previewingReflector ? "#4cff7a" : "white";
-                    ctx.fillText("Reflects", statPanelX + 34, previewY + 36);
+                    ctx.fillText("Reflects", statPanelX + 30, previewY + 28);
                 }
             } else if (name === "Fire Shield") {
-                ctx.drawImage(fireShieldPreview.icon, statPanelX, previewY - 10, 28, 18);
-                ctx.fillText("Fire Shield", statPanelX + 34, previewY);
+                ctx.drawImage(fireShieldPreview.icon, statPanelX, previewY - 9, 24, 16);
+                ctx.fillText("Fire Shield", statPanelX + 30, previewY);
                 const shieldHp = hasFireShield ? player.fireShield.hp : fireShieldPreview.hp;
-                const previewingReflector = hoveredUpgrade && hoveredUpgrade.name === "Fire Reflector";
                 ctx.fillStyle = owned ? "white" : "#4cff7a";
                 if (previewingReflector && !hasFireShield) {
-                    ctx.fillText(`HP: ${hoveredPreview.resultHp}`, statPanelX + 34, previewY + 18);
+                    ctx.fillText(`HP: ${hoveredPreview.resultHp}`, statPanelX + 30, previewY + 14);
                 } else {
                     const shieldHpText = `HP: ${shieldHp}`;
-                    ctx.fillText(shieldHpText, statPanelX + 34, previewY + 18);
+                    ctx.fillText(shieldHpText, statPanelX + 30, previewY + 14);
                     if (previewingReflector) {
                         ctx.fillStyle = "#4cff7a";
-                        ctx.fillText(` → ${hoveredPreview.resultHp}`, statPanelX + 34 + ctx.measureText(shieldHpText).width, previewY + 18);
+                        ctx.fillText(` → ${hoveredPreview.resultHp}`, statPanelX + 30 + ctx.measureText(shieldHpText).width, previewY + 14);
                     }
                 }
                 if ((hasFireShield && player.fireShield.reflectsFire) || previewingReflector) {
                     ctx.fillStyle = previewingReflector ? "#4cff7a" : "white";
-                    ctx.fillText("Reflects", statPanelX + 34, previewY + 36);
+                    ctx.fillText("Reflects", statPanelX + 30, previewY + 28);
                 }
             }
+            sidebarY += 36;
+            if ((name === "Lightning Helmet" && ((hasLightningHelmet && player.lightningHelmet.reflectsLightning) || previewingReflector)) ||
+                (name === "Fire Shield" && ((hasFireShield && player.fireShield.reflectsFire) || previewingReflector))) {
+                sidebarY += 12;
+            }
+            sidebarY += 9;
         }
 
-        drawEquipPreview(topEquip, 168, topIsHovered);
-        drawEquipPreview(bottomEquip, 228, bottomIsHovered);
+        const drawSectionTitle = (title, active, icon = null) => {
+            ctx.fillStyle = active ? "white" : "#4cff7a";
+            if (icon) {
+                ctx.drawImage(icon, statPanelX, sidebarY - 9, 28, 10);
+                ctx.fillText(title, statPanelX + 34, sidebarY);
+            } else {
+                ctx.fillText(title, statPanelX, sidebarY);
+            }
+            sidebarY += 18;
+        };
+        const addSectionGap = () => {
+            sidebarY += 9;
+        };
+
+        if (player.homingBulletActive || hoveredName === "Homing Bullets") {
+            drawSectionTitle("Homing Bullets", player.homingBulletActive);
+            addSectionGap();
+        }
+
+        if (player.canEvade || hoveredName === "Evade Projectiles") {
+            const previewingEvadeUnlock = !player.canEvade && hoveredName === "Evade Projectiles";
+            const luckChance = hoveredPreview && hoveredPreview.luck ? hoveredPreview.luck.evadeChance : null;
+            drawStatLine("Evade Projectiles Chance", formatChance(player.evadeChance),
+                luckChance === null ? null : formatChance(luckChance), previewingEvadeUnlock);
+            addSectionGap();
+        }
+
+        if (player.canIce || hoveredName === "Ice Bullets") {
+            const previewingIceUnlock = !player.canIce && hoveredName === "Ice Bullets";
+            const luckChance = hoveredPreview && hoveredPreview.luck ? hoveredPreview.luck.iceChance : null;
+            drawStatLine("Ice Bullet Chance", formatChance(player.iceChance),
+                luckChance === null ? null : formatChance(luckChance), previewingIceUnlock);
+            const freezePreview = hoveredPreview && hoveredPreview.freezeTime !== undefined
+                ? hoveredPreview.freezeTime
+                : null;
+            drawStatLine("Freeze Time", formatStat(player.freezeTime / 1000) + "s",
+                freezePreview === null ? null : formatStat(freezePreview / 1000) + "s",
+                previewingIceUnlock && freezePreview === null);
+            addSectionGap();
+        }
+
+        if (hasFireShield || previewingFire) {
+            drawEquipPreview("Fire Shield");
+        }
+        if (hasLightningHelmet || previewingLightning) {
+            drawEquipPreview("Lightning Helmet");
+        }
+
+        if (hasSpear || hoveredName === "Spear") {
+            drawSectionTitle("Spear", hasSpear, player.spear.icon);
+            const usesPreview = hoveredPreview && hoveredPreview.spearUses !== undefined && !hasSpear
+                ? hoveredPreview.spearUses
+                : null;
+            const displayedUses = usesPreview === null ? player.spear.uses : usesPreview;
+            drawStatLine("Uses", displayedUses, null, hoveredName === "Spear");
+            addSectionGap();
+        }
+
+        if (player.autoCollectMysteryBox || hoveredName === "Auto-Collect Mystery Box") {
+            const active = player.autoCollectMysteryBox;
+            drawSectionTitle("Auto-Collect Mystery Box", active);
+            drawStatLine("Remaining", player.autoCollectMax - player.autoCollectedCount,
+                null, hoveredName === "Auto-Collect Mystery Box");
+            addSectionGap();
+        }
+
+        if (player.poisonGasActive || hoveredName === "Poison Gas") {
+            const active = player.poisonGasActive;
+            const previewingPoisonUnlock = hoveredUpgrade && hoveredUpgrade.name === "Poison Gas" && hoveredUpgrade.currentLevel === 0;
+            drawSectionTitle("Poison Gas", active);
+            const poisonPreview = hoveredPreview ? hoveredPreview.poisonGas : null;
+            const currentRadius = `${player.poisonGasRadiusMin.toFixed(2)}-${player.poisonGasRadiusMax.toFixed(2)}`;
+            const previewRadius = poisonPreview
+                ? `${poisonPreview.radiusMin.toFixed(2)}-${poisonPreview.radiusMax.toFixed(2)}`
+                : null;
+            drawStatLine("Radius", currentRadius, previewRadius, previewingPoisonUnlock);
+            drawStatLine("Damage Delay", formatStat(player.poisonGasDamageDelay / 1000) + "s",
+                poisonPreview ? formatStat(poisonPreview.damageDelay / 1000) + "s" : null,
+                previewingPoisonUnlock);
+            addSectionGap();
+        }
         
         ctx.font = "18px Arial";
         const optionOffsets = [-40, -10, 20];
@@ -1624,7 +1735,7 @@ function reset(isLevelCleared) {
         player.homingBulletActive = false;
         player.unlockedMysteryBox = false;
         player.lightningHelmet.alive = false;
-        player.lightningHelmet.maxHp = 60;
+        player.lightningHelmet.maxHp = 45;
         player.lightningHelmet.hp = player.lightningHelmet.maxHp;
         player.lightningHelmet.reflectsLightning = false;
         player.fireShield.hp = player.fireShield.maxHp;
