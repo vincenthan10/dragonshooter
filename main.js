@@ -26,9 +26,9 @@ let dragon2SpawnY = 0.65;
 const dragon1RewardRanges = [
     [26, 42], [42, 60], [57, 77], [105, 121], [44, 71], [54, 69], [58, 76],
     [76, 102], [106, 126], [55, 70], [48, 72], [66, 76], [67, 91], [136, 150],
-    [29, 38], [30, 38], [32, 38], [35, 45], [70, 79]
+    [29, 38], [30, 38], [32, 38], [35, 45], [70, 79], [68, 81]
 ];
-const dragon2RewardRanges = [[24, 32], [28, 40], [44, 52], [38, 43], [68, 76]];
+const dragon2RewardRanges = [[24, 32], [28, 40], [44, 52], [38, 43], [68, 76], [0, 0]];
 function generateDragon1Rewards() {
     return dragon1RewardRanges.map(([min, max]) => Math.round(Math.random() * (max - min) + min));
 }
@@ -39,12 +39,12 @@ function generateDragon2Rewards() {
 }
 const dragon1Stats = {
     burstShooting: true,
-    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18, 0.165, 0.3, 0.125],
-    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0.01, 1, 1],
+    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18, 0.165, 0.3, 0.125, 0.17],
+    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0.01, 1, 1, 1],
     facing: 1,
     rewards: generateDragon1Rewards(),
-        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40, 26, 35, 50],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1, 1.2],
+        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40, 26, 35, 50, 66],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1, 1.2, 1.1],
         restTimes: [
             [2500, 4000],
             [2500, 4000],
@@ -64,7 +64,8 @@ const dragon1Stats = {
             [1000, 2000],
             [0, 0],
             [500, 2500],
-            [2250, 3250]
+            [2250, 3250],
+            [3000, 4000]
         ],
         chargeTimes: [
             [2250, 4000],
@@ -85,20 +86,21 @@ const dragon1Stats = {
             [1500, 2500],
             [500, 1000],
             [500, 3500],
-            [2000, 3250]
+            [2000, 3250],
+            [1750, 3500]
         ],
-        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800, 3500, 0, 2200],
-        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1],
-        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 0, 1]
+        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800, 3500, 0, 2200, 2500],
+        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1],
+        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 0, 1, 3]
 }
 const dragon2Stats = {
     zoneAbility: true,
-    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222, 0.11, 0.2, 0.08],
-    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222, 0.11, 0.2, 0.08, 0],
+    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     facing: -1,
     rewards: generateDragon2Rewards(),
-        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 38, 52, 68],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 0.8],
+        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 38, 52, 68, 0],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 0.8, 1],
         restTimes: [
             [0, 0],
             [0, 0],
@@ -118,6 +120,7 @@ const dragon2Stats = {
             [500, 5000],
             [0, 0],
             [0, 1500],
+            [0, 0],
             [0, 0]
         ],
         chargeTimes: [
@@ -140,10 +143,11 @@ const dragon2Stats = {
             [500, 1000],
             [1500, 5000],
             [500, 1000]
+            [0, 0]
         ],
-        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250, 2500, 0, 3300],
-        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1],
-        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1]
+        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250, 2500, 0, 3300, 0],
+        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0],
+        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0]
 }
 const dragon = new Dragon(dragonSpawnX, dragonSpawnY, dragon1Stats);
 const dragon2 = new Dragon(dragon2SpawnX, dragon2SpawnY, dragon2Stats);
@@ -537,7 +541,7 @@ let upgradeHoverIndex = -1;
 let level = 1;
 
 function getActiveDragons() {
-    return level >= 15 ? [dragon, dragon2] : [dragon];
+    return level >= 15 && level <= 19 ? [dragon, dragon2] : [dragon];
 }
 
 function createUpgradeChoices() {
@@ -794,7 +798,7 @@ function update(deltaTime) {
     dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player, level, player);
     if (player.spear.attacking && dragon.alive && player.spear.isColliding(dragon)) {
         dragon.takeDamage(1);
-        const knockbackAmount = 0.014 * Math.pow(player.sizeMultiplier, 2) / Math.pow(dragon.sizeMultiplier, 2) /
+        const knockbackAmount = 0.011 * Math.pow(player.sizeMultiplier, 2) / Math.pow(dragon.sizeMultiplier, 2) /
             (dragon.boss ? Math.pow(dragon.bossMultiplier, 2) : 1);
         dragon.x += player.spear.facing * knockbackAmount;
     }
@@ -1114,7 +1118,7 @@ function update(deltaTime) {
                     fireball.health -= ice.damage;
                     if (fireball.ice) {
                         if (fireball.health <= 0) {
-                            explosions.push(new Explosion(fireball.x + fireball.width / 2, fireball.y - fireball.height / 8, "images/fireExplosionice.png", projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 10));
+                            explosions.push(new Explosion(fireball.x + fireball.width / 2, fireball.y - fireball.height / 8, "images/fireexplosionice.png", projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 10));
                             dragon.fireballs.splice(j, 1);
                         } else {
                             explosions.push(new Explosion(ice.x - 0.01, ice.y, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
@@ -1140,6 +1144,81 @@ function update(deltaTime) {
                 }
             }
             
+        }
+    }
+    for (let i = cloud.raindrops.length - 1; i >= 0; i--) {
+        let raindrop = cloud.raindrops[i];
+        if (dragon === activeDragons[0] && raindrop.isColliding(player) && raindrop.canDamage && player.alive && !player.ltnInvinc) {
+            let roll = player.canEvade ? Math.random() * player.evadeChance : 2;
+            if (roll < 1) {
+                raindrop.canDamage = false;
+            } else {
+                player.hp -= raindrop.damage;
+                const knockbackAmount = 0.005 / Math.pow(player.sizeMultiplier, 4);
+                player.y = player.y + knockbackAmount;
+                explosions.push(new Explosion(raindrop.x - 0.02, raindrop.y - 0.02, "images/explosionWater.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 400, 1));
+                cloud.raindrops.splice(i, 1);
+                continue;
+            }
+        }
+        if (raindrop.isColliding(dragon) && dragon.alive) {
+            dragon.takeDamage(dragon.ltnInvinc ? raindrop.damage * -2 : raindrop.damage * -1);
+            dragon.rainSpeedBoosts.push(5000);
+            explosions.push(new Explosion(raindrop.x - 0.02, raindrop.y - 0.02, "images/explosionWater.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 400, 1));
+            cloud.raindrops.splice(i, 1);
+            continue;
+        }
+        for (let j = player.bullets.length - 1; j >= 0; j--) {
+            let bullet = player.bullets[j];
+            if (raindrop.isColliding(bullet)) {
+                if (bullet.ice) {
+                    explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, "images/bulExplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, bullet.super ? 4 : 1));
+                } else if (bullet.super) {
+                    explosions.push(new Explosion(raindrop.x - 0.09, raindrop.y - 0.2, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+                } else {
+                    explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                }
+                bullet.health -= raindrop.damage;
+                cloud.raindrops.splice(i, 1);
+                if (bullet.health <= 0) {
+                    player.bullets.splice(j, 1);
+                }
+                break;
+            }
+        }
+        if (!cloud.raindrops.includes(raindrop)) {
+            continue;
+        }
+        for (let j = dragon.fireballs.length - 1; j >= 0; j--) {
+            let fireball = dragon.fireballs[j];
+            if (fireball.super) {
+                if (fireball.isSuperColliding(raindrop)) {
+                    fireball.health -= raindrop.damage;
+                    if (fireball.ice) {
+                        if (fireball.health <= 0) {
+                            explosions.push(new Explosion(fireball.x + fireball.width / 2, fireball.y - fireball.height / 8, "images/fireexplosionice.png", projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 10));
+                            dragon.fireballs.splice(j, 1);
+                        } else {
+                            explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                        }
+                    } else {
+                        explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    }
+                    cloud.raindrops.splice(i, 1);
+                }
+            } else if (raindrop.isColliding(fireball)) {
+                fireball.health -= raindrop.damage;
+                if (fireball.ice) {
+                    explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                } else {
+                    explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                }
+                cloud.raindrops.splice(i, 1);
+                if (fireball.health <= 0) {
+                    dragon.fireballs.splice(j, 1);
+                }
+                break;
+            }
         }
     }
     }
@@ -1188,15 +1267,17 @@ function drawCenteredText(text, x, y) {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (level <= 9 || level >= 15) {
+    if (level <= 9 || (level >= 15 && level <= 19)) {
         ctx.fillStyle = "skyblue";
-    } else {
+    } else if (level >= 10 && level <= 14) {
         ctx.fillStyle = "rgb(134, 181, 202)";
+    } else {
+        ctx.fillStyle = "rgb(87, 125, 143)";
     }
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     player.draw(ctx, mapWidth, mapHeight);
     dragon.draw(ctx, mapWidth, mapHeight, level);
-    if (level >= 15) {
+    if (level >= 15 && level <= 19) {
         dragon2.draw(ctx, mapWidth, mapHeight, level);
     }
     player.drawPoisonGas(ctx, mapWidth, mapHeight);
@@ -1204,6 +1285,7 @@ function draw() {
     if (level >= 2) {
         cloud.draw(ctx, mapWidth, mapHeight);
         cloud.drawIce(ctx, mapWidth, mapHeight);
+        cloud.drawRain(ctx, mapWidth, mapHeight);
         mystery.draw(ctx, mapWidth, mapHeight);
     }
     explosions.forEach(e => e.draw(ctx, mapWidth, mapHeight));
@@ -1524,7 +1606,7 @@ function draw() {
             const freezePreview = hoveredPreview && hoveredPreview.freezeTime !== undefined
                 ? hoveredPreview.freezeTime
                 : null;
-            drawStatLine("Freeze Time", formatStat(player.freezeTime / 1000) + "s",
+            drawStatLine("Freeze Duration", formatStat(player.freezeTime / 1000) + "s",
                 freezePreview === null ? null : formatStat(freezePreview / 1000) + "s",
                 previewingIceUnlock && freezePreview === null);
             addSectionGap();
@@ -1544,6 +1626,10 @@ function draw() {
                 : null;
             const displayedUses = usesPreview === null ? player.spear.uses : usesPreview;
             drawStatLine("Uses", displayedUses, null, hoveredName === "Spear");
+            ctx.fillStyle = hoveredName === "Spear" && !hasSpear ? "#4cff7a" : "white";
+            ctx.fillText("Press T to spear in front of you", statPanelX, sidebarY);
+            ctx.fillText("One use per level", statPanelX, sidebarY + 18);
+            sidebarY += 34;
             addSectionGap();
         }
 
@@ -1684,6 +1770,12 @@ function reset(isLevelCleared) {
         dragonSpawnX = 0;
         dragon2SpawnX = 0.1;
     }
+    if (level >= 20) {
+        playerSpawnX = 0.74;
+        playerSpawnY = 0.4;
+        dragonSpawnX = 0.1;
+        dragonSpawnY = 0.3;
+    }
     player.alive = true;
     player.hp = player.maxHp;
     player.abilitySlowMultiplier = 1;
@@ -1715,7 +1807,7 @@ function reset(isLevelCleared) {
         dragonSpawnX = 0.1;
         dragonSpawnY = 0.3;
         dragon2SpawnX = 0.75;
-        dragon2SpawnX = 0.65;
+        dragon2SpawnY = 0.65;
         player.lives = player.maxLives;
         player.coins = 0;
         player.maxHp = 1;
@@ -1788,10 +1880,14 @@ function reset(isLevelCleared) {
     cloud.lightningTimer = 0;
     cloud.ices = [];
     cloud.iceSpawnTimer = 0;
+    cloud.raindrops = [];
+    cloud.rainSpawnTimer = 0;
     if (level == 8) {
         cloud.strikeInterval = Math.random() * 1000 + 600;
     } else if (level >= 10 && level <= 12) {
         cloud.strikeInterval = Math.random() * 15000 + 9000;
+    } else if (level >= 20) {
+        cloud.strikeInterval = Math.random() * 3000 + 2000;
     } else {
         cloud.strikeInterval = Math.random() * 5000 + 3000;
     }
