@@ -19,6 +19,7 @@ export default class Dragon {
         this.yMultiplier = 1.2;
         this.speedMultiplier = 1;
         this.abilitySpeedMultiplier = 1;
+        this.rainSpeedBoosts = [];
         this.facing = stats.facing // - = left, + = right
         this.rewards = stats.rewards;
         this.reward = this.rewards[this.hpChooser];
@@ -183,6 +184,9 @@ export default class Dragon {
     }
 
     update(deltaTime, mapWidth, mapHeight, canvas, baseWidth, baseHeight, target, level, player = null) {
+        this.rainSpeedBoosts = this.rainSpeedBoosts
+            .map(remainingTime => remainingTime - deltaTime)
+            .filter(remainingTime => remainingTime > 0);
         if (player) {
             this.player = player;
         }
@@ -564,8 +568,9 @@ export default class Dragon {
             }
         }
 
-        const movementX = this.dirX * this.xMultiplier * this.effectiveSpeed * deltaTime / 1000;
-        const movementY = this.dirY * this.yMultiplier * this.effectiveSpeed * deltaTime / 1000;
+        const rainSpeedMultiplier = Math.pow(1.05, this.rainSpeedBoosts.length);
+        const movementX = this.dirX * this.xMultiplier * this.effectiveSpeed * rainSpeedMultiplier * deltaTime / 1000;
+        const movementY = this.dirY * this.yMultiplier * this.effectiveSpeed * rainSpeedMultiplier * deltaTime / 1000;
         this.x += movementX;
         this.y += movementY;
 
@@ -595,6 +600,9 @@ export default class Dragon {
 
     takeDamage(damage) {
         this.hp -= damage;
+        if (this.hp > this.maxHp[this.hpChooser]) {
+            this.hp = this.maxHp[this.hpChooser];
+        }
         if (this.hp <= 0) {
             this.kill();
         }
