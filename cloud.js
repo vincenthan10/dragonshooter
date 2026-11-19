@@ -1,5 +1,6 @@
 import Player from "./player.js";
 import Ice from "./ice.js";
+import Raindrop from "./rain.js";
 export default class Cloud {
     constructor(x, y) {
         this.x = x;
@@ -35,7 +36,10 @@ export default class Cloud {
         this.iceSpawnTimer = 0;
         this.ices = [];
         this.iceDamage = 1;
-
+        this.rainSpawnTime = Math.random() * 200 + 500;
+        this.rainSpawnTimer = 0;
+        this.raindrops = [];
+        this.rainDamage = 1;
     }
 
     draw(ctx, mapWidth, mapHeight, baseWidth, baseHeight) {
@@ -118,8 +122,13 @@ export default class Cloud {
                     this.strikeInterval /= 8;
                 } else if ((level >= 10 && level <= 12) || level == 14) {
                     this.strikeInterval *= 3;
+                } else if (level >= 20) {
+                    this.strikeInterval /= 1.5;
                 }
                 this.strikeTime = Math.random() * 230 + 230;
+                if (level >= 20) {
+                    this.strikeTime *= 1.5;
+                }
             }
         }
 
@@ -127,6 +136,13 @@ export default class Cloud {
         for (let i = this.ices.length - 1; i >= 0; i--) {
             if (this.ices[i].y >= 2) {
                 this.ices.splice(i, 1);
+            }
+        }
+
+        this.raindrops.forEach(raindrop => raindrop.update(deltaTime, mapWidth, mapHeight, baseWidth, baseHeight));
+        for (let i = this.raindrops.length - 1; i >= 0; i--) {
+            if (this.raindrops[i].y >= 2) {
+                this.raindrops.splice(i, 1);
             }
         }
 
@@ -144,10 +160,23 @@ export default class Cloud {
                 }
             }
         }
+
+        if (level >= 20) {
+            this.rainSpawnTimer += deltaTime;
+            if (this.rainSpawnTimer >= this.rainSpawnTime) {
+                this.raindrops.push(new Raindrop(Math.random() * 0.94 + 0.03, -0.1, this.rainDamage));
+                this.rainSpawnTimer = 0;
+                this.rainSpawnTime = Math.random() * 200 + 500;
+            }
+        }
     }
 
     drawIce(ctx, mapWidth, mapHeight) {
         this.ices.forEach(ice => ice.draw(ctx, mapWidth, mapHeight));
+    }
+
+    drawRain(ctx, mapWidth, mapHeight) {
+        this.raindrops.forEach(raindrop => raindrop.draw(ctx, mapWidth, mapHeight));
     }
 
 
@@ -163,11 +192,12 @@ export default class Cloud {
                     entity.lightningHelmet.hp -= this.lightningDmg;
                     if (entity.lightningHelmet.hp <= 0) {
                         entity.lightningHelmet.alive = false;
+                        entity.lightningHelmet.reflectsLightning = false;
                     }
                     if (entity.lightningHelmet.reflectsLightning) {
                         const playerCenterX = entity.x + entity.width / 2;
                         const playerCenterY = entity.y + entity.height / 2;
-                        const target = entity.getNearestLivingDragon(dragons);
+                        const target = entity.getNearestLivingDragon(dragons, playerCenterX, playerCenterY);
                         if (target) {
                             const targetCenterX = target.x + target.width / 2;
                             const targetCenterY = target.y + target.height / 2;
