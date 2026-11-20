@@ -36,7 +36,7 @@ export default class Cloud {
         this.iceSpawnTimer = 0;
         this.ices = [];
         this.iceDamage = 1;
-        this.rainSpawnTime = Math.random() * 200 + 500;
+        this.rainSpawnTime = Math.random() * 120 + 400;
         this.rainSpawnTimer = 0;
         this.raindrops = [];
         this.rainDamage = 1;
@@ -166,7 +166,10 @@ export default class Cloud {
             if (this.rainSpawnTimer >= this.rainSpawnTime) {
                 this.raindrops.push(new Raindrop(Math.random() * 0.94 + 0.03, -0.1, this.rainDamage));
                 this.rainSpawnTimer = 0;
-                this.rainSpawnTime = Math.random() * 200 + 500;
+                this.rainSpawnTime = Math.random() * 120 + 400;
+                if (level == 21) {
+                    this.rainSpawnTime /= 2;
+                }
             }
         }
     }
