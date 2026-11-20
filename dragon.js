@@ -81,6 +81,7 @@ export default class Dragon {
         this.ltnInvinc = false;
         this.homingFireballActive = false;
         this.iceActive = false;
+        this.waterActive = false;
 
         this.collected = false;
 
@@ -499,7 +500,7 @@ export default class Dragon {
                     let dy = target.y + target.height / 2 - this.y - this.height / 3;
                     let dist = Math.sqrt(dx * dx + dy * dy);
                     this.dirX = dx / dist;
-                    this.dirY = dy / dist;
+                    this.dirY = level == 21 ? (Math.random() < 0.5 ? -1 : 1) : dy / dist;
                 }
                 this.effectiveSpeed = this.baseSpeed * this.speedMultiplier * this.abilitySpeedMultiplier;
                 if (level == 12) {
@@ -551,8 +552,6 @@ export default class Dragon {
         if (level == 18) {
             const minX = -0.1;
             const maxX = 1.1 - this.width;
-            const minY = -0.1;
-            const maxY = 1.1 - this.height;
 
             if (this.x <= minX && this.dirX * this.xMultiplier < 0) {
                 this.dirX = Math.abs(this.dirX);
@@ -561,6 +560,10 @@ export default class Dragon {
                 this.dirX = -Math.abs(this.dirX);
                 this.facing = this.dirX * this.xMultiplier > 0 ? 1 : -1;
             }
+        }
+        if (level == 18 || level == 21) {
+            const minY = level == 18 ? -0.1 : 0.1;
+            const maxY = level == 18 ? 1.1 : 1.1 - this.height;
             if (this.y <= minY && this.dirY * this.yMultiplier < 0) {
                 this.dirY = Math.abs(this.dirY);
             } else if (this.y >= maxY && this.dirY * this.yMultiplier > 0) {
@@ -577,8 +580,6 @@ export default class Dragon {
         if (level == 18) {
             const minX = -0.1;
             const maxX = 1.1 - this.width;
-            const minY = -0.1;
-            const maxY = 1.1 - this.height;
             if (this.x < minX) {
                 this.x = minX;
                 this.dirX = Math.abs(this.dirX);
@@ -588,6 +589,10 @@ export default class Dragon {
                 this.dirX = -Math.abs(this.dirX);
                 this.facing = this.dirX * this.xMultiplier > 0 ? 1 : -1;
             }
+        }
+        if (level == 18 || level == 21) {
+            const minY = level == 18 ? -0.1 : 0.1;
+            const maxY = level == 18 ? 1.1 : 1.1 - this.height;
             if (this.y < minY) {
                 this.y = minY;
                 this.dirY = Math.abs(this.dirY);
@@ -667,20 +672,21 @@ export default class Dragon {
         const usesRandomFireballEffects = level == 17 || (level == 19 && this.burstShooting);
         const ice = usesRandomFireballEffects ? Math.random() < 1 / 3 : this.iceActive;
         const homing = usesRandomFireballEffects ? Math.random() < 1 / 19 : this.homingFireballActive;
+        const water = level == 21 || (this.waterActive && !ice && Math.random() < 1 / 5);
         if (this.facing < 0) {
-            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, ice, homing, this.player));
+            this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, water ? 1 : this.fireHealth[level - 1], false, ice, water, homing, this.player));
         } else {
-            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, this.fireHealth[level - 1], false, ice, homing, this.player));
+            this.fireballs.push(new Fireball(this.x + this.width, this.y + 0.075, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, water ? 1 : this.fireHealth[level - 1], false, ice, water, homing, this.player));
         }
     }
 
     shootSuperFireball(level) {
         let fireball = null;
         if (this.facing < 0) {
-            fireball = new Fireball(this.x + 0.99, this.y - 0.3, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier * 35, 30, true, this.iceActive, false, this.player);
+            fireball = new Fireball(this.x + 0.99, this.y - 0.3, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier * 35, 30, true, this.iceActive, this.waterActive, false, this.player);
             this.fireballs.push(fireball);
         } else {
-            fireball = new Fireball(this.x + this.width - 0.99, this.y - 0.3, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier * 35, 30, true, this.iceActive, false, this.player);
+            fireball = new Fireball(this.x + this.width - 0.99, this.y - 0.3, 1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier * 35, 30, true, this.iceActive, this.waterActive, false, this.player);
             this.fireballs.push(fireball);
         }
         return fireball;
