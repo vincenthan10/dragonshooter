@@ -26,9 +26,9 @@ let dragon2SpawnY = 0.65;
 const dragon1RewardRanges = [
     [26, 42], [42, 60], [57, 77], [105, 121], [44, 71], [54, 69], [58, 76],
     [76, 102], [106, 126], [55, 70], [48, 72], [66, 76], [67, 91], [136, 150],
-    [29, 38], [30, 38], [32, 38], [35, 45], [70, 79], [68, 81]
+    [29, 38], [30, 38], [32, 38], [35, 45], [70, 79], [68, 81], [60, 90]
 ];
-const dragon2RewardRanges = [[24, 32], [28, 40], [44, 52], [38, 43], [68, 76], [0, 0]];
+const dragon2RewardRanges = [[24, 32], [28, 40], [44, 52], [38, 43], [68, 76], [0, 0], [0, 0]];
 function generateDragon1Rewards() {
     return dragon1RewardRanges.map(([min, max]) => Math.round(Math.random() * (max - min) + min));
 }
@@ -39,12 +39,12 @@ function generateDragon2Rewards() {
 }
 const dragon1Stats = {
     burstShooting: true,
-    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18, 0.165, 0.3, 0.125, 0.17],
-    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0.01, 1, 1, 1],
+    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18, 0.165, 0.3, 0.125, 0.17, 0.12],
+    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0.02, 1, 1, 1, 0.04],
     facing: 1,
     rewards: generateDragon1Rewards(),
-        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40, 26, 35, 50, 66],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1, 1.2, 1.1],
+        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40, 26, 35, 50, 66, 30],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1, 1.2, 1.1, 1.2],
         restTimes: [
             [2500, 4000],
             [2500, 4000],
@@ -65,7 +65,8 @@ const dragon1Stats = {
             [0, 0],
             [500, 2500],
             [2250, 3250],
-            [3000, 4000]
+            [3000, 4000],
+            [0, 0]
         ],
         chargeTimes: [
             [2250, 4000],
@@ -87,20 +88,21 @@ const dragon1Stats = {
             [500, 1000],
             [500, 3500],
             [2000, 3250],
-            [1750, 3500]
+            [1750, 3500],
+            [500, 2000]
         ],
-        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800, 3500, 0, 2200, 2500],
-        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1],
-        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 0, 1, 3]
+        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800, 3500, 0, 2200, 2500, 1500],
+        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],
+        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 0, 1, 3, 1]
 }
 const dragon2Stats = {
     zoneAbility: true,
-    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222, 0.11, 0.2, 0.08, 0],
-    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222, 0.11, 0.2, 0.08, 0, 0],
+    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     facing: -1,
     rewards: generateDragon2Rewards(),
-        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 38, 52, 68, 0],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 0.8, 1],
+        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 38, 52, 68, 0, 0],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 0.8, 1, 1],
         restTimes: [
             [0, 0],
             [0, 0],
@@ -120,6 +122,7 @@ const dragon2Stats = {
             [500, 5000],
             [0, 0],
             [0, 1500],
+            [0, 0],
             [0, 0],
             [0, 0]
         ],
@@ -142,12 +145,13 @@ const dragon2Stats = {
             [500, 5000],
             [500, 1000],
             [1500, 5000],
-            [500, 1000]
+            [500, 1000],
+            [0, 0],
             [0, 0]
         ],
-        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250, 2500, 0, 3300, 0],
-        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0],
-        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0]
+        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250, 2500, 0, 3300, 0, 0],
+        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0],
+        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0]
 }
 const dragon = new Dragon(dragonSpawnX, dragonSpawnY, dragon1Stats);
 const dragon2 = new Dragon(dragon2SpawnX, dragon2SpawnY, dragon2Stats);
@@ -809,6 +813,8 @@ function update(deltaTime) {
     
     for (let i = dragon.fireballs.length - 1; i >= 0; i--) {
         let fireball = dragon.fireballs[i];
+        const waterExplosionX = fireball.x + fireball.width * 0.75;
+        const waterExplosionScale = Math.sqrt(fireball.sizeMultiplier);
         if (fireball.reflected) {
             const hitDragon = activeDragons.find(targetDragon =>
                 targetDragon.alive &&
@@ -838,7 +844,10 @@ function update(deltaTime) {
                 } else if (fireball.ice) {
                     explosions.push(new Explosion(fireball.x, fireball.y - 0.05,
                         "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
-                } else {
+                } else if (fireball.water) {
+                    explosions.push(new Explosion(fireball.x, fireball.y - 0.05,
+                        "images/fireexplosionwater.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                } else{
                     explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src,
                         fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
                 }
@@ -883,6 +892,8 @@ function update(deltaTime) {
                     }
                     if (fireball.ice) {
                         explosions.push(new Explosion(player.x - 0.3, player.y - 0.3, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 10));
+                    } else if (fireball.water) {
+                        explosions.push(new Explosion(waterExplosionX, fireball.y - fireball.height / 8, "images/fireexplosionwater.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, waterExplosionScale));
                     } else {
                         explosions.push(new Explosion(player.x - 0.3, player.y - 0.3, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 10));
                     }
@@ -898,10 +909,11 @@ function update(deltaTime) {
                         explosions.push(new Explosion(fireball.x + fireball.width / 2, fireball.y - fireball.height / 8, "images/bulExplosionice.png", projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 10));
                         dragon.fireballs.splice(i, 1);
                     } 
+                    const bulletExplosionX = fireball.water ? waterExplosionX : bullet.x;
                     if (bullet.super) {
-                        explosions.push(new Explosion(bullet.x, bullet.y - 0.1, bullet.ice ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+                        explosions.push(new Explosion(bulletExplosionX, bullet.y - 0.1, bullet.ice ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
                     } else {
-                        explosions.push(new Explosion(bullet.x, bullet.y - 0.05, bullet.ice ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                        explosions.push(new Explosion(bulletExplosionX, bullet.y - 0.05, bullet.ice ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
                     }
                     if (bullet.health <= 0) {
                         player.bullets.splice(j, 1);
@@ -932,7 +944,7 @@ function update(deltaTime) {
                             player.freeze(level == 14 ? 1000 : 2000);
                         }
                     }
-                    const knockbackAmount = 0.02 * Math.pow(fireball.sizeMultiplier, 4) / Math.pow(player.sizeMultiplier, 4);
+                    const knockbackAmount = 0.02 * Math.pow(fireball.sizeMultiplier, fireball.water ? 1 : 4) / Math.pow(player.sizeMultiplier, 4);
                     
                     // Apply knockback with homing direction for homing fireballs
                     if (fireball.homing && fireball.speedY !== undefined) {
@@ -955,6 +967,8 @@ function update(deltaTime) {
                     }
                     if (fireball.ice) {
                         explosions.push(new Explosion(fireball.x, fireball.y - 0.05, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    } else if (fireball.water) {
+                        explosions.push(new Explosion(waterExplosionX, fireball.y - fireball.height / 8, "images/fireexplosionwater.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, waterExplosionScale));
                     } else {
                         explosions.push(new Explosion(fireball.x, fireball.y - 0.05, fireExplosion.src, fireExplosion.BASEIMAGEWIDTH, fireExplosion.BASEIMAGEHEIGHT, 400, 1));
                     }
@@ -965,10 +979,11 @@ function update(deltaTime) {
             for (let j = player.bullets.length - 1; j >= 0; j--) {
                 let bullet = player.bullets[j];
                 if (fireball.isColliding(bullet)) {
+                    const bulletExplosionX = fireball.water ? waterExplosionX : fireball.x;
                     if (bullet.super) {
-                        explosions.push(new Explosion(fireball.x, fireball.y - 0.1, (fireball.ice && bullet.ice) ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
+                        explosions.push(new Explosion(bulletExplosionX, fireball.y - 0.1, (fireball.ice || fireball.water) && bullet.ice ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 3));
                     } else {
-                        explosions.push(new Explosion(fireball.x, fireball.y - 0.05, (fireball.ice && bullet.ice) ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                        explosions.push(new Explosion(bulletExplosionX, fireball.y - 0.05, (fireball.ice || fireball.water) && bullet.ice ? "images/bulExplosionice.png" : projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
                     }
 
                     bullet.health -= Math.max(fireball.damage, 1);
@@ -1131,7 +1146,7 @@ function update(deltaTime) {
             } else {
                 if (ice.isColliding(fireball)) {
                     fireball.health -= ice.damage;
-                    if (fireball.ice) {
+                    if (fireball.ice || fireball.water) {
                         explosions.push(new Explosion(ice.x - 0.01, ice.y, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
                     } else {
                         explosions.push(new Explosion(ice.x - 0.01, ice.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
@@ -1207,11 +1222,19 @@ function update(deltaTime) {
                     cloud.raindrops.splice(i, 1);
                 }
             } else if (raindrop.isColliding(fireball)) {
-                fireball.health -= raindrop.damage;
-                if (fireball.ice) {
-                    explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                if (fireball.water) {
+                    fireball.health += raindrop.damage;
+                    fireball.damage += raindrop.damage;
+                    fireball.scaleSize(1.5);
+                    fireball.speed *= 0.95;
+                    explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, "images/fireexplosionwater.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
                 } else {
-                    explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    fireball.health -= raindrop.damage;
+                    if (fireball.ice) {
+                        explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, "images/fireexplosionice.png", basicExplosion.BASEIMAGEWIDTH, basicExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    } else {
+                        explosions.push(new Explosion(raindrop.x - 0.01, raindrop.y, projExplosion.src, projExplosion.BASEIMAGEWIDTH, projExplosion.BASEIMAGEHEIGHT, 250, 1));
+                    }
                 }
                 cloud.raindrops.splice(i, 1);
                 if (fireball.health <= 0) {
@@ -1776,6 +1799,9 @@ function reset(isLevelCleared) {
         dragonSpawnX = 0.1;
         dragonSpawnY = 0.3;
     }
+    if (level == 21) {
+        dragonSpawnX = -0.4;
+    }
     player.alive = true;
     player.hp = player.maxHp;
     player.abilitySlowMultiplier = 1;
@@ -1948,6 +1974,9 @@ function reset(isLevelCleared) {
     dragon.abilityMovingToPlayer = false;
     dragon.abilityFireballShot = false;
     explosions.splice(0, explosions.length);
+    if (level >= 20) {
+        dragon.waterActive = true;
+    }
     if (level == 14) {
         dragon.iceActive = true;
     } else {
