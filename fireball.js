@@ -1,5 +1,5 @@
 export default class Fireball {
-    constructor(x, y, dir, damage, sizeMultiplier, health, superType, iceType, homing = false, target = null) {
+    constructor(x, y, dir, damage, sizeMultiplier, health, superType, iceType, waterType, homing = false, target = null) {
         this.x = x;
         this.y = y;
         this.baseSpeed = 0.0065;
@@ -7,17 +7,21 @@ export default class Fireball {
         this.damage = damage;
         this.health = health;
         this.sizeMultiplier = sizeMultiplier;
+        this.baseSizeMultiplier = sizeMultiplier;
         this.homing = homing;
         this.target = target;
         this.super = superType;
-        this.speed = this.baseSpeed * this.dir * (this.super ? 0.15 : 1);
         this.ice = iceType;
+        this.water = waterType;
+        this.speed = this.baseSpeed * this.dir * (this.water ? 0.7 : 1) * (this.super ? 0.15 : 1);
         if (dir > 0) {
             this.img = new Image();
             this.img.src = this.ice ? "images/fireballice.png" : "images/fireball.png";
+            this.img.src = this.water ? "images/fireballwater.png" : this.img.src;
         } else {
             this.img = new Image();
             this.img.src = this.ice ? "images/fireballiceL.png" : "images/fireballL.png";
+            this.img.src = this.water ? "images/fireballwaterL.png" : this.img.src;
         }
         this.BASEIMGWIDTH = 55;
         this.BASEIMGHEIGHT = 20;
@@ -88,14 +92,30 @@ export default class Fireball {
         }
     }
 
+    scaleSize(multiplier) {
+        const centerX = this.x + this.width / 2;
+        const centerY = this.y + this.height / 2;
+        const newSizeMultiplier = this.water
+            ? Math.min(this.sizeMultiplier * multiplier, this.baseSizeMultiplier * 10)
+            : this.sizeMultiplier * multiplier;
+        const actualMultiplier = newSizeMultiplier / this.sizeMultiplier;
+        this.sizeMultiplier = newSizeMultiplier;
+        this.imageWidth *= actualMultiplier;
+        this.imageHeight *= actualMultiplier;
+        this.width *= actualMultiplier;
+        this.height *= actualMultiplier;
+        this.x = centerX - this.width / 2;
+        this.y = centerY - this.height / 2;
+    }
+
     reflect(target) {
         this.reflected = true;
         this.dir *= -1;
         this.speed *= -1;
         this.target = target;
         this.img.src = this.dir > 0
-            ? (this.ice ? "images/fireballice.png" : "images/fireball.png")
-            : (this.ice ? "images/fireballiceL.png" : "images/fireballL.png");
+            ? (this.water ? "images/fireballwater.png" : this.ice ? "images/fireballice.png" : "images/fireball.png")
+            : (this.water ? "images/fireballwaterL.png" : this.ice ? "images/fireballiceL.png" : "images/fireballL.png");
     }
 
     isColliding(entity) {
