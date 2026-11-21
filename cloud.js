@@ -36,7 +36,7 @@ export default class Cloud {
         this.iceSpawnTimer = 0;
         this.ices = [];
         this.iceDamage = 1;
-        this.rainSpawnTime = Math.random() * 120 + 400;
+        this.rainSpawnTime = Math.random() * 200 + 500;
         this.rainSpawnTimer = 0;
         this.raindrops = [];
         this.rainDamage = 1;
@@ -120,7 +120,7 @@ export default class Cloud {
                 this.strikeInterval = Math.random() * 5000 + 3000;
                 if (level == 8) {
                     this.strikeInterval /= 8;
-                } else if ((level >= 10 && level <= 12) || level == 14) {
+                } else if ((level >= 10 && level <= 12) || level == 14 || level == 23) {
                     this.strikeInterval *= 3;
                 } else if (level >= 20) {
                     this.strikeInterval /= 1.5;
@@ -146,7 +146,7 @@ export default class Cloud {
             }
         }
 
-        if (level >= 10 && level <= 14) {
+        if ((level >= 10 && level <= 14) || level == 23) {
             this.iceSpawnTimer += deltaTime;
             if (this.iceSpawnTimer >= this.iceSpawnTime) {
                 this.ices.push(new Ice(Math.random() * 0.92 + 0.04, -0.1, this.iceDamage));
@@ -155,7 +155,7 @@ export default class Cloud {
                 if (level == 13) {
                     this.iceSpawnTime /= 2;
                 }
-                if (level == 14) {
+                if (level >= 14) {
                     this.iceDamage = 2;
                 }
             }
@@ -166,9 +166,12 @@ export default class Cloud {
             if (this.rainSpawnTimer >= this.rainSpawnTime) {
                 this.raindrops.push(new Raindrop(Math.random() * 0.94 + 0.03, -0.1, this.rainDamage));
                 this.rainSpawnTimer = 0;
-                this.rainSpawnTime = Math.random() * 120 + 400;
+                this.rainSpawnTime = Math.random() * 200 + 500;
                 if (level == 21) {
                     this.rainSpawnTime /= 2;
+                }
+                if (level == 23) {
+                    this.rainSpawnTime *= 1.5;
                 }
             }
         }
