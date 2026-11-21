@@ -26,9 +26,9 @@ let dragon2SpawnY = 0.65;
 const dragon1RewardRanges = [
     [26, 42], [42, 60], [57, 77], [105, 121], [44, 71], [54, 69], [58, 76],
     [76, 102], [106, 126], [55, 70], [48, 72], [66, 76], [67, 91], [136, 150],
-    [29, 38], [30, 38], [32, 38], [35, 45], [70, 79], [68, 81], [60, 90]
+    [29, 38], [30, 38], [32, 38], [35, 45], [70, 79], [68, 81], [60, 90], [38, 48], [35, 46]
 ];
-const dragon2RewardRanges = [[24, 32], [28, 40], [44, 52], [38, 43], [68, 76], [0, 0], [0, 0]];
+const dragon2RewardRanges = [[24, 32], [28, 40], [44, 52], [38, 43], [68, 76], [0, 0], [0, 0], [38, 48], [42, 58]];
 function generateDragon1Rewards() {
     return dragon1RewardRanges.map(([min, max]) => Math.round(Math.random() * (max - min) + min));
 }
@@ -39,12 +39,12 @@ function generateDragon2Rewards() {
 }
 const dragon1Stats = {
     burstShooting: true,
-    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18, 0.165, 0.3, 0.125, 0.17, 0.12],
-    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0.02, 1, 1, 1, 0.04],
+    baseSpeeds: [0.165, 0.165, 0.165, 0.15, 0.18, 0.26, 0.084, 0.19, 0.096, 0.192, 0.1, 0.165, 0.18, 0.07, 0.165, 0.18, 0.165, 0.3, 0.125, 0.17, 0.16, 0.126, 0.064],
+    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.01, 1, 1, 1, 1, 0.02, 1, 1, 1, 0.03, 1, 1],
     facing: 1,
     rewards: generateDragon1Rewards(),
-        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40, 26, 35, 50, 66, 30],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1, 1.2, 1.1, 1.2],
+        maxHp: [25, 40, 60, 100, 50, 20, 64, 96, 80, 55, 34, 40, 74, 123, 32, 40, 26, 35, 50, 66, 30, 42, 35],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1, 1.2, 1.1, 1.2, 1, 1],
         restTimes: [
             [2500, 4000],
             [2500, 4000],
@@ -66,6 +66,8 @@ const dragon1Stats = {
             [500, 2500],
             [2250, 3250],
             [3000, 4000],
+            [0, 0],
+            [1000, 2500],
             [0, 0]
         ],
         chargeTimes: [
@@ -89,20 +91,22 @@ const dragon1Stats = {
             [500, 3500],
             [2000, 3250],
             [1750, 3500],
-            [500, 2000]
+            [500, 2000],
+            [1500, 3000],
+            [500, 1000]
         ],
-        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800, 3500, 0, 2200, 2500, 1500],
-        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],
-        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 0, 1, 3, 1]
+        shootingDelays: [2500, 2500, 2500, 2500, 2100, 2100, 2500, 1600, 2500, 2000, 3500, 350, 2000, 3500, 2500, 1800, 3500, 0, 2200, 2500, 1500, 2750, 2800],
+        fireDmg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+        fireHealth: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 0, 1, 3, 1, 3, 3]
 }
 const dragon2Stats = {
     zoneAbility: true,
-    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222, 0.11, 0.2, 0.08, 0, 0],
-    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    baseSpeeds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.28, 0.222, 0.11, 0.2, 0.08, 0, 0, 0.1, 0.16],
+    xMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     facing: -1,
     rewards: generateDragon2Rewards(),
-        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 38, 52, 68, 0, 0],
-        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 0.8, 1, 1],
+        maxHp: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 40, 38, 52, 68, 0, 0, 42, 46],
+        sizeMultipliers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 0.8, 1, 0.8, 1, 1, 1, 0.75],
         restTimes: [
             [0, 0],
             [0, 0],
@@ -124,7 +128,9 @@ const dragon2Stats = {
             [0, 1500],
             [0, 0],
             [0, 0],
-            [0, 0]
+            [0, 0],
+            [3500, 6000],
+            [0, 4000]
         ],
         chargeTimes: [
             [0, 0],
@@ -147,11 +153,13 @@ const dragon2Stats = {
             [1500, 5000],
             [500, 1000],
             [0, 0],
-            [0, 0]
+            [0, 0],
+            [3000, 5000],
+            [800, 8000]
         ],
-        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250, 2500, 0, 3300, 0, 0],
-        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0],
-        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0]
+        shootingDelays: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3000, 2250, 2500, 0, 3300, 0, 0, 2250, 7600],
+        fireDmg: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1],
+        fireHealth: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 3, 1]
 }
 const dragon = new Dragon(dragonSpawnX, dragonSpawnY, dragon1Stats);
 const dragon2 = new Dragon(dragon2SpawnX, dragon2SpawnY, dragon2Stats);
@@ -545,7 +553,7 @@ let upgradeHoverIndex = -1;
 let level = 1;
 
 function getActiveDragons() {
-    return level >= 15 && level <= 19 ? [dragon, dragon2] : [dragon];
+    return (level >= 15 && level <= 19) || (level >= 22 && level <= 23) || level == 25 ? [dragon, dragon2] : [dragon];
 }
 
 function createUpgradeChoices() {
@@ -802,9 +810,9 @@ function update(deltaTime) {
     dragon.update(deltaTime, mapWidth, mapHeight, canvas, BASEMAPWIDTH, BASEMAPHEIGHT, player, level, player);
     if (player.spear.attacking && dragon.alive && player.spear.isColliding(dragon)) {
         dragon.takeDamage(1);
-        const knockbackAmount = 0.011 * Math.pow(player.sizeMultiplier, 2) / Math.pow(dragon.sizeMultiplier, 2) /
+        const knockbackAmount = 0.014 * Math.pow(player.sizeMultiplier, 2) / Math.pow(dragon.sizeMultiplier, 2) /
             (dragon.boss ? Math.pow(dragon.bossMultiplier, 2) : 1);
-        dragon.x += player.spear.facing * knockbackAmount;
+        dragon.applyKnockback(player.spear.facing * knockbackAmount);
     }
     if (dragon.alive && dragon.isColliding(player) && lastHit >= bodyHitTime) {
         player.hp--;
@@ -827,15 +835,17 @@ function update(deltaTime) {
                 }
                 const knockbackAmount = fireball.super
                     ? 0.0375 / Math.pow(hitDragon.sizeMultiplier, 4)
-                    : 0.015 * Math.pow(fireball.sizeMultiplier, 4) / Math.pow(hitDragon.sizeMultiplier, 4);
+                    : 0.015 * Math.pow(fireball.sizeMultiplier, fireball.water ? 1 : 4) / Math.pow(hitDragon.sizeMultiplier, 4);
                 if (fireball.homing && fireball.speedY !== undefined) {
                     const speed = Math.hypot(fireball.speed, fireball.speedY);
                     if (speed > 0) {
-                        hitDragon.x += fireball.speed / speed * knockbackAmount;
-                        hitDragon.y += fireball.speedY / speed * knockbackAmount;
+                        hitDragon.applyKnockback(
+                            fireball.speed / speed * knockbackAmount,
+                            fireball.speedY / speed * knockbackAmount
+                        );
                     }
                 } else {
-                    hitDragon.x += fireball.dir * knockbackAmount;
+                    hitDragon.applyKnockback(fireball.dir * knockbackAmount);
                 }
                 if (fireball.super) {
                     const explosionSrc = fireball.ice ? "images/fireexplosionice.png" : fireExplosion.src;
@@ -1015,12 +1025,11 @@ function update(deltaTime) {
                 if (speed > 0) {
                     const normX = bullet.speed / speed; 
                     const normY = bullet.speedY / speed; 
-                    dragon.x = dragon.x + normX * knockbackAmount;
-                    dragon.y = dragon.y + normY * knockbackAmount;
+                    dragon.applyKnockback(normX * knockbackAmount, normY * knockbackAmount);
                 }
             } else {
                 // For regular bullets, use simple directional knockback
-                dragon.x = dragon.x + bullet.dir * knockbackAmount;
+                dragon.applyKnockback(bullet.dir * knockbackAmount);
             }
             if (bullet.ice) {
                 if (bullet.super) {
@@ -1300,7 +1309,7 @@ function draw() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     player.draw(ctx, mapWidth, mapHeight);
     dragon.draw(ctx, mapWidth, mapHeight, level);
-    if (level >= 15 && level <= 19) {
+    if (getActiveDragons().length > 1) {
         dragon2.draw(ctx, mapWidth, mapHeight, level);
     }
     player.drawPoisonGas(ctx, mapWidth, mapHeight);
@@ -1780,6 +1789,7 @@ function reset(isLevelCleared) {
     const dragon2WasAlive = dragon2.alive;
     player.imageWidth = player.BASEIMGWIDTH;
     player.imageHeight = player.BASEIMGHEIGHT;
+    player.baseShootingDelay = level < 20 ? 9 : 900;
     if (level >= 15) {
         playerSpawnX = 0.46;
         playerSpawnY = 0.46;
@@ -1793,7 +1803,7 @@ function reset(isLevelCleared) {
         dragonSpawnX = 0;
         dragon2SpawnX = 0.1;
     }
-    if (level >= 20) {
+    if (level >= 20 && level <= 21) {
         playerSpawnX = 0.74;
         playerSpawnY = 0.4;
         dragonSpawnX = 0.1;
@@ -1976,6 +1986,10 @@ function reset(isLevelCleared) {
     explosions.splice(0, explosions.length);
     if (level >= 20) {
         dragon.waterActive = true;
+        dragon2.waterActive = true;
+    } else {
+        dragon.waterActive = false;
+        dragon2.waterActive = false;
     }
     if (level == 14) {
         dragon.iceActive = true;
@@ -2041,8 +2055,8 @@ function reset(isLevelCleared) {
     dragon2.abilityMovingToPlayer = false;
     dragon2.abilityFireballShot = false;
     dragon2.collected = false;
-    dragon2.iceActive = false;
-    dragon2.homingFireballActive = false;
+    dragon2.iceActive = level == 22;
+    dragon2.homingFireballActive = level == 23;
     dragon2.zoneAbilityActive = false;
     dragon2.zoneRadius = 0;
     dragon2.zoneX = 0;
