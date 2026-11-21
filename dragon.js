@@ -99,6 +99,7 @@ export default class Dragon {
         this.spawnCooldown = this.spawnTime;
         this.spawnPosition = 0;
         this.meteorites = [];
+        this.meteoriteDamage = 2;
     }
 
     draw(ctx, mapWidth, mapHeight, level) {
@@ -313,7 +314,7 @@ export default class Dragon {
 
                         if (this.spawnCooldown >= this.spawnTime) {
                             this.strikePosition = Math.random() * 0.88 + 0.05;
-                            this.meteorites.push(new Meteorite(this.strikePosition, -0.1, 2));
+                            this.meteorites.push(new Meteorite(this.strikePosition, -0.1, this.meteoriteDamage));
                             this.spawnCooldown = 0;
                             this.spawnTime = Math.random() * 250 + 600;
                         }
@@ -448,7 +449,7 @@ export default class Dragon {
                 this.fireRateMultiplier / this.bossMultiplier * (dragon2Enraged ? 1 / 2 : 1);
             this.baseSpeed = this.baseSpeeds[this.hpChooser] * (this.phase == 1 ? 1 : this.phase == 2 ? 1.1 : 1.3);
             if (level == 19 && this.burstShooting && this.secondaryDragon && !this.secondaryDragon.alive) {
-                this.baseSpeed *= 3 / 2;
+                this.baseSpeed *= 2;
             }
             this.xMultiplier = this.xMultipliers[this.hpChooser];
             if (this.zoneAbilityActive) {
@@ -491,7 +492,7 @@ export default class Dragon {
                 const chargePhaseMultiplier = this.phase == 1 ? 1 : this.phase == 2 ? 1.05 : 1.15;
                 this.chargeTime = this.getRandomRange(chargeRange) * chargePhaseMultiplier * this.bossMultiplier;
 
-                if (level == 18) {
+                if (level == 18 || (level == 23 && this.primaryDragon)) {
                     const angle = Math.random() * Math.PI * 2;
                     this.dirX = Math.cos(angle);
                     this.dirY = Math.sin(angle);
@@ -549,7 +550,8 @@ export default class Dragon {
     }
 
     moveWithBoundaryBounce(deltaTime, level) {
-        if (level == 18) {
+        const isLevel23Dragon2 = level == 23 && this.primaryDragon;
+        if (level == 18 || isLevel23Dragon2) {
             const minX = -0.1;
             const maxX = 1.1 - this.width;
 
@@ -561,9 +563,9 @@ export default class Dragon {
                 this.facing = this.dirX * this.xMultiplier > 0 ? 1 : -1;
             }
         }
-        if (level == 18 || level == 21) {
+        if (level == 18 || level == 21 || isLevel23Dragon2) {
             const minY = level == 18 ? -0.1 : 0.1;
-            const maxY = level == 18 ? 1.1 : 1.1 - this.height;
+            const maxY = level == 21 ? 0.9 : 1.1 - this.height;
             if (this.y <= minY && this.dirY * this.yMultiplier < 0) {
                 this.dirY = Math.abs(this.dirY);
             } else if (this.y >= maxY && this.dirY * this.yMultiplier > 0) {
@@ -577,7 +579,7 @@ export default class Dragon {
         this.x += movementX;
         this.y += movementY;
 
-        if (level == 18) {
+        if (level == 18 || isLevel23Dragon2) {
             const minX = -0.1;
             const maxX = 1.1 - this.width;
             if (this.x < minX) {
@@ -590,9 +592,9 @@ export default class Dragon {
                 this.facing = this.dirX * this.xMultiplier > 0 ? 1 : -1;
             }
         }
-        if (level == 18 || level == 21) {
+        if (level == 18 || level == 21 || isLevel23Dragon2) {
             const minY = level == 18 ? -0.1 : 0.1;
-            const maxY = level == 18 ? 1.1 : 1.1 - this.height;
+            const maxY = level == 21 ? 0.9 : 1.1 - this.height;
             if (this.y < minY) {
                 this.y = minY;
                 this.dirY = Math.abs(this.dirY);
@@ -611,6 +613,11 @@ export default class Dragon {
         if (this.hp <= 0) {
             this.kill();
         }
+    }
+
+    applyKnockback(horizontalAmount = 0, verticalAmount = 0) {
+        this.x = Math.max(-0.5, Math.min(1.5, this.x + horizontalAmount));
+        this.y += verticalAmount;
     }
 
     kill() {
@@ -670,9 +677,11 @@ export default class Dragon {
 
     shootFireball(level) {
         const usesRandomFireballEffects = level == 17 || (level == 19 && this.burstShooting);
-        const ice = usesRandomFireballEffects ? Math.random() < 1 / 3 : this.iceActive;
+        const water = level == 21 || (this.waterActive && Math.random() < 1 / 5);
+        const ice = level == 22 && this.iceActive
+            ? !water
+            : usesRandomFireballEffects && !water ? Math.random() < 1 / 3 : this.iceActive;
         const homing = usesRandomFireballEffects ? Math.random() < 1 / 19 : this.homingFireballActive;
-        const water = level == 21 || (this.waterActive && !ice && Math.random() < 1 / 5);
         if (this.facing < 0) {
             this.fireballs.push(new Fireball(this.x, this.y + 0.075, -1, this.fireDmg[level - 1], this.sizeMultiplier * this.bossMultiplier, water ? 1 : this.fireHealth[level - 1], false, ice, water, homing, this.player));
         } else {
