@@ -119,7 +119,7 @@ export default class Fireball {
     }
 
     isColliding(entity) {
-        if (this.x + this.width * 0.8 >= entity.x && this.x <= entity.x + entity.width * 0.9 && this.y + this.height * 0.85 >= entity.y && this.y <= entity.y + entity.height * 0.9) {
+        if (this.x + this.width * 0.8 >= entity.x && this.x + this.width * 0.4 <= entity.x + entity.width * 0.9 && this.y + this.height * 0.85 >= entity.y && this.y <= entity.y + entity.height * 0.9) {
             return true;
         }
         return false;
